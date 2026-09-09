@@ -5,7 +5,7 @@
    Exposes window.LPB_MENU = { categories, items } and fires 'lpb-menu-ready'. */
 (function () {
   // category filter order exactly as on the live menu — desserts first, then drinks
-  var CATEGORIES = ['All Items', 'Pancake', 'Crêpe', 'Waffle', 'Bubble Waffle', 'N Cup', 'Smoothies', 'Fresh Juice', 'Shakes', 'Matcha', 'BOBA', 'Ice Cream'];
+  var CATEGORIES = ['All Items', 'Pancake', 'Crêpe', 'Waffle', 'Bubble Waffle', 'N Cup', 'Smoothies', 'Fresh Juice', 'Shakes', 'Matcha', 'Hot Drinks', 'BOBA', 'Ice Cream'];
 
   // [name, price]  (price null = "Order Now" only, no price yet)
   var RAW = {
@@ -19,7 +19,9 @@
     'Fresh Juice': [['Orange', 3], ['Carrot', 3], ['Apple', 3], ['Strawberry', 3.5], ['Lemonada', 3], ['Cocktail pieces fresh', 6], ['Cocktail juice fresh', 4], ['Cocktail pieces & avocado', 6], ['Orange & strawberry', 3.5], ['Banana with milk', 3.5], ['Blue hawaii', 4], ['Avocado', 7], ['Polo fresh', 3.5]],
     'Shakes': [['Lotus', 3], ['Nutella', 3], ['Red velvet', 3], ['Kinder', 3], ['Snickers', 3], ['Marshmallow', 3], ['Bubble Gum', 3], ['Arequipe', 3], ['Caramel', 3], ['Cookies', 3], ['Mocha', 3], ['Cerlac', 3], ['Trix', 3], ['Playa Blanca', 3], ['Churro', 5]],
     'BOBA': [['Peach & Strawberry', null], ['Peach & Mango', null], ['Peach & Passion fruit', null], ['Peach & Lychee', null], ['Peach & Lemon', null], ['Tropical', null], ['Peach', null], ['Lemon', null], ['Blue Milk', null], ['Pink Milk', null], ['Matcha', null], ['Peach (Milk)', null], ['Mango (Milk)', null], ['Vanilla', null], ['Coconut', null], ['Tapioca Pearls', null], ['Strawberry (Bobas)', null], ['Tropical (Bobas)', null], ['Lychee (Bobas)', null], ['Mango (Bobas)', null], ['Blueberry (Bobas)', null], ['Passion Fruit (Bobas)', null], ['Peach (Bobas)', null], ['Cheese Cake (Topping)', null], ['Cotton Candy (Topping)', null], ['Biscuit (Topping)', null]],
-    'Ice Cream': [['Croissant', null], ['Blanca ice cream', null]]
+    'Ice Cream': [['Croissant', null], ['Blanca ice cream', null]],
+    // Hot Drinks added Sep 2026 from the owner ("Hir caramel" read as "Hot caramel")
+    'Hot Drinks': [['Espresso', null], ['Americano', null], ['Latte', null], ['Mocha', null], ['White mocha', null], ['Dark mocha', null], ['Caramel macchiato', null], ['White macchiato', null], ['Hot lotus', null], ['Hot white chocolate', null], ['Hot milk chocolate', null], ['Hot cerelac', null], ['Hot caramel', null], ['Cappuccino', null], ['Pumpkin Spice Latte', null]]
   };
 
   // short, honest card copy keyed by flavour name (reused across categories)
@@ -107,7 +109,21 @@
     'Strawberry Cheesecake': 'Strawberry cheesecake, cool in a cup',
     'Lotus Cheesecake': 'Biscoff cheesecake, spiced and smooth',
     'Crunchy N Cup': 'Layers of crunch, cream and chocolate',
-    'Dubai N Cup': 'Pistachio–kunafa chocolate, Dubai style'
+    'Dubai N Cup': 'Pistachio–kunafa chocolate, Dubai style',
+    'Espresso': 'A short, strong shot — pure coffee',
+    'Americano': 'Espresso lengthened smooth and black',
+    'Latte': 'Espresso folded into steamed milk',
+    'White mocha': 'White chocolate melted into coffee',
+    'Dark mocha': 'Dark chocolate, deep in espresso',
+    'Caramel macchiato': 'Steamed milk marked with caramel and espresso',
+    'White macchiato': 'Espresso over milk, white-chocolate sweet',
+    'Hot lotus': 'Warm Biscoff, spiced and silky in a cup',
+    'Hot white chocolate': 'Melted white chocolate, steamed and creamy',
+    'Hot milk chocolate': 'Classic hot chocolate, rich and cosy',
+    'Hot cerelac': 'Steamed malted Cerelac, warm nostalgia',
+    'Hot caramel': 'Buttery caramel, steamed into warm milk',
+    'Cappuccino': 'Espresso under a deep cap of foam',
+    'Pumpkin Spice Latte': 'Autumn in a cup — pumpkin and warm spice'
   };
 
   var CAT_DESC = {
@@ -121,7 +137,8 @@
     'Fresh Juice': 'Pressed fresh, nothing added',
     'Shakes': 'Thick blended shake, extra cold',
     'BOBA': 'Iced tea with chewy pearls',
-    'Ice Cream': 'Cold, creamy, made in-house'
+    'Ice Cream': 'Cold, creamy, made in-house',
+    'Hot Drinks': 'Coffee and cocoa, served steaming'
   };
 
   // family key that maps a category to an icon + a "temperature" tag
@@ -136,7 +153,8 @@
     'Fresh Juice': { icon: 'juice', temp: 'Fresh' },
     'Shakes': { icon: 'shake', temp: 'Iced' },
     'BOBA': { icon: 'boba', temp: 'Iced' },
-    'Ice Cream': { icon: 'scoop', temp: 'Cold' }
+    'Ice Cream': { icon: 'scoop', temp: 'Cold' },
+    'Hot Drinks': { icon: 'coffee', temp: 'Hot' }
   };
 
   var NUTTY = { 'Nutella': 1, 'Kinder': 1, 'Snickers': 1, 'Nutella with strawberry': 1, 'White Pistachio Matcha': 1, 'Dubai N Cup': 1 };

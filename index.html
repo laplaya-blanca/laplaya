@@ -1145,13 +1145,14 @@ class Component extends DCLogic {
       scoop: [['circle', { cx: 20, cy: 15, r: 7 }], ['path', { d: 'M13 18 L20 33 L27 18' }]],
       bubble: [['rect', { x: 9, y: 9, width: 22, height: 22, rx: 9 }], ['circle', { cx: 15.5, cy: 15.5, r: 2.4 }], ['circle', { cx: 24.5, cy: 15.5, r: 2.4 }], ['circle', { cx: 15.5, cy: 24.5, r: 2.4 }], ['circle', { cx: 24.5, cy: 24.5, r: 2.4 }]],
       matcha: [['path', { d: 'M20 33 Q9 25 13 12 Q23 7 27 16 Q29 27 20 33 Z' }], ['path', { d: 'M20 32 Q18.5 22 16.5 14' }]],
+      coffee: [['path', { d: 'M12 16 H28 L26.8 29 a4 4 0 0 1 -4 3.6 H17.2 a4 4 0 0 1 -4 -3.6 Z' }], ['path', { d: 'M28 18.5 a4.2 4.2 0 0 1 0 8.4' }], ['path', { d: 'M16.5 12 q1.6 -2.4 0 -5' }], ['path', { d: 'M23.5 12 q1.6 -2.4 0 -5' }]],
       frond: frond
     };
     var kids = (P[kind] || P.glass).map(function (c, i) { return R(c[0], Object.assign({ key: i }, c[1])); });
     return R('svg', common, kids);
   }
   _decorate(it, iconSize) {
-    var TINT = { 'Pancake': 'rgba(232,164,76,.15)', 'Crêpe': 'rgba(231,96,122,.11)', 'Waffle': 'rgba(232,164,76,.17)', 'Bubble Waffle': 'rgba(232,164,76,.15)', 'N Cup': 'rgba(231,96,122,.13)', 'Matcha': 'rgba(168,198,134,.2)', 'Smoothies': 'rgba(231,96,122,.13)', 'Fresh Juice': 'rgba(168,198,134,.17)', 'Shakes': 'rgba(31,122,140,.13)', 'BOBA': 'rgba(168,198,134,.15)', 'Ice Cream': 'rgba(31,122,140,.11)' };
+    var TINT = { 'Pancake': 'rgba(232,164,76,.15)', 'Crêpe': 'rgba(231,96,122,.11)', 'Waffle': 'rgba(232,164,76,.17)', 'Bubble Waffle': 'rgba(232,164,76,.15)', 'N Cup': 'rgba(231,96,122,.13)', 'Matcha': 'rgba(168,198,134,.2)', 'Smoothies': 'rgba(231,96,122,.13)', 'Fresh Juice': 'rgba(168,198,134,.17)', 'Shakes': 'rgba(31,122,140,.13)', 'BOBA': 'rgba(168,198,134,.15)', 'Ice Cream': 'rgba(31,122,140,.11)', 'Hot Drinks': 'rgba(139,94,60,.16)' };
     var tint = TINT[it.cat] || 'rgba(31,122,140,.10)';
     return Object.assign({}, it, { iconEl: this._icon(it.icon, iconSize || 22), frond: this._icon('frond', 118), tint: tint, tintStyle: { position: 'absolute', inset: 0, background: 'radial-gradient(130% 90% at 100% 0%, ' + tint + ', rgba(255,255,255,0) 62%)', pointerEvents: 'none' } });
   }
@@ -1931,7 +1932,7 @@ class Component extends DCLogic {
     var fanFrondStyle = { position: 'absolute', top: '-14px', right: '-12px', width: '96px', height: '96px', backgroundImage: frondBg, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', opacity: 0.12, transform: 'rotate(8deg)', pointerEvents: 'none', zIndex: 1 };
 
     // category pills (real categories only — no "All Items"), each with its little beach-line icon
-    var CAT_ICON = { 'Pancake': 'pancake', 'Crêpe': 'crepe', 'Waffle': 'waffle', 'Bubble Waffle': 'bubble', 'N Cup': 'glass', 'Matcha': 'matcha', 'Smoothies': 'shake', 'Fresh Juice': 'juice', 'Shakes': 'shake', 'BOBA': 'boba', 'Ice Cream': 'scoop' };
+    var CAT_ICON = { 'Pancake': 'pancake', 'Crêpe': 'crepe', 'Waffle': 'waffle', 'Bubble Waffle': 'bubble', 'N Cup': 'glass', 'Matcha': 'matcha', 'Hot Drinks': 'coffee', 'Smoothies': 'shake', 'Fresh Juice': 'juice', 'Shakes': 'shake', 'BOBA': 'boba', 'Ice Cream': 'scoop' };
     var cats = st.categories.filter(function (c) { return c !== 'All Items'; }).map(function (c) {
       var a = c === menuCat;
       return { name: c, active: a, iconEl: self._icon(CAT_ICON[c] || 'glass', 16), style: Object.assign({}, pillBase, a ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C', boxShadow: '0 8px 22px rgba(31,122,140,.32)' } : { background: 'rgba(31,122,140,.06)', color: '#1F7A8C', borderColor: 'rgba(31,122,140,.22)' }) };
