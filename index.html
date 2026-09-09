@@ -59,8 +59,10 @@
     /* NAV — keep the fixed bar compact so the Cart button never clips off-screen */
     #lpb-nav{ padding-left:calc(14px + env(safe-area-inset-left, 0px)) !important; padding-right:calc(14px + env(safe-area-inset-right, 0px)) !important; gap:8px !important; }
     #cart-fab{ padding:9px 12px !important; font-size:12px !important; gap:7px !important; }
-    /* MENU pills — a thumb-swipeable rail (wrapping made a tall block that ate the viewport) */
-    #menu-pills{ position:static !important; padding:9px !important; gap:7px !important; margin-bottom:16px !important; flex-wrap:nowrap !important; justify-content:flex-start !important; overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; }
+    /* MENU pills — a thumb-swipeable rail (wrapping made a tall block that ate the viewport);
+       sticky lives on the #menu-stick wrapper so the rail + view switch pin together on phones */
+    #menu-stick{ top:90px !important; margin-bottom:16px !important; }
+    #menu-pills{ padding:9px !important; gap:7px !important; flex-wrap:nowrap !important; justify-content:flex-start !important; overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; }
     #menu-pills button{ padding:8px 13px !important; font-size:12.5px !important; flex:0 0 auto; scroll-snap-align:center; }
     /* FAN deck — shrink so the active card centres without a big empty gap */
     #fan-deck{ height:342px !important; }
@@ -119,6 +121,9 @@
 <div id="lpb-fallback" style="position:fixed; inset:0; z-index:0; display:none; overflow:hidden; background:#123f4d;"></div>
 <!-- Instant blur-up poster (first crêpe frame, inlined) — covers the opaque WebGL canvas until the crêpe clip is decoding, so the hero never sits blank while the heavy video downloads. Fades out via the script in <helmet>. -->
 <div id="lpb-hero-poster" aria-hidden="true" style="position:fixed; inset:0; z-index:0; background:#123f4d url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAAkAEADASIAAhEBAxEB/8QAGgAAAwADAQAAAAAAAAAAAAAAAAMEAgUGAf/EAC8QAAIBAgQEBQIHAQAAAAAAAAECAwARBBIhMUEFIhMyUXGRFIEVI0JhoWKS0eHw/8QAFwEBAQEBAAAAAAAAAAAAAAAAAgMBAP/EABwRAQEBAQEBAAMAAAAAAAAAAAABAgQAA//EABwRAAMBAQEBAQEAAAAAAAAAAAABEQIhMRJRQf/aAAwDAQACEQMRAD8A20UCRM6B1KbrqNPP/d6pVI1CjmAAaEE7ViOEAfY6HXXSvW4U7MSWUk1FTKfDFurwXxFohwvFZXS/JewB7Gq05QLEuupuNe1RT8OVI2WUxhWBH1OBWuTiCyuPC4bmxsLq5fJ1trcaX6ed/WyblZMtzwdIGjItnW3rQJI1P3r8iuehxGKkmBUrygQPwiAbga294WO+2x32GyiRZV2IcGzLbY227/wC2oqqrIqmp7RcZIzs6/NZBwRbOCPWoDh9dj8UxYrDY/FdaOKgDNGhaaaULt7oQBWtl4tEsS8wO7NbOCL5f+H2qbE8VkkjKzOzIdzewHqNqkbD83WOYqam5Kpi+L8RafEctLKqqSpCfXmte3bYUV5wedJMyyI0UwURhgtmW9tiLb9rXvbrXjZQ2GKO+wDg2ZbbG23f8A21FVVZFU1PaLjJGdnX5rIOCLZwR61AcPrsfimLFYbH4rrRxUAZo0LTTShdvdCAK1svFolyXmB3ZrZwRfL/w+1TYnisksZWZ2ZDub2A9RtUjYfm6xzFTU3JVMXxfiLT4jlpZVVSVIT68j2A2y79G5FSVoHnSTMsiNFMFEYYLZlvbYi2/a172614Wa3ByZzeD4kaSTLcaipbWCCAbeR1oGE0hI0zg63FvKr1eEeGxBJGuTNca9vfyrehSAsqk210qLB5cLCwRmbqzN1PYUzElhCHRwLrc3YjX2NOeidbnLbix1FL5aqSVuu+1FFVJmEuIlghzK2Yj9XrT4sVIQNRRRQY0VQyM7WNW4ImWF3Y/bNksNiNP7oooMZRijyJRGBmA1JYm5vp00qTEYmRn1Pnb9tvKiikgs/9k=') center/cover no-repeat; filter:blur(26px) saturate(1.18); transform:scale(1.14); transition:opacity .9s ease; will-change:opacity;"></div>
+
+<!-- ============ TIME-OF-DAY MOOD (whole-page soft-light tint set once at boot from the clock — see _initMood) ============ -->
+<div id="lpb-mood" aria-hidden="true" style="position:fixed; inset:0; z-index:900; pointer-events:none; opacity:0; mix-blend-mode:soft-light; transition:opacity 1.2s ease;"></div>
 
 <!-- ============ ATMOSPHERE: sand grain + palm-shade drift ============ -->
 <div aria-hidden="true" style="position:fixed; inset:-20%; z-index:1; pointer-events:none; opacity:.5; mix-blend-mode:soft-light; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;); animation:lpbGrain 8s steps(6) infinite;"></div>
@@ -293,15 +298,25 @@
         <p style="margin:0; font-family:'Manrope',sans-serif; font-size:clamp(14px,1.6vw,17px); line-height:1.55; color:rgba(20,58,64,.72);">Pancakes to boba, juices to scoops — every one a signature. <strong style="color:#14586B; font-weight:700;">Pick a category</strong>, swipe through the deck, and hit <strong style="color:#14586B; font-weight:700;">Add</strong> on the one that calls you.</p>
       </div>
 
-      <!-- category pills (sticky) -->
-      <div id="menu-pills" style="position:sticky; top:70px; z-index:20; display:flex; gap:9px; flex-wrap:wrap; justify-content:center; padding:12px; margin:0 auto clamp(26px,4vh,40px); max-width:1000px; background:rgba(245,241,227,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(31,122,140,.12); border-radius:22px; box-shadow:0 10px 30px rgba(20,58,64,.08);">
-        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="9">
-          <button data-cat="{{ c.name }}" onClick="{{ onFilterClick }}" data-cursor="grow" style="{{ c.style }}" style-hover="filter:brightness(1.05); transform:translateY(-1px)">{{ c.name }}</button>
-        </sc-for>
+      <!-- sticky control stack: category rail + view switch (sticky on desktop AND mobile) -->
+      <div id="menu-stick" style="position:sticky; top:70px; z-index:20; margin:0 auto clamp(26px,4vh,40px); max-width:1000px;">
+        <div id="menu-pills" style="display:flex; gap:9px; flex-wrap:wrap; justify-content:center; padding:12px; background:rgba(245,241,227,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(31,122,140,.12); border-radius:22px; box-shadow:0 10px 30px rgba(20,58,64,.08);">
+          <sc-for list="{{ cats }}" as="c" hint-placeholder-count="9">
+            <button data-cat="{{ c.name }}" onClick="{{ onFilterClick }}" data-cursor="grow" style="{{ c.style }}" style-hover="filter:brightness(1.05); transform:translateY(-1px)">{{ c.iconEl }}<span>{{ c.name }}</span></button>
+          </sc-for>
+        </div>
+        <!-- deck ↔ grid view switch — its own row so the phone rail can scroll without hiding it -->
+        <div style="display:flex; justify-content:center; margin-top:8px;">
+          <div style="display:inline-flex; gap:6px; padding:5px; border-radius:999px; background:rgba(245,241,227,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(31,122,140,.12); box-shadow:0 8px 22px rgba(20,58,64,.08);">
+            <button onClick="{{ onViewDeck }}" aria-label="Card deck view" data-cursor="grow" style="{{ viewDeckStyle }}" style-hover="filter:brightness(1.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="8" height="14" rx="2"/><path d="M5.5 6.5 L4 18 a2 2 0 0 0 1.7 2.2"/><path d="M18.5 6.5 L20 18 a2 2 0 0 1 -1.7 2.2"/></svg><span>Deck</span></button>
+            <button onClick="{{ onViewGrid }}" aria-label="Grid view" data-cursor="grow" style="{{ viewGridStyle }}" style-hover="filter:brightness(1.05)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg><span>See all</span></button>
+          </div>
+        </div>
       </div>
 
-      <!-- fan deck: the selected category fanned out — hover spreads it, tap a card to add -->
-      <div style="position:relative;">
+      <!-- fan deck: the selected category fanned out — hover spreads it, tap a card to add.
+           display (not sc-if) drives the deck/grid switch — sc-if left stale DOM on device. -->
+      <div style="{{ deckWrapStyle }}">
         <div id="fan-deck" style="position:relative; width:100%; height:clamp(380px,52vh,460px);">
           <sc-for list="{{ fanItems }}" as="it" hint-placeholder-count="7">
             <div class="fan-card" style="{{ it.slotStyle }}" style-hover="z-index:40">
@@ -330,6 +345,31 @@
         <div style="display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap; max-width:360px; margin:clamp(14px,3vh,28px) auto 0;">
           <sc-for list="{{ fanDots }}" as="d" hint-placeholder-count="5"><span style="{{ d.style }}"></span></sc-for>
         </div>
+      </div>
+
+      <!-- compact grid: the whole category at a glance (2-up on phones); tap a card for the detail overlay -->
+      <div id="menu-grid" style="{{ gridWrapStyle }}">
+        <sc-for list="{{ fanItems }}" as="it" hint-placeholder-count="8">
+          <div data-id="{{ it.id }}" onClick="{{ onGridOpen }}" data-cursor="grow" style="position:relative; overflow:hidden; border-radius:18px; background:linear-gradient(158deg, #FCF9F0 0%, #EFE7D4 70%, #DDE7E0 100%); border:1px solid rgba(31,122,140,.16); box-shadow:0 10px 24px rgba(20,58,64,.10); padding:15px 14px 14px; cursor:none; display:flex; flex-direction:column; gap:9px; transition:transform .25s ease, box-shadow .25s ease;" style-hover="transform:translateY(-3px); box-shadow:0 16px 32px rgba(20,58,64,.16)">
+            <div aria-hidden="true" style="{{ it.tintStyle }}"></div>
+            <div style="position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <span style="display:grid; place-items:center; width:34px; height:34px; border-radius:11px; background:rgba(31,122,140,.09); border:1px solid rgba(31,122,140,.14); color:#1F7A8C;">{{ it.iconEl }}</span>
+              <span data-id="{{ it.id }}" onClick="{{ onGridAdd }}" role="button" aria-label="Add to cart" data-cursor="grow" style="display:grid; place-items:center; width:31px; height:31px; border-radius:999px; background:#1F7A8C; color:#F5F1E3; box-shadow:0 6px 14px rgba(31,122,140,.3); cursor:none;" style-hover="filter:brightness(1.12)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+            </div>
+            <div style="position:relative;">
+              <h3 style="margin:0 0 4px; font-family:'Fraunces',serif; font-weight:600; font-size:19px; line-height:1.05; color:#1F7A8C;">{{ it.name }}</h3>
+              <p style="margin:0; font-family:'Manrope',sans-serif; font-size:12px; line-height:1.45; color:rgba(20,58,64,.6);">{{ it.desc }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- can't decide? let the tide pick -->
+      <div style="display:flex; justify-content:center; margin-top:clamp(20px,3.5vh,34px);">
+        <button onClick="{{ onSurprise }}" data-cursor="grow" data-magnetic="1" style="display:inline-flex; align-items:center; gap:9px; cursor:none; border:1.4px solid rgba(31,122,140,.28); padding:13px 26px; border-radius:999px; background:rgba(31,122,140,.06); color:#1F7A8C; font-family:'Manrope',sans-serif; font-weight:800; font-size:13.5px; letter-spacing:.4px; will-change:transform; transition:background-color .3s, color .3s;" style-hover="background:#1F7A8C; color:#F5F1E3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 11c2.5-3.2 5-3.2 7.5 0s5 3.2 7.5 0 4.2-2.7 5 0"/><path d="M2 16.5c2.5-3.2 5-3.2 7.5 0s5 3.2 7.5 0 4.2-2.7 5 0"/></svg>
+          Let the tide decide
+        </button>
       </div>
     </section>
 
@@ -603,6 +643,12 @@
     </sc-if>
   </aside>
 
+  <!-- ===== SURPRISE WAVE (sweeps up over the screen, recedes to reveal the tide's pick in the detail overlay) ===== -->
+  <div id="surprise-wave" aria-hidden="true" style="position:fixed; left:0; top:0; width:100%; height:100vh; z-index:650; pointer-events:none; transform:translateY(112%); background:linear-gradient(180deg, #BFE0DC 0%, #1F7A8C 34%, #14586B 100%);">
+    <svg viewBox="0 0 1440 90" width="100%" height="88" preserveAspectRatio="none" style="position:absolute; left:0; top:-86px; display:block;"><path d="M0 90 L0 58 C 180 18 340 74 540 48 C 740 22 900 66 1100 40 C 1260 20 1360 44 1440 30 L1440 90 Z" fill="#BFE0DC"/></svg>
+    <svg viewBox="0 0 1440 90" width="100%" height="88" preserveAspectRatio="none" style="position:absolute; left:0; bottom:-86px; display:block; transform:scaleY(-1);"><path d="M0 90 L0 58 C 180 18 340 74 540 48 C 740 22 900 66 1100 40 C 1260 20 1360 44 1440 30 L1440 90 Z" fill="#14586B"/></svg>
+  </div>
+
   <!-- ===== GALLERY DETAIL OVERLAY ===== -->
   <sc-if value="{{ detailOpen }}">
     <div style="position:fixed; inset:0; z-index:600; display:flex; align-items:center; justify-content:center; padding:20px;">
@@ -647,6 +693,7 @@ class Component extends DCLogic {
       categories: M ? M.categories : ['All Items'],
       filter: 'All Items',
       menuCat: 'Pancake',
+      menuView: (function () { try { return localStorage.getItem('lpb-menu-view') === 'grid' ? 'grid' : 'deck'; } catch (e) { return 'deck'; } })(),
       fanCenter: 3,
       cart: {},           // id -> { item, qty }
       cartOpen: false,
@@ -721,6 +768,7 @@ class Component extends DCLogic {
       self._initEvents();
       self._initOutro();
       self._initGLSync();
+      self._initMood();
       self._initIntro();
       window.__lpb = self;
       window.ScrollTrigger.refresh();
@@ -861,7 +909,8 @@ class Component extends DCLogic {
       uMouse: { value: new THREE.Vector2(0.5, 0.5) }, uRipple: { value: 0.0 },
       uZoom: { value: 1.0 }, uCanvasAspect: { value: window.innerWidth / window.innerHeight },
       uTexAspect: { value: 1280 / 720 }, uReduced: { value: this.reduced ? 1.0 : 0.0 },
-      uOutro: { value: 0.0 }, uVignette: { value: 1.0 }, uFit: { value: 0.0 }
+      uOutro: { value: 0.0 }, uVignette: { value: 1.0 }, uFit: { value: 0.0 },
+      uWarm: { value: 0.0 }, uNight: { value: 0.0 }
     };
     this._u = uniforms;
     // On tall/portrait phones a 16:9 video "cover"-fills to a zoomed centre strip;
@@ -872,7 +921,7 @@ class Component extends DCLogic {
       'precision highp float;',
       'varying vec2 vUv;',
       'uniform sampler2D uTex0; uniform sampler2D uTex1; uniform sampler2D uTex2;',
-      'uniform float uScene, uTime, uRipple, uZoom, uCanvasAspect, uTexAspect, uReduced, uOutro, uVignette, uFit;',
+      'uniform float uScene, uTime, uRipple, uZoom, uCanvasAspect, uTexAspect, uReduced, uOutro, uVignette, uFit, uWarm, uNight;',
       'uniform vec2 uMouse;',
       // uFit blends cover (0) -> contain (1): cover crops to fill, contain shows the whole frame.
       'vec2 coverUV(vec2 uv, float fit){ float ra=uCanvasAspect, rt=uTexAspect; vec2 sc=vec2(1.0), sn=vec2(1.0); if(ra>rt){ sc.y=rt/ra; sn.x=ra/rt; } else { sc.x=ra/rt; sn.y=rt/ra; } vec2 s=mix(sc,sn,fit); uv=(uv-0.5)*s/uZoom+0.5; return uv; }',
@@ -902,6 +951,9 @@ class Component extends DCLogic {
       '  float sc=clamp(uScene,0.0,2.0); vec3 col;',
       '  if(sc<1.0) col=wash(uTex0,uTex1,sc,uv,uFit); else col=wash(uTex1,uTex2,sc-1.0,uv,uFit);',
       '  col=mix(col, col*vec3(1.07,1.0,0.9)+vec3(0.02,0.01,0.0), 0.55);',
+      // time-of-day mood: warm gold toward evening, deeper + dimmer after dark (see _initMood)
+      '  col=mix(col, col*vec3(1.08,0.97,0.85), uWarm*0.45);',
+      '  col=mix(col, col*vec3(0.86,0.94,1.05)*0.82, uNight*0.6);',
       '  float vig=smoothstep(1.25,0.35,distance(uv,vec2(0.5)));',
       '  col*=mix(1.0, mix(0.7,1.0,vig), uVignette);',
       // letterbox: where "contain" samples past the frame, fill with a dim/blurred version of the
@@ -1084,6 +1136,8 @@ class Component extends DCLogic {
       shake: [['path', { d: 'M13 15 H27 L25 32 H15 Z' }], ['path', { d: 'M13 15 a7 6 0 0 1 14 0' }], ['path', { d: 'M20 8 V32' }]],
       boba: [['path', { d: 'M13 10 H27 L24 32 H16 Z' }], ['circle', { cx: 18, cy: 28, r: 1.5 }], ['circle', { cx: 22, cy: 28, r: 1.5 }], ['circle', { cx: 20, cy: 25, r: 1.5 }], ['path', { d: 'M22 7 L20.5 30' }]],
       scoop: [['circle', { cx: 20, cy: 15, r: 7 }], ['path', { d: 'M13 18 L20 33 L27 18' }]],
+      bubble: [['rect', { x: 9, y: 9, width: 22, height: 22, rx: 9 }], ['circle', { cx: 15.5, cy: 15.5, r: 2.4 }], ['circle', { cx: 24.5, cy: 15.5, r: 2.4 }], ['circle', { cx: 15.5, cy: 24.5, r: 2.4 }], ['circle', { cx: 24.5, cy: 24.5, r: 2.4 }]],
+      matcha: [['path', { d: 'M20 33 Q9 25 13 12 Q23 7 27 16 Q29 27 20 33 Z' }], ['path', { d: 'M20 32 Q18.5 22 16.5 14' }]],
       frond: frond
     };
     var kids = (P[kind] || P.glass).map(function (c, i) { return R(c[0], Object.assign({ key: i }, c[1])); });
@@ -1211,6 +1265,44 @@ class Component extends DCLogic {
     });
   }
   _openDetail(it) { this.setState({ detail: this._decorate(it, 26) }); }
+  _setMenuView(v) {
+    try { localStorage.setItem('lpb-menu-view', v); } catch (e) {}
+    this.setState({ menuView: v });
+  }
+  // "Let the tide decide" — a wave washes the screen and recedes to reveal a random dish
+  _surprise() {
+    var self = this, gsap = window.gsap;
+    var pool = this.state.menu; if (!pool.length) return;
+    var it = pool[Math.floor(Math.random() * pool.length)];
+    var idx = this._catItems(it.cat).findIndex(function (m) { return m.id === it.id; });
+    var reveal = function () { self.setState({ menuCat: it.cat, fanCenter: Math.max(0, idx), detail: self._decorate(it, 26) }); };
+    var el = document.getElementById('surprise-wave');
+    if (!el || !gsap || this.reduced) { reveal(); return; }
+    if (this._waveBusy) return; this._waveBusy = true;
+    gsap.killTweensOf(el);
+    gsap.timeline({ onComplete: function () { self._waveBusy = false; } })
+      .fromTo(el, { y: 0, yPercent: 112 }, { yPercent: 0, duration: 0.55, ease: 'power2.in', onComplete: reveal })
+      .to(el, { yPercent: -112, duration: 0.75, ease: 'power2.inOut', delay: 0.18 })
+      .set(el, { yPercent: 112 });
+  }
+  // time-of-day mood: the beach warms toward golden hour and deepens after dark
+  _initMood() {
+    var h = new Date().getHours(), warm, night;
+    if (h >= 6 && h < 11) { warm = 0.12; night = 0; }        // morning — bright and clean
+    else if (h < 16) { warm = 0.2; night = 0; }              // midday
+    else if (h < 19) { warm = 0.62; night = 0; }             // golden hour
+    else if (h < 23) { warm = 0.75; night = 0.45; }          // evening glow
+    else { warm = 0.5; night = 0.62; }                       // late night
+    this._mood = { warm: warm, night: night };
+    var el = document.getElementById('lpb-mood');
+    if (el) {
+      el.style.background = night > 0
+        ? 'linear-gradient(180deg, rgba(18,42,66,' + (0.55 * night).toFixed(2) + '), rgba(232,140,60,' + (0.28 * warm).toFixed(2) + '))'
+        : 'linear-gradient(180deg, rgba(255,202,120,' + (0.32 * warm).toFixed(2) + '), rgba(255,152,84,' + (0.24 * warm).toFixed(2) + '))';
+      el.style.opacity = '1';
+    }
+    if (this._u) { this._u.uWarm.value = warm; this._u.uNight.value = night; }
+  }
   _animateDetailIn() {
     var gsap = window.gsap; if (!gsap) return;
     var card = document.querySelector('[data-detail-card]');
@@ -1780,7 +1872,7 @@ class Component extends DCLogic {
     var self = this, st = this.state;
     var count = this._cartCount();
     var filter = st.filter;
-    var pillBase = { cursor: 'none', padding: '9px 16px', borderRadius: '999px', border: '1.4px solid', fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: '12.5px', letterSpacing: '.3px', transition: 'background-color .3s, color .3s, border-color .3s, box-shadow .3s, transform .2s', whiteSpace: 'nowrap' };
+    var pillBase = { cursor: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '999px', border: '1.4px solid', fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: '12.5px', letterSpacing: '.3px', transition: 'background-color .3s, color .3s, border-color .3s, box-shadow .3s, transform .2s', whiteSpace: 'nowrap' };
     var chipBase = { cursor: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px 16px', borderRadius: '14px', border: '1.4px solid', fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: '13px', letterSpacing: '.2px', transition: 'background-color .3s, color .3s, border-color .3s, transform .2s' };
 
     // shared teal frond motif for the fan cards
@@ -1824,10 +1916,11 @@ class Component extends DCLogic {
     });
     var fanFrondStyle = { position: 'absolute', top: '-14px', right: '-12px', width: '96px', height: '96px', backgroundImage: frondBg, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', opacity: 0.12, transform: 'rotate(8deg)', pointerEvents: 'none', zIndex: 1 };
 
-    // category pills (real categories only — no "All Items")
+    // category pills (real categories only — no "All Items"), each with its little beach-line icon
+    var CAT_ICON = { 'Pancake': 'pancake', 'Crêpe': 'crepe', 'Waffle': 'waffle', 'Bubble Waffle': 'bubble', 'N Cup': 'glass', 'Matcha': 'matcha', 'Smoothies': 'shake', 'Fresh Juice': 'juice', 'Shakes': 'shake', 'BOBA': 'boba', 'Ice Cream': 'scoop' };
     var cats = st.categories.filter(function (c) { return c !== 'All Items'; }).map(function (c) {
       var a = c === menuCat;
-      return { name: c, active: a, style: Object.assign({}, pillBase, a ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C', boxShadow: '0 8px 22px rgba(31,122,140,.32)' } : { background: 'rgba(31,122,140,.06)', color: '#1F7A8C', borderColor: 'rgba(31,122,140,.22)' }) };
+      return { name: c, active: a, iconEl: self._icon(CAT_ICON[c] || 'glass', 16), style: Object.assign({}, pillBase, a ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C', boxShadow: '0 8px 22px rgba(31,122,140,.32)' } : { background: 'rgba(31,122,140,.06)', color: '#1F7A8C', borderColor: 'rgba(31,122,140,.22)' }) };
     });
 
     // cart line items
@@ -1877,6 +1970,21 @@ class Component extends DCLogic {
         { key: 'waffle', idx: 1, label: 'Waffle Chapter', kicker: 'Chapter Two', title: 'Waffles', intro: 'Crisp Belgian squares, loaded high and pouring with chocolate.' },
         { key: 'smoothie', idx: 2, label: 'Smoothie Chapter', kicker: 'Chapter Three', title: 'Smoothies', intro: 'Blended fruit, thick and cold, poured at the beach bar.' }
       ],
+
+      // full menu — deck ↔ grid view (display-driven, never sc-if: stale-DOM gotcha)
+      deckWrapStyle: { position: 'relative', display: st.menuView === 'grid' ? 'none' : 'block' },
+      gridWrapStyle: { display: st.menuView === 'grid' ? 'grid' : 'none', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: '12px', maxWidth: '1000px', margin: '0 auto' },
+      viewDeckStyle: Object.assign({}, pillBase, { padding: '9px 12px' }, st.menuView !== 'grid' ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C' } : { background: 'rgba(31,122,140,.06)', color: '#1F7A8C', borderColor: 'rgba(31,122,140,.22)' }),
+      viewGridStyle: Object.assign({}, pillBase, { padding: '9px 12px' }, st.menuView === 'grid' ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C' } : { background: 'rgba(31,122,140,.06)', color: '#1F7A8C', borderColor: 'rgba(31,122,140,.22)' }),
+      onViewDeck: function () { self._setMenuView('deck'); },
+      onViewGrid: function () { self._setMenuView('grid'); },
+      onGridOpen: function (e) { var it = self._byId(e.currentTarget.getAttribute('data-id')); if (it) self._openDetail(it); },
+      onGridAdd: function (e) {
+        if (e) { e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); }
+        var it = self._byId(e.currentTarget.getAttribute('data-id'));
+        if (it) self.addToCart(it, e);
+      },
+      onSurprise: function () { self._surprise(); },
 
       // full menu (fan deck)
       cats: cats,
