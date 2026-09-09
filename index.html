@@ -149,6 +149,11 @@
       <p id="intro-scroll" style="margin:0; display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:600; font-size:clamp(11px,1.2vw,13px); letter-spacing:2px; text-transform:uppercase; color:#F0D9A8; text-shadow:0 2px 14px rgba(0,0,0,.5); will-change:transform;">Scroll to enter
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:lpbWaveBob 2.2s ease-in-out infinite;"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
       </p>
+      <!-- hungry-customer shortcut: the printed QR lands here, so the front door itself offers the menu -->
+      <button id="intro-menu-btn" onClick="{{ onIntroMenu }}" data-cursor="grow" style="margin-top:8px; display:inline-flex; align-items:center; gap:9px; cursor:none; border:none; padding:14px 28px; border-radius:999px; background:#E8A44C; color:#14586B; font-family:'Manrope',sans-serif; font-weight:800; font-size:14px; letter-spacing:.4px; box-shadow:0 12px 30px rgba(232,164,76,.45);" style-hover="filter:brightness(1.08)">
+        Straight to the menu
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -1957,6 +1962,11 @@ class Component extends DCLogic {
       onMnavMenu: mnavGo('#menu'),
       onMnavEvents: mnavGo('#events'),
       onMnavVisit: mnavGo('#outro'),
+      onIntroMenu: function (e) {
+        if (e) { e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); }
+        self._releaseIntro();
+        setTimeout(function () { self._scrollTo('#menu'); }, 80);
+      },
       onNavHome: function (e) { e && e.preventDefault(); self._scrollTo('#top'); },
       onNavMenu: function (e) { e && e.preventDefault(); self._scrollTo('#menu'); },
       onNavGallery: function (e) { e && e.preventDefault(); self._scrollTo('#gallery'); },
