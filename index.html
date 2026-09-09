@@ -1226,11 +1226,14 @@ class Component extends DCLogic {
     var dots = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-dot]'));
     if (!slides.length) return;
     var HOLD = 5000, WASH = 1.6;
-    // per-chapter accent: caramel gold / toasted waffle / strawberry coral
-    var ACCENT = ['#F0C97A', '#E89B5A', '#F28FA5'];
+    // per-chapter accent: logo teal (owner request) / toasted waffle / strawberry coral.
+    // The big title takes the full accent; kicker + dots sit on dark glass, so chapter one
+    // uses a lighter logo-teal there or it drowns.
+    var ACCENT = ['#2E8B98', '#E89B5A', '#F28FA5'];
+    var ACCENT_UI = ['#9FD8E0', '#E89B5A', '#F28FA5'];
     this._chIdx = 0; this._chDir = 1;
     var stop = function () { if (self._chTimer) { clearTimeout(self._chTimer); self._chTimer = null; } };
-    var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? ACCENT[idx % ACCENT.length] : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
+    var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? ACCENT_UI[idx % ACCENT_UI.length] : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
     var paint = function (idx, on) {
       var gsap = window.gsap;
       var sl = slides[idx]; if (!sl) return;
@@ -1241,7 +1244,8 @@ class Component extends DCLogic {
         title.style.webkitBackgroundClip = 'text'; title.style.backgroundClip = 'text';
       }
       var kick = sl.querySelector('[data-ch-kicker]');
-      if (on && kick) { kick.style.color = acc; kick.style.borderColor = acc + '73'; }
+      var accUi = ACCENT_UI[idx % ACCENT_UI.length];
+      if (on && kick) { kick.style.color = accUi; kick.style.borderColor = accUi + '73'; }
       gsap.killTweensOf(sl);
       if (on) {
         sl.style.visibility = 'visible';
