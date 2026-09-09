@@ -803,6 +803,12 @@ class Component extends DCLogic {
       if (self._booted) return;
       if (!window.THREE || !window.gsap || !window.ScrollTrigger || !window.Lenis) { return setTimeout(ready, 60); }
       self._booted = true;
+      // TWO gsap copies exist (DC helmet re-eval; same reason window.ScrollTrigger !== __lpb._ST).
+      // The late copy has no ticker listeners, so gsap's autoSleep freezes its clock ~2s after the
+      // last tween — killing any delayedCall longer than that (the 5s chapter slideshow timer).
+      // Pin autoSleep off on whichever copy window.gsap points at, now and after the re-eval lands.
+      var keepAwake = function () { try { if (window.gsap && !window.gsap.__lpbAwake) { window.gsap.__lpbAwake = 1; window.gsap.ticker.add(function () {}); } window.gsap && window.gsap.ticker.wake(); } catch (e) {} };
+      keepAwake(); setTimeout(keepAwake, 600); setTimeout(keepAwake, 1600); setTimeout(keepAwake, 3500);
       window.gsap.registerPlugin(window.ScrollTrigger);
       self._ST = window.ScrollTrigger;
       self._paintPalms();
@@ -837,7 +843,7 @@ class Component extends DCLogic {
     try { this.lenis && this.lenis.destroy(); } catch (e) {}
     try { this._three && this._three.renderer.dispose(); } catch (e) {}
     try { this._montage && this._montage.kill(); } catch (e) {}
-    try { this._chTimer && this._chTimer.kill(); } catch (e) {}
+    try { this._chTimer && clearTimeout(this._chTimer); } catch (e) {}
     try { window.removeEventListener('resize', this._fanResize); } catch (e) {}
     try { var s = this._fanSwipe; if (s) { s.el.removeEventListener('touchstart', s.start); s.el.removeEventListener('touchmove', s.move); s.el.removeEventListener('touchend', s.end); s.el.removeEventListener('touchcancel', s.end); s.el.removeEventListener('mousedown', s.mdown); window.removeEventListener('mousemove', s.mmove); window.removeEventListener('mouseup', s.mup); this._fanSwipe = null; } } catch (e) {}
     try { if (this._fanSeq) { clearInterval(this._fanSeq); this._fanSeq = null; } } catch (e) {}
@@ -1207,18 +1213,23 @@ class Component extends DCLogic {
 
   // ---------- content acts: pin, stagger cards, deterministic wave morph ----------
   // ---------- ACT 2 · chapter slideshow (one screen; slides rotate on a timer) ----------
+  // NOTE: the timer is a plain setTimeout, NOT gsap.delayedCall — the page ends up with two gsap
+  // copies (DC helmet re-eval) and a long delayedCall can land on the copy whose clock stalls,
+  // freezing the rotation. window.gsap is also resolved per call here for the same reason.
   _initActs() {
-    var self = this, gsap = window.gsap;
+    var self = this;
     var sec = document.getElementById('chapters'); if (!sec) return;
     var slides = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-slide]'));
     var dots = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-dot]'));
     if (!slides.length) return;
-    var HOLD = 5, WASH = 1.6;
+    var HOLD = 5000, WASH = 1.6;
     // per-chapter accent: caramel gold / toasted waffle / strawberry coral
     var ACCENT = ['#F0C97A', '#E89B5A', '#F28FA5'];
     this._chIdx = 0; this._chDir = 1;
+    var stop = function () { if (self._chTimer) { clearTimeout(self._chTimer); self._chTimer = null; } };
     var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? ACCENT[idx % ACCENT.length] : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
     var paint = function (idx, on) {
+      var gsap = window.gsap;
       var sl = slides[idx]; if (!sl) return;
       var title = sl.querySelector('[data-cht]');
       var acc = ACCENT[idx % ACCENT.length];
@@ -1240,6 +1251,7 @@ class Component extends DCLogic {
     };
     var go = function (idx) {
       if (idx === self._chIdx) return;
+      var gsap = window.gsap;
       paint(self._chIdx, false); paint(idx, true); mark(idx);
       self._chIdx = idx;
       // the same shoreline wash the scroll used to drive, now on the clock
@@ -1253,25 +1265,25 @@ class Component extends DCLogic {
       var n = self._chIdx + self._chDir;
       if (n > slides.length - 1 || n < 0) { self._chDir *= -1; n = self._chIdx + self._chDir; }
       go(n);
-      self._chTimer = gsap.delayedCall(HOLD, tick);
+      self._chTimer = setTimeout(tick, HOLD);
     };
     paint(0, true); mark(0); this._setScene(0);
     dots.forEach(function (d) {
       d.addEventListener('click', function () {
         var i = parseInt(d.getAttribute('data-ch-dot'), 10);
-        if (self._chTimer) { self._chTimer.kill(); self._chTimer = null; }
+        stop();
         go(i);
-        self._chTimer = gsap.delayedCall(HOLD, tick);
+        self._chTimer = setTimeout(tick, HOLD);
       });
     });
     // rotate only while the slideshow is on screen (kiosk battery; never fights the outro montage)
     var t = window.ScrollTrigger.create({ trigger: sec, start: 'top bottom', end: 'bottom top',
       onToggle: function (s) {
-        if (s.isActive) { if (!self._chTimer) self._chTimer = gsap.delayedCall(HOLD, tick); }
-        else if (self._chTimer) { self._chTimer.kill(); self._chTimer = null; }
+        if (s.isActive) { if (!self._chTimer) self._chTimer = setTimeout(tick, HOLD); }
+        else stop();
       } });
     this._triggers.push(t);
-    if (t.isActive && !this._chTimer) this._chTimer = gsap.delayedCall(HOLD, tick);
+    if (t.isActive && !this._chTimer) this._chTimer = setTimeout(tick, HOLD);
   }
 
   // ---------- GL power management ----------
