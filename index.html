@@ -446,21 +446,20 @@
 
     <!-- ===== EVENTS & CATERING · inquiry ===== -->
     <section id="events" data-screen-label="Events &amp; Catering" style="position:relative; z-index:2; padding:clamp(50px,8vh,110px) clamp(16px,5vw,60px) clamp(60px,9vh,120px); max-width:1160px; margin:0 auto;">
-      <!-- full-bleed beachside-aisle backdrop; the deck scroll-dollies toward the arch (see _initEvents).
-           The parallax layers live in a STICKY viewport-sized stage, not stretched over the whole
-           (very tall) section: a section-height image at 3x DPR blows past mobile GPU texture
-           limits, and animating scale on it made tiles re-rasterize out of sync => the visual
-           glitch/tearing on phones. One-screen-tall layers composite cleanly.
+      <!-- full-bleed beachside-aisle backdrop — STATIC by owner request: the scroll-driven
+           dolly/parallax/blur re-rasterized the 100vw layers every frame and tore on real
+           devices. The layers still live in a sticky viewport-sized stage (a section-height
+           image at 3x DPR blows past mobile GPU texture limits).
            overflow:clip + clip-path (NOT overflow:hidden — that would turn this wrapper into the
            sticky child's scrollport and kill the stick); no transform here for the same reason. -->
       <div aria-hidden="true" style="position:absolute; left:calc(50% - 50vw); top:0; bottom:0; width:100vw; z-index:-1; overflow:clip; clip-path:inset(0);">
         <div id="events-stage" style="position:sticky; top:0; height:100vh; overflow:hidden;">
-          <img id="events-bg" src="assets/events-aisle.jpg?v=1" alt="" decoding="async" loading="lazy" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 44%; transform:scale(1.06); will-change:transform;">
+          <img id="events-bg" src="assets/events-aisle.jpg?v=1" alt="" decoding="async" loading="lazy" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 44%; transform:scale(1.12);">
           <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(12,44,54,.60) 0%, rgba(12,44,54,.30) 24%, rgba(18,63,77,.20) 52%, rgba(12,44,54,.20) 80%, rgba(12,44,54,.10) 100%);"></div>
-          <!-- foreground palms (nearest plane): sweep past faster than the backdrop as you scroll in -->
-          <img id="events-fg" src="assets/events-palms.webp?v=1" alt="" decoding="async" loading="lazy" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 44%; transform:scale(1); filter:blur(1.4px); will-change:transform; pointer-events:none;">
-          <!-- vignette that opens as you scroll in, drawing the eye down the aisle to the arch/form -->
-          <div id="events-vig" aria-hidden="true" style="position:absolute; inset:0; background:radial-gradient(125% 95% at 50% 40%, rgba(12,44,54,0) 42%, rgba(12,44,54,.5) 100%); opacity:.7; pointer-events:none;"></div>
+          <!-- foreground palms (nearest plane), softly defocused for depth -->
+          <img id="events-fg" src="assets/events-palms.webp?v=1" alt="" decoding="async" loading="lazy" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 44%; transform:scale(1.06); filter:blur(1.4px); pointer-events:none;">
+          <!-- vignette that frames the aisle toward the arch/form -->
+          <div id="events-vig" aria-hidden="true" style="position:absolute; inset:0; background:radial-gradient(125% 95% at 50% 40%, rgba(12,44,54,0) 42%, rgba(12,44,54,.5) 100%); opacity:.45; pointer-events:none;"></div>
         </div>
       </div>
       <div id="events-content" style="position:relative;">
@@ -1399,53 +1398,10 @@ class Component extends DCLogic {
   _initEvents() {
     var self = this, gsap = window.gsap;
     var sec = document.getElementById('events'); if (!sec) return;
-    // Phones: Lenis doesn't smooth touch scroll (smoothTouch:false), so scrub:true snaps the
-    // parallax to raw scroll events during flick momentum => visible shake/steps. scrub:1 lerps
-    // each layer toward its target every frame instead, which restores buttery motion there.
-    // Desktop already scrolls through Lenis, so instant scrub stays perfectly smooth.
-    var coarseEv = window.innerWidth < 820 || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
-    var evScrub = coarseEv ? 1 : true;
+    // The backdrop is fully static now (owner request) — every scroll-driven layer animation
+    // (dolly, palm sweep, focus-pull blur, vignette, counter-parallax) re-rasterized 100vw
+    // textures per frame and tore on real devices. Only the one-time entrance fade remains.
     if (gsap && !self.reduced) gsap.from(sec.querySelectorAll('[data-events-in]'), { autoAlpha: 0, y: 32, stagger: 0.09, duration: 0.6, ease: 'power2.out', scrollTrigger: { trigger: sec, start: 'top 70%' } });
-    // layered dolly: backdrop eases toward the arch while the foreground palms sweep past faster => depth of "walking up the aisle"
-    var bg = document.getElementById('events-bg');
-    if (bg && gsap && !self.reduced) {
-      var t = gsap.fromTo(bg, { scale: 1.06 }, { scale: 1.24, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: evScrub } });
-      if (t.scrollTrigger) self._triggers.push(t.scrollTrigger);
-    }
-    var fg = document.getElementById('events-fg');
-    if (fg && gsap && !self.reduced) {
-      // gentler magnification on phones — blowing the palm texture up 1.6x shimmers on mobile GPUs
-      var tf = gsap.fromTo(fg, { scale: 1, yPercent: 0 }, { scale: coarseEv ? 1.35 : 1.6, yPercent: coarseEv ? -4 : -5, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: evScrub } });
-      if (tf.scrollTrigger) self._triggers.push(tf.scrollTrigger);
-    }
-    // focus-pull: the backdrop starts soft and sharpens as you arrive at the arch.
-    // Desktop-only: animating blur() re-rasterizes the full-viewport image every scroll frame,
-    // which stutters on phone GPUs — the scale-dolly + vignette carry the depth there.
-    if (bg && gsap && !self.reduced && !coarseEv) {
-      // quantized to 0.75px steps: a continuously-changing blur re-rasterizes the 100vw image
-      // every scroll frame (visible tearing); ~7 discrete steps read the same and raster rarely
-      var foc = { b: 5 }, focLast = -1;
-      var tb = gsap.to(foc, { b: 0, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'center center', scrub: true }, onUpdate: function () {
-        var q = Math.round(foc.b / 0.75) * 0.75;
-        if (q === focLast) return; focLast = q;
-        bg.style.filter = q > 0.06 ? 'blur(' + q.toFixed(2) + 'px)' : 'none';
-      } });
-      if (tb.scrollTrigger) self._triggers.push(tb.scrollTrigger);
-    }
-    // vignette opens (edges clear) as you scroll toward the arch/form
-    var vig = document.getElementById('events-vig');
-    if (vig && gsap && !self.reduced) {
-      var tv = gsap.fromTo(vig, { opacity: 0.82 }, { opacity: 0.22, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'center center', scrub: evScrub } });
-      if (tv.scrollTrigger) self._triggers.push(tv.scrollTrigger);
-    }
-    // content counter-parallax: the cards/form drift a touch faster than the scene for depth.
-    // Desktop-only — on phones this moves the exact content the thumb is scrolling, and the
-    // one-frame lag between touch scroll and the transform reads as judder/tearing.
-    var content = document.getElementById('events-content');
-    if (content && gsap && !self.reduced && !coarseEv) {
-      var tc = gsap.fromTo(content, { yPercent: 3 }, { yPercent: -5, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: true } });
-      if (tc.scrollTrigger) self._triggers.push(tc.scrollTrigger);
-    }
     var form = document.getElementById('events-form'); if (!form || form._bound) return; form._bound = true;
     var ok = document.getElementById('events-success');
     var err = document.getElementById('events-error');
