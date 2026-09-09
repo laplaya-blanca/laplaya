@@ -30,6 +30,8 @@
   @keyframes lpbSpin{ to{ transform:rotate(360deg);} }
   @keyframes lpbPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
   @keyframes lpbPop{ 0%{ transform:scale(0) translateY(8px); } 70%{ transform:scale(1.25); } 100%{ transform:scale(1) translateY(0); } }
+  @keyframes lpbTicketIn{ 0%{ opacity:0; transform:scale(.94) translateY(18px) rotate(-1.2deg); } 100%{ opacity:1; transform:scale(1) translateY(0) rotate(0); } }
+  @media (prefers-reduced-motion: reduce){ [data-ticket]{ animation:none !important; } }
   @keyframes lpbDrift{ 0%{ transform:translateX(0);} 100%{ transform:translateX(-50%);} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }
 
@@ -264,7 +266,7 @@
         <h2 data-cht style="position:absolute; top:41%; left:clamp(14px,4vw,54px); transform:translateY(-50%); margin:0; --p:0%; font-family:'Fraunces',serif; font-weight:600; font-size:clamp(72px,17vw,258px); line-height:.82; letter-spacing:-.02em; text-transform:uppercase; background:linear-gradient(92deg,#F0D9A8 var(--p), rgba(240,217,168,0) var(--p)); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1.6px rgba(245,241,227,.5); white-space:nowrap; pointer-events:none;">{{ ch.title }}</h2>
         <div style="position:relative; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(96px,13vh,150px) clamp(16px,5vw,60px) clamp(30px,5vh,54px);">
           <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;">
-            <span style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; background:rgba(245,241,227,.16); border:1px solid rgba(245,241,227,.3); color:#F5F1E3; font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2.6px; text-transform:uppercase; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">{{ ch.kicker }}</span>
+            <span data-ch-kicker style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; background:rgba(12,44,54,.28); border:1px solid rgba(245,241,227,.3); color:#F5F1E3; font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2.6px; text-transform:uppercase; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">{{ ch.kicker }}</span>
             <p class="ch-intro" style="max-width:360px; margin:0; text-align:right; font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:clamp(15px,2vw,22px); line-height:1.35; color:#F5F1E3; text-shadow:0 2px 14px rgba(0,0,0,.4);">{{ ch.intro }}</p>
           </div>
           <!-- (chapter slides stay card-free — pure image + title; every dish lives in the fan deck menu below) -->
@@ -598,7 +600,7 @@
     <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:24px 24px 18px; border-bottom:1px solid rgba(31,122,140,.14);">
       <div>
         <div style="font-family:'Fraunces',serif; font-weight:600; font-size:26px; color:#1F7A8C; line-height:1;">Your cart</div>
-        <div style="font-family:'Manrope',sans-serif; font-size:12px; color:rgba(20,58,64,.6); margin-top:4px;">{{ cartCount }} item(s) · beach pickup</div>
+        <div style="font-family:'Manrope',sans-serif; font-size:12px; color:rgba(20,58,64,.6); margin-top:4px;">{{ cartCountLabel }} · beach pickup</div>
       </div>
       <button onClick="{{ onCloseCart }}" data-cursor="grow" aria-label="Close cart" style="display:grid; place-items:center; width:40px; height:40px; border-radius:12px; border:1px solid rgba(31,122,140,.2); background:#FFFFFF; color:#14586B; cursor:none;" style-hover="background:#1F7A8C; color:#F5F1E3">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -644,11 +646,50 @@
     </div>
     <sc-if value="{{ cartHasItems }}">
       <div class="cart-foot" style="padding:18px 24px 24px; border-top:1px solid rgba(31,122,140,.14); background:#FBF8EE;">
-        <button onClick="{{ onCheckout }}" data-cursor="grow" data-magnetic="1" style="width:100%; cursor:none; border:none; padding:16px; border-radius:16px; background:#E8A44C; color:#14586B; font-family:'Manrope',sans-serif; font-weight:800; font-size:15px; letter-spacing:.3px; box-shadow:0 12px 28px rgba(232,164,76,.36); will-change:transform;">Checkout</button>
+        <button onClick="{{ onCounterTicket }}" data-cursor="grow" data-magnetic="1" style="width:100%; cursor:none; border:none; padding:16px; border-radius:16px; background:#E8A44C; color:#14586B; font-family:'Manrope',sans-serif; font-weight:800; font-size:15px; letter-spacing:.3px; box-shadow:0 12px 28px rgba(232,164,76,.36); will-change:transform;">Show at the counter</button>
+        <button onClick="{{ onCheckout }}" data-cursor="grow" style="width:100%; margin-top:10px; cursor:none; padding:14px; border-radius:16px; border:1.5px solid rgba(31,122,140,.35); background:transparent; color:#1F7A8C; font-family:'Manrope',sans-serif; font-weight:800; font-size:14px; letter-spacing:.3px;" style-hover="background:rgba(31,122,140,.07)">Order on WhatsApp</button>
         <p style="margin:10px 0 0; text-align:center; font-family:'Manrope',sans-serif; font-size:11px; color:rgba(20,58,64,.5);">Prices confirmed in-store.</p>
       </div>
     </sc-if>
   </aside>
+
+  <!-- ===== COUNTER TICKET (a beach postcard of the order — the customer shows their phone at the till) ===== -->
+  <sc-if value="{{ ticketOpen }}">
+    <div style="position:fixed; inset:0; z-index:620; display:flex; align-items:center; justify-content:center; padding:18px;">
+      <div onClick="{{ onCloseTicket }}" style="position:absolute; inset:0; background:rgba(12,44,54,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);"></div>
+      <div data-ticket style="position:relative; z-index:2; width:min(430px,94vw); max-height:88vh; display:flex; flex-direction:column; filter:drop-shadow(0 30px 60px rgba(12,44,54,.55)); animation:lpbTicketIn .5s cubic-bezier(.22,1,.36,1);">
+        <button onClick="{{ onCloseTicket }}" aria-label="Close" data-cursor="grow" style="position:absolute; top:-18px; right:-8px; z-index:4; display:grid; place-items:center; width:40px; height:40px; border-radius:12px; border:1px solid rgba(245,241,227,.3); background:rgba(12,44,54,.6); color:#F5F1E3; cursor:none; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);" style-hover="background:rgba(12,44,54,.85)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <div style="position:relative; background:#FBF8EE; border-radius:22px 22px 0 0; padding:24px 26px 4px; overflow:hidden; display:flex; flex-direction:column; min-height:0;">
+          <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; opacity:.35; mix-blend-mode:multiply; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='tkg'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23tkg)'/%3E%3C/svg%3E&quot;); background-size:150px;"></div>
+          <div style="position:relative; display:flex; justify-content:space-between; align-items:flex-start; gap:14px;">
+            <div>
+              <div style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:29px; line-height:1; color:#1F7A8C;">La Playa Blanca</div>
+              <div style="margin-top:7px; font-family:'Manrope',sans-serif; font-weight:700; font-size:11.5px; letter-spacing:1.6px; text-transform:uppercase; color:rgba(20,58,64,.55);">Beach pickup · {{ ticketTime }}</div>
+            </div>
+            <div style="flex:0 0 auto; padding:5px; border:1.6px dashed rgba(31,122,140,.45); border-radius:9px; background:#FFFFFF; transform:rotate(5deg); box-shadow:0 6px 16px rgba(20,58,64,.14);">
+              <img src="assets/logo.jpg" alt="" style="display:block; width:52px; height:52px; border-radius:5px; object-fit:cover;">
+            </div>
+          </div>
+          <div aria-hidden="true" style="position:relative; margin:16px 0 4px; border-top:2px dashed rgba(31,122,140,.25);"></div>
+          <div style="position:relative; overflow:auto; min-height:0; padding:4px 0;">
+            <sc-for list="{{ cartItems }}" as="it" hint-placeholder-count="3">
+              <div style="display:flex; align-items:baseline; gap:12px; padding:9px 0;">
+                <span style="flex:0 0 auto; font-family:'Manrope',sans-serif; font-weight:800; font-size:15px; color:#E8A44C;">{{ it.qty }}×</span>
+                <span style="flex:1; font-family:'Fraunces',serif; font-weight:600; font-size:22px; line-height:1.1; color:#14586B;">{{ it.name }}</span>
+                <span style="flex:0 0 auto; font-family:'Manrope',sans-serif; font-weight:700; font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color:rgba(20,58,64,.45);">{{ it.cat }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div aria-hidden="true" style="position:relative; margin:4px 0 14px; border-top:2px dashed rgba(31,122,140,.25);"></div>
+          <p style="position:relative; margin:0 0 6px; text-align:center; font-family:'Manrope',sans-serif; font-weight:700; font-size:13.5px; color:#14586B;">Show this at the counter — we’ll take it from there.</p>
+          <p style="position:relative; margin:0 0 10px; text-align:center; font-family:'Manrope',sans-serif; font-size:11px; color:rgba(20,58,64,.5);">Prices confirmed in-store.</p>
+        </div>
+        <svg viewBox="0 0 420 22" width="100%" height="22" preserveAspectRatio="none" style="display:block; flex:0 0 auto;" aria-hidden="true"><path d="M0 0 H420 V8 L405 20 L390 8 L375 20 L360 8 L345 20 L330 8 L315 20 L300 8 L285 20 L270 8 L255 20 L240 8 L225 20 L210 8 L195 20 L180 8 L165 20 L150 8 L135 20 L120 8 L105 20 L90 8 L75 20 L60 8 L45 20 L30 8 L15 20 L0 8 Z" fill="#FBF8EE"/></svg>
+      </div>
+    </div>
+  </sc-if>
 
   <!-- ===== SURPRISE WAVE (sweeps up over the screen, recedes to reveal the tide's pick in the detail overlay) ===== -->
   <div id="surprise-wave" aria-hidden="true" style="position:fixed; left:0; top:0; width:100%; height:100vh; z-index:650; pointer-events:none; transform:translateY(112%); background:linear-gradient(180deg, #BFE0DC 0%, #1F7A8C 34%, #14586B 100%);">
@@ -704,6 +745,8 @@ class Component extends DCLogic {
       fanCenter: 3,
       cart: {},           // id -> { item, qty }
       cartOpen: false,
+      ticketOpen: false,  // counter-ticket postcard overlay
+      ticketTime: '',
       navOpen: false,     // mobile nav overlay
       detail: null,       // gallery detail overlay (item object)
       build: { base: 'crepe', sauce: 'nutella', toppings: [], cream: true },
@@ -1171,11 +1214,20 @@ class Component extends DCLogic {
     var dots = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-dot]'));
     if (!slides.length) return;
     var HOLD = 5, WASH = 1.6;
+    // per-chapter accent: caramel gold / toasted waffle / strawberry coral
+    var ACCENT = ['#F0C97A', '#E89B5A', '#F28FA5'];
     this._chIdx = 0; this._chDir = 1;
-    var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? '#F0D9A8' : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
+    var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? ACCENT[idx % ACCENT.length] : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
     var paint = function (idx, on) {
       var sl = slides[idx]; if (!sl) return;
       var title = sl.querySelector('[data-cht]');
+      var acc = ACCENT[idx % ACCENT.length];
+      if (on && title) {
+        title.style.background = 'linear-gradient(92deg,' + acc + ' var(--p), ' + acc + '00 var(--p))';
+        title.style.webkitBackgroundClip = 'text'; title.style.backgroundClip = 'text';
+      }
+      var kick = sl.querySelector('[data-ch-kicker]');
+      if (on && kick) { kick.style.color = acc; kick.style.borderColor = acc + '73'; }
       gsap.killTweensOf(sl);
       if (on) {
         sl.style.visibility = 'visible';
@@ -1246,32 +1298,6 @@ class Component extends DCLogic {
     self._syncGL();
   }
 
-  // ---------- ACT 5 · pinned horizontal gallery ----------
-  _initGallery() {
-    var self = this, gsap = window.gsap;
-    var sec = document.getElementById('gallery'); if (!sec) return;
-    var track = sec.querySelector('[data-gallery-track]');
-    if (!track) return;
-    var cards = Array.prototype.slice.call(sec.querySelectorAll('.gallery-card'));
-    var amt = function () { return Math.max(0, track.scrollWidth - window.innerWidth); };
-    var tw = gsap.to(track, { x: function () { return -amt(); }, ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: function () { return '+=' + (amt() + window.innerHeight * 0.4); }, scrub: self.reduced ? true : 1, pin: true, anticipatePin: 1, invalidateOnRefresh: true } });
-    if (tw.scrollTrigger) self._triggers.push(tw.scrollTrigger);
-    if (!self.reduced) gsap.from(cards, { autoAlpha: 0, y: 46, stagger: 0.07, duration: 0.6, ease: 'power2.out', scrollTrigger: { trigger: sec, start: 'top 65%' } });
-    var coarse = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
-    cards.forEach(function (card) {
-      var sheen = card.querySelector('[data-sheen]');
-      if (!self.reduced && !coarse) {
-        card.addEventListener('mousemove', function (e) {
-          var r = card.getBoundingClientRect();
-          var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-          gsap.to(card, { rotateY: (px - 0.5) * 15, rotateX: -(py - 0.5) * 15, duration: 0.4, ease: 'power2.out', transformPerspective: 950, transformOrigin: 'center' });
-          if (sheen) sheen.style.background = 'radial-gradient(340px circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(245,241,227,.3), rgba(245,241,227,0) 62%)';
-        });
-        card.addEventListener('mouseleave', function () { gsap.to(card, { rotateY: 0, rotateX: 0, duration: 0.7, ease: 'elastic.out(1,0.5)' }); if (sheen) sheen.style.background = 'transparent'; });
-      }
-      card.addEventListener('click', function () { var it = self._byId(card.getAttribute('data-id')); if (it) self._openDetail(it); });
-    });
-  }
   _openDetail(it) { this.setState({ detail: this._decorate(it, 26) }); }
   _setMenuView(v) {
     try { localStorage.setItem('lpb-menu-view', v); } catch (e) {}
@@ -1957,6 +1983,7 @@ class Component extends DCLogic {
     return {
       // nav / cart badge
       cartCount: count,
+      cartCountLabel: count + (count === 1 ? ' item' : ' items'),
       cartBadgeDisplay: count > 0 ? 'flex' : 'none',
       onOpenCart: function () { self.setState({ cartOpen: true, navOpen: false }); },
       onCloseCart: function () { self.setState({ cartOpen: false }); },
@@ -1979,7 +2006,6 @@ class Component extends DCLogic {
       },
       onNavHome: function (e) { e && e.preventDefault(); self._scrollTo('#top'); },
       onNavMenu: function (e) { e && e.preventDefault(); self._scrollTo('#menu'); },
-      onNavGallery: function (e) { e && e.preventDefault(); self._scrollTo('#gallery'); },
       onNavBuilder: function (e) { e && e.preventDefault(); self._scrollTo('#builder'); },
       onNavEvents: function (e) { e && e.preventDefault(); self._scrollTo('#events'); },
       onNavVisit: function (e) { e && e.preventDefault(); self._scrollTo('#outro'); },
@@ -2053,6 +2079,13 @@ class Component extends DCLogic {
       onDecClick: function (e) { self.setQty(e.currentTarget.getAttribute('data-id'), -1); },
       onRemoveClick: function (e) { self.removeItem(e.currentTarget.getAttribute('data-id')); },
       onCheckout: function () { self._waCheckout(); },
+      ticketOpen: !!st.ticketOpen,
+      ticketTime: st.ticketTime,
+      onCounterTicket: function () {
+        var t = ''; try { t = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+        self.setState({ ticketOpen: true, cartOpen: false, ticketTime: t });
+      },
+      onCloseTicket: function () { self.setState({ ticketOpen: false }); },
 
       // builder
       baseOpts: baseOpts, sauceOpts: sauceOpts, topOpts: topOpts,
