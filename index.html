@@ -122,8 +122,10 @@
 <!-- Instant blur-up poster (first crêpe frame, inlined) — covers the opaque WebGL canvas until the crêpe clip is decoding, so the hero never sits blank while the heavy video downloads. Fades out via the script in <helmet>. -->
 <div id="lpb-hero-poster" aria-hidden="true" style="position:fixed; inset:0; z-index:0; background:#123f4d url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAAkAEADASIAAhEBAxEB/8QAGgAAAwADAQAAAAAAAAAAAAAAAAMEAgUGAf/EAC8QAAIBAgQEBQIHAQAAAAAAAAECAwARBBIhMUEFIhMyUXGRFIEVI0JhoWKS0eHw/8QAFwEBAQEBAAAAAAAAAAAAAAAAAgMBAP/EABwRAQEBAQEBAAMAAAAAAAAAAAABAgQAA//EABwRAAMBAQEBAQEAAAAAAAAAAAABEQIhMRJRQf/aAAwDAQACEQMRAD8A20UCRM6B1KbrqNPP/d6pVI1CjmAAaEE7ViOEAfY6HXXSvW4U7MSWUk1FTKfDFurwXxFohwvFZXS/JewB7Gq05QLEuupuNe1RT8OVI2WUxhWBH1OBWuTiCyuPC4bmxsLq5fJ1trcaX6ed/WyblZMtzwdIGjItnW3rQJI1P3r8iuehxGKkmBUrygQPwiAbga294WO+2x32GyiRZV2IcGzLbY227/wC2oqqrIqmp7RcZIzs6/NZBwRbOCPWoDh9dj8UxYrDY/FdaOKgDNGhaaaULt7oQBWtl4tEsS8wO7NbOCL5f+H2qbE8VkkjKzOzIdzewHqNqkbD83WOYqam5Kpi+L8RafEctLKqqSpCfXmte3bYUV5wedJMyyI0UwURhgtmW9tiLb9rXvbrXjZQ2GKO+wDg2ZbbG23f8A21FVVZFU1PaLjJGdnX5rIOCLZwR61AcPrsfimLFYbH4rrRxUAZo0LTTShdvdCAK1svFolyXmB3ZrZwRfL/w+1TYnisksZWZ2ZDub2A9RtUjYfm6xzFTU3JVMXxfiLT4jlpZVVSVIT68j2A2y79G5FSVoHnSTMsiNFMFEYYLZlvbYi2/a172614Wa3ByZzeD4kaSTLcaipbWCCAbeR1oGE0hI0zg63FvKr1eEeGxBJGuTNca9vfyrehSAsqk210qLB5cLCwRmbqzN1PYUzElhCHRwLrc3YjX2NOeidbnLbix1FL5aqSVuu+1FFVJmEuIlghzK2Yj9XrT4sVIQNRRRQY0VQyM7WNW4ImWF3Y/bNksNiNP7oooMZRijyJRGBmA1JYm5vp00qTEYmRn1Pnb9tvKiikgs/9k=') center/cover no-repeat; filter:blur(26px) saturate(1.18); transform:scale(1.14); transition:opacity .9s ease; will-change:opacity;"></div>
 
-<!-- ============ TIME-OF-DAY MOOD (whole-page soft-light tint set once at boot from the clock — see _initMood) ============ -->
-<div id="lpb-mood" aria-hidden="true" style="position:fixed; inset:0; z-index:900; pointer-events:none; opacity:0; mix-blend-mode:soft-light; transition:opacity 1.2s ease;"></div>
+<!-- ============ TIME-OF-DAY MOOD (whole-page tint set once at boot from the clock — see _initMood).
+     Plain alpha compositing on purpose: mix-blend-mode here forced the browser to re-composite the
+     whole page under the overlay every frame, which tore the events parallax to shreds. ============ -->
+<div id="lpb-mood" aria-hidden="true" style="position:fixed; inset:0; z-index:900; pointer-events:none; opacity:0; transition:opacity 1.2s ease;"></div>
 
 <!-- ============ ATMOSPHERE: sand grain + palm-shade drift ============ -->
 <div aria-hidden="true" style="position:fixed; inset:-20%; z-index:1; pointer-events:none; opacity:.5; mix-blend-mode:soft-light; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;); animation:lpbGrain 8s steps(6) infinite;"></div>
@@ -1301,9 +1303,10 @@ class Component extends DCLogic {
     this._mood = { warm: warm, night: night };
     var el = document.getElementById('lpb-mood');
     if (el) {
+      // normal-blend alphas are stronger than soft-light ones — keep these low or text greys out
       el.style.background = night > 0
-        ? 'linear-gradient(180deg, rgba(18,42,66,' + (0.55 * night).toFixed(2) + '), rgba(232,140,60,' + (0.28 * warm).toFixed(2) + '))'
-        : 'linear-gradient(180deg, rgba(255,202,120,' + (0.32 * warm).toFixed(2) + '), rgba(255,152,84,' + (0.24 * warm).toFixed(2) + '))';
+        ? 'linear-gradient(180deg, rgba(10,28,46,' + (0.26 * night).toFixed(2) + '), rgba(214,122,44,' + (0.10 * warm).toFixed(2) + '))'
+        : 'linear-gradient(180deg, rgba(255,196,112,' + (0.12 * warm).toFixed(2) + '), rgba(255,148,76,' + (0.09 * warm).toFixed(2) + '))';
       el.style.opacity = '1';
     }
     if (this._u) { this._u.uWarm.value = warm; this._u.uNight.value = night; }
@@ -1373,8 +1376,14 @@ class Component extends DCLogic {
     // Desktop-only: animating blur() re-rasterizes the full-viewport image every scroll frame,
     // which stutters on phone GPUs — the scale-dolly + vignette carry the depth there.
     if (bg && gsap && !self.reduced && !coarseEv) {
-      var foc = { b: 5 };
-      var tb = gsap.to(foc, { b: 0, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'center center', scrub: true }, onUpdate: function () { bg.style.filter = foc.b > 0.06 ? 'blur(' + foc.b.toFixed(2) + 'px)' : 'none'; } });
+      // quantized to 0.75px steps: a continuously-changing blur re-rasterizes the 100vw image
+      // every scroll frame (visible tearing); ~7 discrete steps read the same and raster rarely
+      var foc = { b: 5 }, focLast = -1;
+      var tb = gsap.to(foc, { b: 0, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'center center', scrub: true }, onUpdate: function () {
+        var q = Math.round(foc.b / 0.75) * 0.75;
+        if (q === focLast) return; focLast = q;
+        bg.style.filter = q > 0.06 ? 'blur(' + q.toFixed(2) + 'px)' : 'none';
+      } });
       if (tb.scrollTrigger) self._triggers.push(tb.scrollTrigger);
     }
     // vignette opens (edges clear) as you scroll toward the arch/form
