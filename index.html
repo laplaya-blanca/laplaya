@@ -94,12 +94,15 @@
   @media (max-width:560px){ #events-form .grid{ grid-template-columns:1fr; } }
 </style>
 <script>
-  /* Fade the instant blur-up poster once the crêpe clip is actually decoding, revealing the live WebGL frame underneath. */
+  /* Fade the instant blur-up poster once the crêpe scene image is in AND the WebGL app is rendering, revealing the live frame underneath. */
   (function(){
+    var loaded = false;
+    var im = new Image();
+    im.onload = im.onerror = function(){ loaded = true; };
+    im.src = 'assets/scene-crepe.jpg?v=1';
     function tick(){
       var p = document.getElementById('lpb-hero-poster');
-      var v = document.getElementById('vid-crepe');
-      if (p && v && v.readyState >= 3) {
+      if (p && loaded && window.__lpb && (window.__lpb._u || !window.__lpb.state.webglOK)) {
         setTimeout(function(){ p.style.opacity = '0'; setTimeout(function(){ p.style.display = 'none'; }, 950); }, 180);
         return;
       }
@@ -110,19 +113,9 @@
 </script>
 </helmet>
 
-<!-- ============ SOURCE VIDEOS (WebGL textures) ============
-     Swap these three paths for your hosted MP4 loops later — nothing else changes. -->
-<div aria-hidden="true" style="position:fixed; width:2px; height:2px; top:-10px; left:-10px; opacity:0; pointer-events:none; overflow:hidden;">
-  <!-- crêpe loads eagerly (it's the hero); waffle+smoothie defer to when you scroll into their
-       chapters — cuts initial load from ~12MB to ~4MB, a big win on slow connections. -->
-  <video id="vid-crepe" src="assets/video-crepe.mp4?v=3" muted loop playsinline preload="auto"></video>
-  <video id="vid-waffle" src="assets/video-waffle.mp4?v=3" muted loop playsinline preload="metadata"></video>
-  <video id="vid-smoothie" src="assets/video-smoothie.mp4?v=3" muted loop playsinline preload="metadata"></video>
-</div>
-
 <!-- ============ WEBGL CANVAS (fixed world behind everything) ============ -->
 <canvas id="lpb-webgl" style="position:fixed; inset:0; width:100vw; height:100vh; display:block; z-index:0;"></canvas>
-<!-- Fallback plain-video layer (shown only if WebGL unavailable) -->
+<!-- Fallback plain-image layer (shown only if WebGL unavailable) -->
 <div id="lpb-fallback" style="position:fixed; inset:0; z-index:0; display:none; overflow:hidden; background:#123f4d;"></div>
 <!-- Instant blur-up poster (first crêpe frame, inlined) — covers the opaque WebGL canvas until the crêpe clip is decoding, so the hero never sits blank while the heavy video downloads. Fades out via the script in <helmet>. -->
 <div id="lpb-hero-poster" aria-hidden="true" style="position:fixed; inset:0; z-index:0; background:#123f4d url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAAkAEADASIAAhEBAxEB/8QAGgAAAwADAQAAAAAAAAAAAAAAAAMEAgUGAf/EAC8QAAIBAgQEBQIHAQAAAAAAAAECAwARBBIhMUEFIhMyUXGRFIEVI0JhoWKS0eHw/8QAFwEBAQEBAAAAAAAAAAAAAAAAAgMBAP/EABwRAQEBAQEBAAMAAAAAAAAAAAABAgQAA//EABwRAAMBAQEBAQEAAAAAAAAAAAABEQIhMRJRQf/aAAwDAQACEQMRAD8A20UCRM6B1KbrqNPP/d6pVI1CjmAAaEE7ViOEAfY6HXXSvW4U7MSWUk1FTKfDFurwXxFohwvFZXS/JewB7Gq05QLEuupuNe1RT8OVI2WUxhWBH1OBWuTiCyuPC4bmxsLq5fJ1trcaX6ed/WyblZMtzwdIGjItnW3rQJI1P3r8iuehxGKkmBUrygQPwiAbga294WO+2x32GyiRZV2IcGzLbY227/wC2oqqrIqmp7RcZIzs6/NZBwRbOCPWoDh9dj8UxYrDY/FdaOKgDNGhaaaULt7oQBWtl4tEsS8wO7NbOCL5f+H2qbE8VkkjKzOzIdzewHqNqkbD83WOYqam5Kpi+L8RafEctLKqqSpCfXmte3bYUV5wedJMyyI0UwURhgtmW9tiLb9rXvbrXjZQ2GKO+wDg2ZbbG23f8A21FVVZFU1PaLjJGdnX5rIOCLZwR61AcPrsfimLFYbH4rrRxUAZo0LTTShdvdCAK1svFolyXmB3ZrZwRfL/w+1TYnisksZWZ2ZDub2A9RtUjYfm6xzFTU3JVMXxfiLT4jlpZVVSVIT68j2A2y79G5FSVoHnSTMsiNFMFEYYLZlvbYi2/a172614Wa3ByZzeD4kaSTLcaipbWCCAbeR1oGE0hI0zg63FvKr1eEeGxBJGuTNca9vfyrehSAsqk210qLB5cLCwRmbqzN1PYUzElhCHRwLrc3YjX2NOeidbnLbix1FL5aqSVuu+1FFVJmEuIlghzK2Yj9XrT4sVIQNRRRQY0VQyM7WNW4ImWF3Y/bNksNiNP7oooMZRijyJRGBmA1JYm5vp00qTEYmRn1Pnb9tvKiikgs/9k=') center/cover no-repeat; filter:blur(26px) saturate(1.18); transform:scale(1.14); transition:opacity .9s ease; will-change:opacity;"></div>
@@ -249,21 +242,28 @@
     </div>
   </section>
 
-  <!-- ===== ACTS 2–4 · CRÊPE / WAFFLE / SMOOTHIE CHAPTERS ===== -->
-  <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="3">
-    <section id="chapter-{{ ch.key }}" data-chapter="{{ ch.idx }}" data-screen-label="{{ ch.label }}" style="position:relative; height:100vh; width:100%; overflow:hidden;">
-      <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(12,44,54,.52) 0%, rgba(12,44,54,.05) 24%, rgba(12,44,54,.12) 58%, rgba(12,44,54,.68) 100%); pointer-events:none;"></div>
-      <h2 data-cht style="position:absolute; top:41%; left:clamp(14px,4vw,54px); transform:translateY(-50%); margin:0; --p:0%; font-family:'Fraunces',serif; font-weight:600; font-size:clamp(72px,17vw,258px); line-height:.82; letter-spacing:-.02em; text-transform:uppercase; background:linear-gradient(92deg,#F0D9A8 var(--p), rgba(240,217,168,0) var(--p)); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1.6px rgba(245,241,227,.5); white-space:nowrap; pointer-events:none;">{{ ch.title }}</h2>
-      <div style="position:relative; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(96px,13vh,150px) clamp(16px,5vw,60px) clamp(30px,5vh,54px);">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;">
-          <span style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; background:rgba(245,241,227,.16); border:1px solid rgba(245,241,227,.3); color:#F5F1E3; font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2.6px; text-transform:uppercase; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">{{ ch.kicker }}</span>
-          <p class="ch-intro" style="max-width:360px; margin:0; text-align:right; font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:clamp(15px,2vw,22px); line-height:1.35; color:#F5F1E3; text-shadow:0 2px 14px rgba(0,0,0,.4);">{{ ch.intro }}</p>
+  <!-- ===== ACT 2 · CHAPTERS SLIDESHOW (crêpes / waffles / smoothies rotate in one screen —
+       the store menu doesn't need three viewports of scrolling; the WebGL wash sweeps between
+       the still images the way it used to sweep between the videos) ===== -->
+  <section id="chapters" data-screen-label="Chapters" style="position:relative; height:100vh; width:100%; overflow:hidden;">
+    <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(12,44,54,.52) 0%, rgba(12,44,54,.05) 24%, rgba(12,44,54,.12) 58%, rgba(12,44,54,.68) 100%); pointer-events:none;"></div>
+    <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="3">
+      <div class="ch-slide" data-ch-slide="{{ ch.idx }}" style="position:absolute; inset:0; opacity:0; visibility:hidden; pointer-events:none;">
+        <h2 data-cht style="position:absolute; top:41%; left:clamp(14px,4vw,54px); transform:translateY(-50%); margin:0; --p:0%; font-family:'Fraunces',serif; font-weight:600; font-size:clamp(72px,17vw,258px); line-height:.82; letter-spacing:-.02em; text-transform:uppercase; background:linear-gradient(92deg,#F0D9A8 var(--p), rgba(240,217,168,0) var(--p)); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1.6px rgba(245,241,227,.5); white-space:nowrap; pointer-events:none;">{{ ch.title }}</h2>
+        <div style="position:relative; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(96px,13vh,150px) clamp(16px,5vw,60px) clamp(30px,5vh,54px);">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+            <span style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; background:rgba(245,241,227,.16); border:1px solid rgba(245,241,227,.3); color:#F5F1E3; font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2.6px; text-transform:uppercase; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">{{ ch.kicker }}</span>
+            <p class="ch-intro" style="max-width:360px; margin:0; text-align:right; font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:clamp(15px,2vw,22px); line-height:1.35; color:#F5F1E3; text-shadow:0 2px 14px rgba(0,0,0,.4);">{{ ch.intro }}</p>
+          </div>
+          <!-- (chapter slides stay card-free — pure image + title; every dish lives in the fan deck menu below) -->
         </div>
-        <!-- (chapter item cards removed by request — chapters are pure cinema: title + video;
-             every dish lives in the fan deck menu below) -->
       </div>
-    </section>
-  </sc-for>
+    </sc-for>
+    <!-- slide dots: tap to jump to a chapter (sit above the shoreline crest that rises from the cream world) -->
+    <div style="position:absolute; left:0; right:0; bottom:calc(150px + env(safe-area-inset-bottom, 0px)); display:flex; justify-content:center; gap:9px; z-index:3;">
+      <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="3"><button data-ch-dot="{{ ch.idx }}" aria-label="{{ ch.title }}" data-cursor="grow" style="width:9px; height:9px; padding:0; border-radius:999px; border:none; cursor:none; background:rgba(245,241,227,.4); transition:background .4s ease, transform .4s ease;"></button></sc-for>
+    </div>
+  </section>
 
   <!-- Signatures gallery removed — every dish is a signature; they now live in the fanned menu deck below. -->
   <!-- ===== CREAM WORLD (opaque — scrolls over the video; menu + builder live here) ===== -->
@@ -720,12 +720,12 @@ class Component extends DCLogic {
       self._initBuilder();
       self._initEvents();
       self._initOutro();
-      self._initVideoSync();
+      self._initGLSync();
       self._initIntro();
       window.__lpb = self;
       window.ScrollTrigger.refresh();
       // pins change total page height; keep Lenis' scroll limit in sync so all content stays reachable
-      setTimeout(function () { if (self.lenis) self.lenis.resize(); window.ScrollTrigger.refresh(); self._syncVids(); }, 400);
+      setTimeout(function () { if (self.lenis) self.lenis.resize(); window.ScrollTrigger.refresh(); self._syncGL(); }, 400);
       setTimeout(function () { if (self.lenis) self.lenis.resize(); window.ScrollTrigger.refresh(); }, 1200);
     };
     ready();
@@ -739,6 +739,7 @@ class Component extends DCLogic {
     try { this.lenis && this.lenis.destroy(); } catch (e) {}
     try { this._three && this._three.renderer.dispose(); } catch (e) {}
     try { this._montage && this._montage.kill(); } catch (e) {}
+    try { this._chTimer && this._chTimer.kill(); } catch (e) {}
     try { window.removeEventListener('resize', this._fanResize); } catch (e) {}
     try { var s = this._fanSwipe; if (s) { s.el.removeEventListener('touchstart', s.start); s.el.removeEventListener('touchmove', s.move); s.el.removeEventListener('touchend', s.end); s.el.removeEventListener('touchcancel', s.end); s.el.removeEventListener('mousedown', s.mdown); window.removeEventListener('mousemove', s.mmove); window.removeEventListener('mouseup', s.mup); this._fanSwipe = null; } } catch (e) {}
     try { if (this._fanSeq) { clearInterval(this._fanSeq); this._fanSeq = null; } } catch (e) {}
@@ -806,7 +807,7 @@ class Component extends DCLogic {
     window.__lenis = lenis;
     var self = this;
     lenis.on('scroll', window.ScrollTrigger.update);
-    lenis.on('scroll', function () { self._syncVids(); });
+    lenis.on('scroll', function () { self._syncGL(); });
     window.gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
     window.gsap.ticker.lagSmoothing(0);
   }
@@ -847,21 +848,19 @@ class Component extends DCLogic {
     var scene = new THREE.Scene();
     var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    var vids = [document.getElementById('vid-crepe'), document.getElementById('vid-waffle'), document.getElementById('vid-smoothie')];
-    var texes = vids.map(function (v) {
-      var t = new THREE.VideoTexture(v);
-      t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter; t.format = THREE.RGBFormat;
+    var loader = new THREE.TextureLoader();
+    var texes = ['assets/scene-crepe.jpg?v=1', 'assets/scene-waffle.jpg?v=1', 'assets/scene-smoothie.jpg?v=1'].map(function (s) {
+      var t = loader.load(s);
+      t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter;
       return t;
     });
-    // kick playback (muted autoplay policy friendly)
-    vids.forEach(function (v) { var p = v && v.play(); if (p && p.catch) p.catch(function () {}); });
 
     var uniforms = {
       uTex0: { value: texes[0] }, uTex1: { value: texes[1] }, uTex2: { value: texes[2] },
       uScene: { value: 0.0 }, uTime: { value: 0.0 },
       uMouse: { value: new THREE.Vector2(0.5, 0.5) }, uRipple: { value: 0.0 },
       uZoom: { value: 1.0 }, uCanvasAspect: { value: window.innerWidth / window.innerHeight },
-      uTexAspect: { value: 1916 / 1080 }, uReduced: { value: this.reduced ? 1.0 : 0.0 },
+      uTexAspect: { value: 1280 / 720 }, uReduced: { value: this.reduced ? 1.0 : 0.0 },
       uOutro: { value: 0.0 }, uVignette: { value: 1.0 }, uFit: { value: 0.0 }
     };
     this._u = uniforms;
@@ -927,7 +926,7 @@ class Component extends DCLogic {
     var mat = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: vert, fragmentShader: frag });
     var mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
     scene.add(mesh);
-    this._three = { renderer: renderer, scene: scene, camera: camera, mat: mat, vids: vids };
+    this._three = { renderer: renderer, scene: scene, camera: camera, mat: mat };
 
     var self = this;
     // GSAP ticker passes (time, deltaTimeMs, frame); drive animation off real elapsed time so the
@@ -974,11 +973,8 @@ class Component extends DCLogic {
         self.mouse.ty = 0.5 - b / 56;
       }, { passive: true });
     }
-    // pause videos when tab hidden; on return, re-resolve which clips should run
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { self._playVids(false); self._activeKey = null; }
-      else self._syncVids();
-    });
+    // stop rendering when the tab is hidden; on return, re-resolve whether the canvas is visible
+    document.addEventListener('visibilitychange', function () { self._syncGL(); });
   }
 
   _webglFallback() {
@@ -988,20 +984,20 @@ class Component extends DCLogic {
     if (cv) cv.style.display = 'none';
     if (!host) return;
     host.style.display = 'block';
-    var srcs = ['assets/video-crepe.mp4?v=3', 'assets/video-waffle.mp4?v=3', 'assets/video-smoothie.mp4?v=3'];
+    var srcs = ['assets/scene-crepe.jpg?v=1', 'assets/scene-waffle.jpg?v=1', 'assets/scene-smoothie.jpg?v=1'];
     host.innerHTML = srcs.map(function (s, i) {
-      return '<video src="' + s + '" muted loop playsinline autoplay style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:' + (i === 0 ? 1 : 0) + '; transition:opacity 1.1s ease; filter:saturate(1.05) contrast(1.02);"></video>';
+      return '<img src="' + s + '" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:' + (i === 0 ? 1 : 0) + '; transition:opacity 1.1s ease; filter:saturate(1.05) contrast(1.02);">';
     }).join('') + '<div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(12,44,54,.25),rgba(12,44,54,.12) 40%,rgba(12,44,54,.4));"></div>';
-    this._fallbackVids = host.querySelectorAll('video');
+    this._fallbackImgs = host.querySelectorAll('img');
   }
 
   _setScene(v) {
     this._scene = v;
     if (this._sceneProxy) this._sceneProxy.v = v;
     if (this._u) this._u.uScene.value = v;
-    if (this._fallbackVids && this._fallbackVids.length === 3) {
+    if (this._fallbackImgs && this._fallbackImgs.length === 3) {
       var idx = Math.round(v);
-      for (var i = 0; i < 3; i++) this._fallbackVids[i].style.opacity = (i === idx ? '1' : '0');
+      for (var i = 0; i < 3; i++) this._fallbackImgs[i].style.opacity = (i === idx ? '1' : '0');
     }
   }
 
@@ -1105,62 +1101,69 @@ class Component extends DCLogic {
   _byId(id) { return this.state.menu.find(function (it) { return it.id === id; }); }
 
   // ---------- content acts: pin, stagger cards, deterministic wave morph ----------
+  // ---------- ACT 2 · chapter slideshow (one screen; slides rotate on a timer) ----------
   _initActs() {
     var self = this, gsap = window.gsap;
-    var secs = Array.prototype.slice.call(document.querySelectorAll('[data-chapter]'));
-    if (!secs.length) return;
-    var lastIdx = secs.length - 1;
-    secs.forEach(function (sec) {
-      var idx = parseInt(sec.getAttribute('data-chapter'), 10);
-      var title = sec.querySelector('[data-cht]');
-      var mobile = window.innerWidth < 820;
-      var last = idx >= lastIdx;
-      // scene + zoom are computed straight from THIS chapter's own progress → monotonic, no shared state
-      var tl = gsap.timeline({ scrollTrigger: {
-        trigger: sec, start: 'top top', end: '+=' + (mobile ? 120 : 160) + '%',
-        scrub: self.reduced ? true : 1, pin: true, anticipatePin: 1, invalidateOnRefresh: true,
-        onUpdate: function (s) {
-          var p = s.progress, scene;
-          if (last) { scene = idx; }
-          else { var mp = (p - 0.62) / 0.38; mp = mp < 0 ? 0 : (mp > 1 ? 1 : mp); mp = mp * mp * (3 - 2 * mp); scene = idx + mp; }
-          self._setScene(scene);
-          if (self._u && !self.reduced) self._u.uZoom.value = 1.0 + 0.05 * Math.min(p / 0.7, 1);
-        }
-      } });
-      if (title) tl.fromTo(title, { '--p': '0%', xPercent: idx % 2 ? 7 : -7 }, { '--p': '100%', xPercent: idx % 2 ? -11 : 11, ease: 'none', duration: 1.5 }, 0);
-      tl.to({}, { duration: 0.6 });
-      if (tl.scrollTrigger) self._triggers.push(tl.scrollTrigger);
+    var sec = document.getElementById('chapters'); if (!sec) return;
+    var slides = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-slide]'));
+    var dots = Array.prototype.slice.call(sec.querySelectorAll('[data-ch-dot]'));
+    if (!slides.length) return;
+    var HOLD = 5, WASH = 1.6;
+    this._chIdx = 0; this._chDir = 1;
+    var mark = function (idx) { dots.forEach(function (d, i) { d.style.background = i === idx ? '#F0D9A8' : 'rgba(245,241,227,.4)'; d.style.transform = i === idx ? 'scale(1.3)' : 'scale(1)'; }); };
+    var paint = function (idx, on) {
+      var sl = slides[idx]; if (!sl) return;
+      var title = sl.querySelector('[data-cht]');
+      gsap.killTweensOf(sl);
+      if (on) {
+        sl.style.visibility = 'visible';
+        gsap.to(sl, { opacity: 1, duration: self.reduced ? 0.01 : 0.9, ease: 'power2.out' });
+        if (title && !self.reduced) gsap.fromTo(title, { '--p': '0%', xPercent: idx % 2 ? 6 : -6 }, { '--p': '100%', xPercent: 0, duration: 1.5, ease: 'power2.out', overwrite: 'auto' });
+        else if (title) gsap.set(title, { '--p': '100%', xPercent: 0 });
+      } else {
+        gsap.to(sl, { opacity: 0, duration: self.reduced ? 0.01 : 0.7, ease: 'power2.in', onComplete: function () { sl.style.visibility = 'hidden'; } });
+      }
+    };
+    var go = function (idx) {
+      if (idx === self._chIdx) return;
+      paint(self._chIdx, false); paint(idx, true); mark(idx);
+      self._chIdx = idx;
+      // the same shoreline wash the scroll used to drive, now on the clock
+      if (self._u && !self._montage) {
+        gsap.killTweensOf(self._u.uScene);
+        gsap.to(self._u.uScene, { value: idx, duration: self.reduced ? 0.01 : WASH, ease: 'sine.inOut', onUpdate: function () { self._setScene(self._u.uScene.value); } });
+      } else if (!self._u) self._setScene(idx);
+    };
+    var tick = function () {
+      // ping-pong 0→1→2→1→0… — the wash can't jump the middle scene, so never wrap 2→0
+      var n = self._chIdx + self._chDir;
+      if (n > slides.length - 1 || n < 0) { self._chDir *= -1; n = self._chIdx + self._chDir; }
+      go(n);
+      self._chTimer = gsap.delayedCall(HOLD, tick);
+    };
+    paint(0, true); mark(0); this._setScene(0);
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () {
+        var i = parseInt(d.getAttribute('data-ch-dot'), 10);
+        if (self._chTimer) { self._chTimer.kill(); self._chTimer = null; }
+        go(i);
+        self._chTimer = gsap.delayedCall(HOLD, tick);
+      });
     });
+    // rotate only while the slideshow is on screen (kiosk battery; never fights the outro montage)
+    var t = window.ScrollTrigger.create({ trigger: sec, start: 'top bottom', end: 'bottom top',
+      onToggle: function (s) {
+        if (s.isActive) { if (!self._chTimer) self._chTimer = gsap.delayedCall(HOLD, tick); }
+        else if (self._chTimer) { self._chTimer.kill(); self._chTimer = null; }
+      } });
+    this._triggers.push(t);
+    if (t.isActive && !this._chTimer) this._chTimer = gsap.delayedCall(HOLD, tick);
   }
 
-  // ---------- video power management ----------
-  _vids() { return this._three ? this._three.vids : (this._fallbackVids ? Array.prototype.slice.call(this._fallbackVids) : []); }
-  _playVids(play) {
-    (this._vids() || []).forEach(function (v) {
-      if (!v) return;
-      if (play) { if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } }
-      else { if (!v.paused) v.pause(); }
-    });
-  }
-  _pauseVids(paused) { this._playVids(!paused); } // back-compat
-  // decode only the video(s) for the current scene — big saving vs running all three at once
-  _activeVids(play) {
-    if (!play) { this._activeKey = 'none'; this._playVids(false); return; }
-    var s = Math.max(0, Math.min(2, this._scene || 0));
-    var lo = Math.floor(s), hi = Math.ceil(s);
-    var key = lo + '-' + hi;
-    if (key === this._activeKey) return;
-    this._activeKey = key;
-    (this._vids() || []).forEach(function (v, i) {
-      if (!v) return;
-      if (i === lo || i === hi) { if (v.paused) { var p = v.play && v.play(); if (p && p.catch) p.catch(function () {}); } }
-      else { if (!v.paused) v.pause(); }
-    });
-  }
-  // Scroll-position driven: videos play UNLESS the opaque cream world is covering the viewport.
-  // This is authoritative on every scroll, so playback can never get stuck paused after a fast
-  // scroll or a blocked autoplay — the old trigger-toggle approach could miss the resume edge.
-  _syncVids() {
+  // ---------- GL power management ----------
+  // Scroll-position driven: the canvas renders UNLESS something opaque covers the viewport
+  // (the intro overlay, the cream world, or a hidden tab). Authoritative on every scroll.
+  _syncGL() {
     if (this._vsync) return; var self = this; this._vsync = true;
     requestAnimationFrame(function () { self._vsync = false; });
     var hidden = document.hidden;
@@ -1174,23 +1177,11 @@ class Component extends DCLogic {
       if (world) { var r = world.getBoundingClientRect(); if (r.top <= mid && r.bottom >= mid) hidden = true; }
     }
     this._glOff = hidden;
-    // decode only the scene-adjacent clip(s) — all three at once triples decode cost and forces
-    // the full ~12MB download up front on phones. The outro montage sweeps every scene, so it
-    // keeps all three warm while it runs.
-    if (hidden) this._activeVids(false);
-    else if (this._montage) this._playVids(true);
-    else this._activeVids(true);
-    var iv = document.getElementById('intro-video');
-    if (iv && iv.pause && this.introDone && !iv.paused) iv.pause();
   }
-  _initVideoSync() {
+  _initGLSync() {
     var self = this;
-    // first-interaction fallback in case the browser blocked muted autoplay at first paint
-    var kick = function () { self._activeKey = null; self._syncVids(); };
-    ['pointerdown', 'touchstart', 'keydown', 'wheel'].forEach(function (ev) { window.addEventListener(ev, kick, { once: true, passive: true }); });
-    // authoritative sync on every scroll (covers reduced-motion where Lenis is off, and scroll-up resume)
-    window.addEventListener('scroll', function () { self._syncVids(); }, { passive: true });
-    self._syncVids();
+    window.addEventListener('scroll', function () { self._syncGL(); }, { passive: true });
+    self._syncGL();
   }
 
   // ---------- ACT 5 · pinned horizontal gallery ----------
@@ -1249,7 +1240,7 @@ class Component extends DCLogic {
       window.addEventListener('resize', railMask, { passive: true });
       railMask();
     }
-    // (video play/pause is now handled centrally by _syncVids — scroll-position driven — so no toggle here)
+    // (GL on/off is handled centrally by _syncGL — scroll-position driven — so no toggle here)
   }
   _initBuilder() {
     var self = this, gsap = window.gsap;
@@ -1348,15 +1339,16 @@ class Component extends DCLogic {
     var self = this, gsap = window.gsap;
     var sec = document.getElementById('outro'); if (!sec) return;
     var t = window.ScrollTrigger.create({ trigger: sec, start: 'top 72%', end: 'bottom bottom',
-      onEnter: function () { self._playVids(true); if (self._u) gsap.to(self._u.uOutro, { value: 1, duration: 1.4 }); self._startMontage(); },
-      onEnterBack: function () { self._playVids(true); self._startMontage(); },
-      onLeaveBack: function () { self._stopMontage(); if (self._u) { gsap.to(self._u.uOutro, { value: 0, duration: 0.6 }); self._setScene(2); } } });
+      onEnter: function () { if (self._u) gsap.to(self._u.uOutro, { value: 1, duration: 1.4 }); self._startMontage(); },
+      onEnterBack: function () { self._startMontage(); },
+      onLeaveBack: function () { self._stopMontage(); if (self._u) { gsap.to(self._u.uOutro, { value: 0, duration: 0.6 }); self._setScene(self._chIdx || 0); } } });
     self._triggers.push(t);
     if (!self.reduced) gsap.from(sec.querySelectorAll('[data-outro-in]'), { autoAlpha: 0, y: 30, stagger: 0.11, duration: 0.7, ease: 'power2.out', scrollTrigger: { trigger: sec, start: 'top 62%' } });
   }
   _startMontage() {
     var self = this, gsap = window.gsap;
     if (this._montage || this.reduced || !this._u) return;
+    gsap.killTweensOf(this._u.uScene);
     this._montage = gsap.fromTo(this._u.uScene, { value: 2 }, { value: 0, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1, onUpdate: function () { self._setScene(self._u.uScene.value); } });
   }
   _stopMontage() { if (this._montage) { this._montage.kill(); this._montage = null; } }
@@ -1536,7 +1528,6 @@ class Component extends DCLogic {
       if (Math.abs(self.iTarget - self.iShown) < 0.0005) self.iShown = self.iTarget;
       self._introApply(self.iShown);
       self._glOff = (self.iShown < 0.82) || document.hidden;
-      self._activeVids(!self._glOff); // scene 0 behind the intro => only the crêpe clip decodes
       if (self.introActive && self._iReadyRelease && self.iTarget >= 1 && self.iShown >= 0.999) self._releaseIntro();
       self._iRaf = requestAnimationFrame(self._iLoop);
     };
@@ -1569,7 +1560,7 @@ class Component extends DCLogic {
     var ivR = document.getElementById('intro-video'); if (ivR && ivR.pause) ivR.pause();
     if (this.lenis) this.lenis.start();
     if (window.ScrollTrigger) window.ScrollTrigger.refresh();
-    this._syncVids();
+    this._syncGL();
   }
 
   _engageIntro() {
