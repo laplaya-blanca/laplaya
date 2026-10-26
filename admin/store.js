@@ -18,7 +18,9 @@ export const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname
 export class ConflictError extends Error { constructor(key) { super(LABELS[key] || key); this.key = key; } }
 
 // ---------- auth ----------
-const auth = LOCAL || !window.GoTrue ? null : new window.GoTrue({ APIUrl: '/.netlify/identity', setCookie: false });
+// the vendored UMD build exposes the class as GoTrue.default
+const GoTrue = window.GoTrue && (window.GoTrue.default || window.GoTrue);
+const auth = LOCAL || !GoTrue ? null : new GoTrue({ APIUrl: '/.netlify/identity', setCookie: false });
 const localUser = { email: 'Local preview', jwt: async () => 'local', logout: async () => {} };
 
 export function currentUser() { return LOCAL ? localUser : auth ? auth.currentUser() : null; }
