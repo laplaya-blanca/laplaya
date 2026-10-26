@@ -73,9 +73,11 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
 
       {/* the categories, floating just above the waterline */}
       <div className="absolute inset-x-0 bottom-[34px] z-10 flex flex-col gap-2.5">
-        <p className="glass3d mx-5 self-start rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
-          <span>{light.clock} · {light.label}{count ? ' · ' + count + ' to try' : ''}</span>
-        </p>
+        <div className="edge px-5">
+          <p className="glass3d inline-block rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
+            <span>{light.clock} · {light.label}{count ? ' · ' + count + ' to try' : ''}</span>
+          </p>
+        </div>
         {cats.length > 0 && (
           <nav aria-label="Jump to a category" className="edge bubbles flex gap-2.5 overflow-x-auto px-5 pb-3 pt-2 [scrollbar-width:none]">
             {cats.map((c, i) => (
