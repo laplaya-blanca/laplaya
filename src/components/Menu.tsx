@@ -4,16 +4,16 @@ import { img, money } from '../lib/content';
 import { flavourColours, seeded } from '../lib/flavor';
 
 // category headers with a photo of their own; the rest (and any category the owner adds) open on the shore
-const SCENES: Record<string, string> = { crepe: '/assets/scene-crepe.jpg', waffle: '/assets/scene-waffle.jpg', smoothies: '/assets/scene-smoothie.jpg',
-  'fresh-juice': '/assets/cat-fresh-juice.jpg', matcha: '/assets/cat-matcha.jpg', 'hot-drinks': '/assets/cat-hot-drinks.jpg', boba: '/assets/cat-boba.jpg' };
+const SCENES: Record<string, string> = { 'fresh-juice': '/assets/cat-fresh-juice.jpg', matcha: '/assets/cat-matcha.jpg', 'hot-drinks': '/assets/cat-hot-drinks.jpg', boba: '/assets/cat-boba.jpg' };
 
 export type Add = (item: Item, from?: HTMLElement | null) => void;
 export type View = 'rail' | 'list';
 
-// a category's picture: its scene photo, else the owner's photo of its signature (or any) item
+// a category's picture: its scene photo, else the owner's photo of its signature (or any) item, on its beach table
+// once it has been re-plated
 export function sceneImage(cat: Category, w: number) {
   const shot = cat.items.find((i) => i.photo && i.signature) || cat.items.find((i) => i.photo);
-  return SCENES[cat.key] ? img(SCENES[cat.key], w) : shot ? img(shot.photo, w) : '';
+  return SCENES[cat.key] ? img(SCENES[cat.key], w) : shot ? img(shot.plated.day || shot.photo, w) : '';
 }
 
 export const SHADE = 'linear-gradient(180deg, transparent 28%, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)';
