@@ -33,6 +33,7 @@ export function App() {
   const [tide, setTide] = useState(false);
   const [active, setActive] = useState('');
   const [inMenu, setInMenu] = useState(false);
+  const [pastMenu, setPastMenu] = useState(false);
   const [intro, setIntro] = useState(shouldIntro);
   const [bump, setBump] = useState(0);
   const [view, setViewState] = useState<View>(() => { try { return (localStorage.getItem('lpb-view') as View) || 'rail'; } catch { return 'rail'; } });
@@ -66,6 +67,13 @@ export function App() {
     // An observer, not a scroll listener, so scrolling never forces a layout or a React render.
     const el = markRef.current; if (!el) return;
     const io = new IntersectionObserver(([e]) => setInMenu(!e.isIntersecting && e.boundingClientRect.top < 80), { rootMargin: '-80px 0px 0px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    // the menu's end has gone up under the bar: Events & Catering isn't a category, so the bar steps aside
+    const el = menuRef.current; if (!el) return;
+    const io = new IntersectionObserver(([e]) => setPastMenu(!e.isIntersecting && e.boundingClientRect.bottom < 80), { rootMargin: '-80px 0px 0px 0px' });
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -123,9 +131,9 @@ export function App() {
     <>
       {intro && <Intro onDone={() => setIntro(false)} />}
       <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} cats={cats} onPick={goTo} />
-      <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
+      <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && !pastMenu && cats.length > 0} />
 
-      <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
+      <Water dark={light.dark} ready={!!content} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
       <main ref={menuRef} id="menu" aria-label="Menu" className="on-water relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">

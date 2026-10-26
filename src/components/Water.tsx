@@ -76,13 +76,23 @@ void main(){
 // the menu starts exactly at the bottom edge of the hero; trim 1px so merely touching the edge reads as off screen
 const EDGE = { rootMargin: '0px 0px -1px 0px' };
 
+// everything set on the water, and an observer that says whether any of it is on screen right now
+const onWater = () => [...document.querySelectorAll<HTMLElement>('#menu, #events, footer')];
+function watch(els: HTMLElement[], tell: (on: boolean) => void) {
+  const on = new Set<Element>();
+  const io = new IntersectionObserver((es) => { es.forEach((e) => (e.isIntersecting ? on.add(e.target) : on.delete(e.target))); tell(on.size > 0); }, EDGE);
+  els.forEach((el) => io.observe(el));
+  return io;
+}
+
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const LOOKS = {
   day: { deep: hex('#13222A'), shallow: hex('#3B505A'), shine: hex('#E4ECEF'), gloss: 1.15, beach: 0 },
   night: { deep: hex('#050F17'), shallow: hex('#123245'), shine: hex('#D3DEE2'), gloss: 1.15, beach: 0 }
 };
 
-export function Water({ dark, className = '' }: { dark: boolean; className?: string }) {
+// ready: the page's content is in, so Events & Catering and the footer exist to be watched as well
+export function Water({ dark, ready = false, className = '' }: { dark: boolean; ready?: boolean; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const look = useRef(LOOKS.day);
   const repaint = useRef<() => void>(() => {});
@@ -144,10 +154,10 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
     canvas.addEventListener('webglcontextlost', lost);
     const ro = new ResizeObserver(() => { if (!dead) { size(); paint(performance.now()); } });
     ro.observe(canvas);
-    // only while the menu itself is on screen: the hero and footer cover the water anyway
-    const menu = document.getElementById('menu');
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; kick(); }, EDGE);
-    if (menu) io.observe(menu); else { visible = true; kick(); }
+    // only while the menu, Events & Catering or the footer (all set on the water) is on screen: the hero covers it anyway
+    const parts = onWater();
+    const io = watch(parts, (on) => { visible = on; kick(); });
+    if (!parts.length) { visible = true; kick(); }
     const vis = () => kick();
     document.addEventListener('visibilitychange', vis);
 
@@ -158,25 +168,26 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
       canvas.removeEventListener('webglcontextlost', lost);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+  }, [ready]);
 
   // the filmed water: load as the menu nears, play while it's on screen, hand over from the drawn water once it rolls
   useEffect(() => {
     const v = film.current, menu = document.getElementById('menu');
     if (!v || !menu || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const parts = onWater();
     let seen = false;
     const play = () => { if (seen && !document.hidden) v.play().catch(() => {}); else v.pause(); };
     // start fetching a little before the menu arrives; play only while it is actually on screen
     const soon = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !v.getAttribute('src')) { v.src = '/assets/water.mp4'; v.load(); soon.disconnect(); }
     }, { rootMargin: '60% 0px' });
-    const io = new IntersectionObserver(([e]) => { seen = e.isIntersecting; play(); }, EDGE);
-    soon.observe(menu); io.observe(menu);
+    const io = watch(parts, (on) => { seen = on; play(); });
+    soon.observe(menu);
     const rolls = () => { filming.current = true; setRolling(true); };
     v.addEventListener('playing', rolls);
     document.addEventListener('visibilitychange', play);
     return () => { soon.disconnect(); io.disconnect(); v.removeEventListener('playing', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
-  }, []);
+  }, [ready]);
 
   return (
     <div aria-hidden className={'isolate overflow-hidden ' + className}>
