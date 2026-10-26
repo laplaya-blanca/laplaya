@@ -7,7 +7,8 @@ import { orderText, useCart } from './lib/cart';
 import { flavourColours } from './lib/flavor';
 import { Shore } from './components/Shore';
 import { Art, CategoryBar, Scene, useAfloat, type View } from './components/Menu';
-import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
+import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, TideWave } from './components/Sheets';
+import { Postcard } from './components/Postcard';
 import { Events, Footer } from './components/Shoreline';
 import { Water } from './components/Water';
 import { Intro, shouldIntro } from './components/Intro';
@@ -203,7 +204,7 @@ export function App() {
         {open?.t === 'item' && <ItemSheet key={'i' + open.item.id} item={open.item} qty={cart[open.item.id]?.qty || 0} onAdd={add} onClose={() => setOpen(null)} />}
         {open?.t === 'cart' && <CartSheet key="cart" lines={lines} total={total} unpriced={unpriced} picks={picks} onOpen={(item) => setOpen({ t: 'item', item })}
           onQty={(id, d) => dispatch({ type: 'qty', id, d })} onClose={() => setOpen(null)} onWhatsApp={whatsapp} onTicket={() => setOpen({ t: 'ticket' })} />}
-        {open?.t === 'ticket' && <Ticket key="ticket" lines={lines} total={total} unpriced={unpriced} onClose={() => setOpen(null)} />}
+        {open?.t === 'ticket' && <Postcard key="ticket" lines={lines} total={total} unpriced={unpriced} night={light.dark} onClose={() => setOpen(null)} />}
         {open?.t === 'cats' && <CategoriesSheet key="cats" cats={cats} onPick={goTo} onClose={() => setOpen(null)} />}
         {open?.t === 'search' && <SearchSheet key="search" items={all} onOpen={(item) => setOpen({ t: 'item', item })} onClose={() => setOpen(null)} />}
       </AnimatePresence>

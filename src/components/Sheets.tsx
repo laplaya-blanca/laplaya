@@ -182,38 +182,6 @@ export function CartSheet({ lines, total, unpriced, onQty, onClose, onWhatsApp, 
   );
 }
 
-// ---------- counter ticket: a postcard to hold up at the till ----------
-export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; total: number; unpriced: boolean; onClose: () => void }) {
-  const time = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Beirut', hour: '2-digit', minute: '2-digit' }).format(new Date());
-  return (
-    <Sheet label="Counter ticket" onClose={onClose}>
-      <div className="px-5 pb-2">
-        <div className="relative rounded-[22px] border-2 border-dashed border-[#1F7A8C]/35 bg-[#FBF8EE] p-6 text-[#14586B]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-serif text-[30px] font-semibold leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
-              <p className="mt-2 text-[13px] font-extrabold uppercase tracking-[.16em] text-[#14586B]/70">Beach pickup · {time}</p>
-            </div>
-            <img src="/assets/logo.jpg" alt="" decoding="async" className="size-14 rotate-6 rounded-lg border-2 border-white object-cover shadow-md" />
-          </div>
-          <ul className="mt-5 border-y-2 border-dashed border-[#1F7A8C]/25 py-2">
-            {lines.map((l) => (
-              <li key={l.item.id} className="flex items-baseline gap-3 py-2">
-                <span className="text-[20px] font-extrabold text-[#14586B] tabular-nums">{l.qty}×</span>
-                <span className="flex-1 font-serif text-[24px] font-semibold leading-tight">{l.item.name}<span className="block text-[13px] font-sans font-bold uppercase tracking-[.12em] text-[#14586B]/60">{l.item.cat}</span></span>
-                {l.item.price != null && <span className="text-[17px] font-bold tabular-nums">{money(l.item.price * l.qty)}</span>}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 flex items-baseline justify-between"><span className="text-[15px] font-bold">Total</span><span className="font-serif text-[30px] font-semibold tabular-nums">{money(total) || '$0'}{unpriced ? ' +' : ''}</span></p>
-          <p className="mt-3 text-center text-[15px] font-bold">Show this at the counter — we’ll take it from there.</p>
-        </div>
-        <button onClick={onClose} className="mt-4 h-12 w-full rounded-full bg-[var(--paper-2)] font-extrabold">Done</button>
-      </div>
-    </Sheet>
-  );
-}
-
 // ---------- categories as a mosaic ----------
 export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; onPick: (k: string) => void; onClose: () => void }) {
   // one wide tile, then two rows of pairs. If that would leave the last tile alone on its row, the last wide tile
