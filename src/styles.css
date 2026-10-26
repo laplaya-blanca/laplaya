@@ -6,7 +6,9 @@
   --sky-1: #BFE6E8; --sky-2: #DDF2EF; --sky-3: #F5F3E6;
   --sea-1: #4FB6BF; --sea-2: #1F8A99; --sea-3: #14586B;
   --sun: #FFF4D6; --glow: rgba(255, 248, 220, .6); --hills: #8FB0A9;
-  --paper: #FBF7EE; --paper-2: #F3ECDC; --ink: #123F4D; --ink-soft: #456570; --line: rgba(18, 63, 77, .14); --water: #E9F1EC;
+  --paper: #FBF7EE; --paper-2: #F3ECDC; --ink: #123F4D; --ink-soft: #456570; --line: rgba(18, 63, 77, .14); --water: #155E69;
+  --w-ink: #FBF7EE; --w-ink-soft: rgba(251, 247, 238, .84); --w-line: rgba(251, 247, 238, .2);
+  --p-ink: #123F4D; --p-ink-soft: #456570; --p-line: rgba(18, 63, 77, .14);
   --accent: #123F4D; --accent-ink: #FBF7EE; --accent-glow: rgba(18,63,77,.28); --glint: #F3E9D2; --pill: #FBF7EE; --pill-ink: #123F4D; --coral: #D9566B;
   --dock-h: 72px;
   color-scheme: light;
@@ -31,6 +33,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
 [tabindex="-1"]:focus { outline: none; }
 }
+/* text set straight on the moving water vs. text on paper floating in it */
+.on-water { --ink: var(--w-ink); --ink-soft: var(--w-ink-soft); --line: var(--w-line); color: var(--ink); text-shadow: 0 1px 14px rgba(3, 26, 33, .35); }
+.on-water .photo-type { text-shadow: none; }
+.on-water .paper { --ink: var(--p-ink); --ink-soft: var(--p-ink-soft); --line: var(--p-line); color: var(--ink); text-shadow: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 body.locked { overflow: hidden; }
 

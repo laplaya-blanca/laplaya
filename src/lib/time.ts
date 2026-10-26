@@ -61,9 +61,14 @@ const PALETTES: Record<Phase, Record<string, string>> = {
 const SURFACES = {
   // two colours per light: lake-teal on cream by day, gold on navy by night. --glint is the accent on dark
   // surfaces (photo overlays, footer, dock): cream by day, gold by night. --pill is the order button on the dark dock.
-  day: { '--paper': '#FBF7EE', '--paper-2': '#F3ECDC', '--ink': '#123F4D', '--ink-soft': '#456570', '--line': 'rgba(18,63,77,.14)', '--water': '#E9F1EC',
+  // --w-* is text set straight on the moving water, --p-* is text on paper (cards, forms) inside it.
+  day: { '--paper': '#FBF7EE', '--paper-2': '#F3ECDC', '--ink': '#123F4D', '--ink-soft': '#456570', '--line': 'rgba(18,63,77,.14)', '--water': '#155E69',
+    '--w-ink': '#FBF7EE', '--w-ink-soft': 'rgba(251,247,238,.84)', '--w-line': 'rgba(251,247,238,.2)',
+    '--p-ink': '#123F4D', '--p-ink-soft': '#456570', '--p-line': 'rgba(18,63,77,.14)',
     '--accent': '#123F4D', '--accent-ink': '#FBF7EE', '--accent-glow': 'rgba(18,63,77,.28)', '--glint': '#F3E9D2', '--pill': '#FBF7EE', '--pill-ink': '#123F4D' },
   night: { '--paper': '#132B3B', '--paper-2': '#0F2331', '--ink': '#F3ECDD', '--ink-soft': '#B9C6C9', '--line': 'rgba(243,236,221,.14)', '--water': '#0B1E2B',
+    '--w-ink': '#F3ECDD', '--w-ink-soft': '#B9C6C9', '--w-line': 'rgba(243,236,221,.14)',
+    '--p-ink': '#F3ECDD', '--p-ink-soft': '#B9C6C9', '--p-line': 'rgba(243,236,221,.14)',
     '--accent': '#E2C27A', '--accent-ink': '#0B1E2B', '--accent-glow': 'rgba(226,194,122,.3)', '--glint': '#E2C27A', '--pill': '#E2C27A', '--pill-ink': '#0B1E2B' }
 };
 

@@ -30,7 +30,7 @@ export function Events({ site }: { site: Site | null }) {
   const ig = site?.contact.instagram;
   const field = 'mt-1.5 h-13 w-full rounded-2xl border border-[var(--line)] bg-[var(--paper)] px-4 text-[17px] outline-none focus:border-[var(--sea-2)] focus:ring-2 focus:ring-[var(--sea-2)]/30';
   return (
-    <section id="events" aria-labelledby="events-h" className="mt-16">
+    <section id="events" aria-labelledby="events-h" className="on-water mt-16">
       <div className="relative h-[52svh] min-h-[340px] overflow-hidden">
         <img src="/assets/events-aisle.jpg" alt="A wedding aisle set up on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
@@ -50,12 +50,12 @@ export function Events({ site }: { site: Site | null }) {
           ))}
         </ul>
         {state === 'sent' ? (
-          <div role="status" className="mt-6 rounded-[26px] bg-[var(--paper)] p-6 text-center">
+          <div role="status" className="paper mt-6 rounded-[26px] bg-[var(--paper)] p-6 text-center">
             <p className="font-serif text-[30px] font-semibold">Inquiry sent — gracias!</p>
             <p className="mt-2 text-[16px] text-[var(--ink-soft)]">We’ll be in touch soon to plan it with you.</p>
           </div>
         ) : (
-          <form onSubmit={submit} noValidate className="mt-6 rounded-[26px] bg-[var(--paper-2)] p-5">
+          <form onSubmit={submit} noValidate className="paper mt-6 rounded-[26px] bg-[var(--paper-2)] p-5">
             <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
             <input type="hidden" name="subject" value="New Events & Catering inquiry — La Playa Blanca" />
             <input type="hidden" name="from_name" value="La Playa Blanca website" />

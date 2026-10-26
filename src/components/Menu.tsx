@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, type MouseEvent } from 'react';
+import { memo, useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
 import type { Category, Item } from '../lib/content';
 import { img, money } from '../lib/content';
 import { flavourColours, seeded } from '../lib/flavor';
@@ -100,8 +100,45 @@ export function ShoreScene({ seed, w }: { seed: string; w: number }) {
 // the owner's own photo when there is one. Until then a general card rather than a stand-in product shot
 // (a picture of one shake on every shake reads as a promise): the shore at a slightly different framing,
 // washed in the item's flavour colour, with its name written across the water.
+// Is this photo shot on white? Look at its outer edge once, at 16×16, and remember the answer per photo.
+const onWhite = new Map<string, boolean>();
+function shotOnWhite(im: HTMLImageElement) {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 16;
+    const x = c.getContext('2d', { willReadFrequently: true })!;
+    x.drawImage(im, 0, 0, 16, 16);
+    const d = x.getImageData(0, 0, 16, 16).data;
+    let edge = 0, white = 0;
+    for (let y = 0; y < 16; y++) for (let i = 0; i < 16; i++) {
+      if (y !== 0 && y !== 15 && i !== 0 && i !== 15) continue;
+      const o = (y * 16 + i) * 4; edge++;
+      if (Math.min(d[o], d[o + 1], d[o + 2]) > 226) white++;
+    }
+    return white / edge > 0.8;
+  } catch { return false; }
+}
+
+// The owner's studio shots are on white. Multiplied over a soft photo of the shore, the white turns into sky, lake
+// and sand while the plate and its own shadow stay, so it sits on the beach. Anything not shot on white is shown as is,
+// and this works for whatever he uploads next without touching the files.
+function Photo({ item, w, className }: { item: Item; w: number; className: string }) {
+  const [beach, setBeach] = useState(() => onWhite.get(item.photo) || false);
+  const check = (e: SyntheticEvent<HTMLImageElement>) => {
+    if (!onWhite.has(item.photo)) onWhite.set(item.photo, shotOnWhite(e.currentTarget));
+    setBeach(onWhite.get(item.photo)!);
+  };
+  return (
+    <span className={className + ' relative isolate block overflow-hidden bg-[#F4ECDF]'}>
+      {beach && <img src={img('/assets/hero-lake-wide.jpg', 480)} alt="" aria-hidden loading="lazy"
+        className="absolute inset-0 size-full object-cover blur-[2.5px]" style={{ objectPosition: '74% 50%', transform: 'scale(1.9)', transformOrigin: '74% 80%' }} />}
+      <img src={img(item.photo, w)} alt={item.name} loading="lazy" onLoad={check}
+        className={'relative size-full object-cover' + (beach ? ' mix-blend-multiply' : '')} />
+    </span>
+  );
+}
+
 function Art({ item, w, className }: { item: Item; w: number; className: string }) {
-  if (item.photo) return <img src={img(item.photo, w)} alt={item.name} loading="lazy" className={className + ' object-cover'} />;
+  if (item.photo) return <Photo key={item.photo} item={item} w={w} className={className} />;
   const rnd = seeded(item.name + item.cat);
   const tint = flavourColours(item.name, item.kind)[0];
   const small = w < 300;
@@ -135,7 +172,7 @@ function Price({ item, className = '' }: { item: Item; className?: string }) {
 
 const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
-    <article role="listitem" className={'w-[min(72vw,290px)] overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)] ' + (item.soldOut ? 'opacity-70' : '')}>
+    <article role="listitem" className={'paper w-[min(72vw,290px)] overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)] ' + (item.soldOut ? 'opacity-70' : '')}>
       <button onClick={() => onOpen(item)} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
         <div className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />

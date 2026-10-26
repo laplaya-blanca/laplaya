@@ -123,7 +123,7 @@ export function App() {
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
       <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
-      <main ref={menuRef} id="menu" aria-label="Menu" className="relative pb-6">
+      <main ref={menuRef} id="menu" aria-label="Menu" className="on-water relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">
           <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light)}</h2>
@@ -131,7 +131,7 @@ export function App() {
         </div>
 
         {failed && (
-          <div role="alert" className="mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
+          <div role="alert" className="paper mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
             <p className="font-serif text-[24px] font-semibold">The menu is washing back in…</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We couldn’t load it just now. You can still order by phone or WhatsApp.</p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -168,7 +168,7 @@ export function App() {
         )}
 
         {content && !cats.length && (
-          <div role="status" className="mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
+          <div role="status" className="paper mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
             <p className="font-serif text-[24px] font-semibold">Fresh menu on its way</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We’re updating it right now. Ask at the counter, or message us on WhatsApp.</p>
             <a href="https://wa.me/96171245911" className="mt-4 inline-flex h-12 items-center rounded-full bg-[var(--accent)] px-6 font-extrabold text-[var(--accent-ink)]">WhatsApp us</a>

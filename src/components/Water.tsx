@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 // The lake behind the menu: a slow rolling swell with light skating over the crests, drawn live so the glass
-// bars have real water moving under them. Pale lake by day (text stays dark-on-light), dark water with silver
+// bars have real water moving under them. Deep turquoise lake by day, dark water with silver
 // light by night. Drawn at a fraction of screen resolution (water is soft anyway), ~30fps, and only while the
 // menu is on screen. No WebGL or reduced motion → nothing renders and the plain --water colour stays.
 
@@ -43,7 +43,7 @@ void main(){
 
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const LOOKS = {
-  day: { deep: hex('#CFE1DE'), shallow: hex('#EEF4EF'), shine: hex('#FFFFFF'), gloss: 0.55 },
+  day: { deep: hex('#073C47'), shallow: hex('#1F7480'), shine: hex('#FFFFFF'), gloss: 1.0 },
   night: { deep: hex('#050F17'), shallow: hex('#123245'), shine: hex('#D3DEE2'), gloss: 1.15 }
 };
 
