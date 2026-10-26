@@ -45,7 +45,9 @@ export function Events({ site }: { site: Site | null }) {
           <p className="mt-2 max-w-[34ch] text-[16px] leading-snug text-[#FBF6EA]/90">Tell us about your day and we’ll build something sweet around it.</p>
         </div>
       </div>
-      <div className="px-5">
+      {/* a phone reads the offers, then the form; from a laptop on they sit side by side, the form at a width a form
+          should be, on the same left edge as the menu above */}
+      <div className="px-5 lg:grid lg:max-w-[1120px] lg:grid-cols-[minmax(0,.85fr)_minmax(0,1.15fr)] lg:items-start lg:gap-16">
         <ul className="mt-6 divide-y divide-[var(--line)]">
           {OFFERS.map(([t, d]) => (
             <li key={t} className="py-4">
@@ -119,33 +121,42 @@ export function Footer({ site }: { site: Site | null }) {
         </svg>
       </div>
       <div aria-hidden className="glitter">{GLITTER.map(([x, w], i) => <span key={i} style={{ ['--g' as string]: i, ['--x' as string]: x, ['--w' as string]: w }} />)}</div>
-      {/* on a phone everything stacks; on a wide screen the map takes the left and hours and hello sit beside it */}
-      <div className="relative mx-auto max-w-[1040px]">
-      <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
-      <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
-      <div className="relative mt-10 grid gap-8 text-[#F3ECDD] md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-start md:gap-x-12">
-        <div className="md:row-span-2"><TreasureMap href={maps} /></div>
-        <div className="drift" style={{ ['--i' as string]: 1 }}>
-          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
-          {filled ? (
-            <ul className="mt-2 text-[16px]">
-              {h!.weekly.map((w) => <li key={w.day} className="flex justify-between py-0.5"><span>{w.day}</span><span className="tabular-nums">{w.closed ? 'Closed' : w.open + ' – ' + w.close}</span></li>)}
-            </ul>
-          ) : (
-            <p className="mt-2 font-serif text-[22px] font-semibold">{h?.headline || 'Daily, in season'}<span className="block font-sans text-[16px] font-normal">{h?.subline}</span></p>
-          )}
-          {h?.note && <p className="mt-2 text-[14px] opacity-80">{h.note}</p>}
+      {/* On a phone everything stacks. Up to a laptop it stays one column no wider than a phone's, so the map never
+          blows up; from a laptop on, the map takes the left and hours and hello sit beside it, centred on it. The
+          whole sign-off keeps the page's left edge, like the menu and the events above it. */}
+      <div className="relative max-w-[1080px]">
+        <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
+        <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
+        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-x-16">
+          <TreasureMap href={maps} />
+          <div className="grid gap-8 lg:gap-10">
+            <div className="drift" style={{ ['--i' as string]: 1 }}>
+              <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
+              {filled ? (
+                <ul className="mt-2 text-[16px]">
+                  {h!.weekly.map((w) => <li key={w.day} className="flex justify-between py-0.5"><span>{w.day}</span><span className="tabular-nums">{w.closed ? 'Closed' : w.open + ' – ' + w.close}</span></li>)}
+                </ul>
+              ) : (
+                <p className="mt-2 font-brand text-[24px] font-extrabold uppercase leading-none tracking-[.02em] text-[#F9F6E3]">{h?.headline || 'Daily, in season'}<span className="mt-1.5 block font-sans text-[16px] font-normal normal-case tracking-normal">{h?.subline}</span></p>
+              )}
+              {h?.note && <p className="mt-2 text-[14px] opacity-80">{h.note}</p>}
+            </div>
+            {c && <Hello c={c} />}
+          </div>
         </div>
-        {c && <Hello c={c} />}
-      </div>
-      </div>
-      {/* sign-off: the house, then the maker's signature, set apart by a hairline */}
-      <div className="relative mt-14 flex flex-col items-center text-center text-[#F3ECDD]">
-        <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
-        <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/90">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
-        <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent" />
-        <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80">Crafted by</p>
-        <Signature />
+        {/* sign-off: the house, then the maker's signature. Stacked and set apart by a hairline on a phone; one line
+            across the foot of the page, under a rule, on a wide screen */}
+        <div className="relative mt-14 flex flex-col items-center text-center text-[#F3ECDD] lg:mt-20 lg:flex-row lg:items-center lg:justify-between lg:border-t lg:border-[#F3ECDD]/15 lg:pt-8 lg:text-left">
+          <div className="flex flex-col items-center lg:flex-row lg:gap-4">
+            <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
+            <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/90 lg:mt-0">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
+          </div>
+          <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent lg:hidden" />
+          <div className="flex flex-col items-center lg:flex-row lg:gap-5">
+            <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80 lg:mt-0">Crafted by</p>
+            <Signature />
+          </div>
+        </div>
       </div>
     </footer>
   );

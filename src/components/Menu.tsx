@@ -128,7 +128,7 @@ export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Ca
 // a category header with no photo: the wide shore, framed a little differently per category
 export function ShoreScene({ seed, w }: { seed: string; w: number }) {
   const x = Math.round(15 + seeded(seed)() * 70);
-  return <img src={img('/assets/hero-lake-wide.jpg', w)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: x + '% 60%' }} />;
+  return <img src={img('/assets/hero-lake-wide.jpg', w)} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={{ objectPosition: x + '% 60%' }} />;
 }
 
 // the owner's own photo when there is one. Until then a general card rather than a stand-in product shot
@@ -214,13 +214,13 @@ function Photo({ item, w, className }: { item: Item; w: number; className: strin
   const ready = !broken && (night ? item.plated.night : item.plated.day);
   if (ready) return (
     <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>
-      <img src={img(ready, w)} alt={item.name} loading="lazy" onError={() => setBroken(true)} className="size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+      <img src={img(ready, w)} alt={item.name} loading="lazy" decoding="async" onError={() => setBroken(true)} className="size-full object-cover" style={{ objectPosition: 'center 75%' }} />
     </span>
   );
   const src = img(item.photo, w);
   if (!shot?.white) return (
     <span className={className + ' relative block overflow-hidden bg-[#F4ECDF]'}>
-      <img src={src} alt={item.name} loading="lazy" onLoad={read} className={'size-full object-cover' + (shot ? '' : ' opacity-0')} />
+      <img src={src} alt={item.name} loading="lazy" decoding="async" onLoad={read} className={'size-full object-cover' + (shot ? '' : ' opacity-0')} />
     </span>
   );
   const [x0, y0, x1, y1] = shot.box, { ar } = shot;
@@ -237,10 +237,10 @@ function Photo({ item, w, className }: { item: Item; w: number; className: strin
   const shadow = { width: `calc(${dw} * 1.02)`, height: `calc(${dw} * .17)`, left: `calc(50cqw - ${dw} * .51)`, top: `calc(${top} + ${L} * ${(y1 * ar).toFixed(4)} - ${dw} * .12)` };
   return (
     <span className={className + ' relative isolate block overflow-hidden bg-[#EFE6D8] [container-type:size]'}>
-      <img src={img(table.src, Math.min(Math.max(w, 300), 1200))} alt="" aria-hidden loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+      <img src={img(table.src, Math.min(Math.max(w, 300), 1200))} alt="" aria-hidden loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
       <span aria-hidden className="absolute rounded-[50%] mix-blend-multiply" style={{ ...shadow, background: 'radial-gradient(closest-side, rgba(52,34,18,.42), rgba(52,34,18,.18) 55%, rgba(52,34,18,0))' }} />
       <span aria-hidden className="absolute bg-white" style={{ ...place, ...mask }} />
-      <img src={src} alt={item.name} loading="lazy" onLoad={read} className="absolute max-w-none mix-blend-multiply [mask:linear-gradient(90deg,transparent,#000_5%,#000_95%,transparent),linear-gradient(transparent,#000_5%,#000_95%,transparent)] [mask-composite:intersect]"
+      <img src={src} alt={item.name} loading="lazy" decoding="async" onLoad={read} className="absolute max-w-none mix-blend-multiply [mask:linear-gradient(90deg,transparent,#000_5%,#000_95%,transparent),linear-gradient(transparent,#000_5%,#000_95%,transparent)] [mask-composite:intersect]"
         style={place} />
       {table.tint && <span aria-hidden className="absolute mix-blend-multiply" style={{ ...place, ...mask, background: table.tint }} />}
     </span>
@@ -254,7 +254,7 @@ function Art({ item, w, className }: { item: Item; w: number; className: string 
   const small = w < 300;
   return (
     <span className={className + ' relative block overflow-hidden bg-[var(--sea-2)]'}>
-      <img src={img('/assets/hero-lake-tall.jpg', Math.max(w, 200))} alt="" loading="lazy" className="absolute inset-0 size-full object-cover"
+      <img src={img('/assets/hero-lake-tall.jpg', Math.max(w, 200))} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover"
         style={{ objectPosition: Math.round(rnd() * 100) + '% ' + Math.round(35 + rnd() * 55) + '%' }} />
       <span className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 20%, color-mix(in srgb, ${tint} 55%, transparent) 100%)` }} />
       {small
