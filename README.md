@@ -1,7 +1,7 @@
 # Handoff: La Playa Blanca — Cocktails & Desserts (immersive one-page site)
 
 ## Owner dashboard & content
-All editable content lives in `content/` and is edited at **`/admin`** (Decap CMS). Saving there commits to `main` and Netlify redeploys in about a minute.
+All editable content lives in `content/` and is edited at **`/admin`**, a custom dashboard (`admin/app.js` UI, `admin/store.js` data layer; Preact + htm from unpkg, no build step). Each **Save changes** becomes one commit on `main` through Netlify Git Gateway (changed JSON files plus any new photos, which are shrunk to 1600px in the browser first), and Netlify redeploys in about a minute. Before writing, the dashboard checks no one else changed those files since it loaded them. The previous Decap CMS dashboard is kept at `/admin/classic/` as a fallback.
 
 | File | What it holds |
 |---|---|
@@ -18,7 +18,7 @@ All editable content lives in `content/` and is edited at **`/admin`** (Decap CM
 3. Identity → Services → **Enable Git Gateway**.
 4. Identity → **Invite users** → the owner's email. The invite link opens the site, they set a password, and land on `/admin`.
 
-**Local editing without logging in:** run `npx decap-server@3.11.3` and a static server (e.g. `python3 -m http.server 8787`), then open `http://localhost:8787/admin/`. Edits write straight to `content/`.
+**Local preview:** on `localhost` the dashboard skips the login and calls `/.netlify/git/github/…` with the token `local`, so it needs a server that stands in for Git Gateway: `python3 tools/mock-git-gateway.py <copy-of-site> 8790`, then open `http://localhost:8790/admin/`. Saves write into that folder, so point it at a scratch copy. (A plain static server shows an empty dashboard.) The Decap fallback still works locally with `npx decap-server@3.11.3` at `/admin/classic/`.
 
 ## Overview
 A single-page, scroll-driven marketing + ordering site for **La Playa Blanca**, a beachside dessert & drinks spot in Qaraaoun, West Bekaa. The experience runs as one continuous vertical journey:
