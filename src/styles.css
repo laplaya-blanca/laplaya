@@ -74,6 +74,27 @@ html[data-intro] .rise { animation-play-state: paused; }
 .rail::-webkit-scrollbar { display: none; }
 .rail > * { scroll-snap-align: start; flex: none; }
 
+/* Afloat. Everything here is transform-only (the compositor's job, no layout or paint) and runs only inside a
+   section marked .afloat, i.e. on or near the screen.
+   1. cards bob on a slow swell; each one a beat behind the one before, so the swell visibly rolls along the rail */
+@keyframes bob {
+  0%, 100% { translate: 0 -3px; rotate: -.5deg; }
+  50% { translate: 0 4px; rotate: .6deg; }
+}
+.afloat .float { animation: bob 6.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -.8s); }
+/* 2. the title's letters ride a small ripple, one after another */
+@keyframes ripple { 0%, 100% { translate: 0 0; } 50% { translate: 0 -.045em; } }
+.letter { display: inline-block; }
+.afloat .letter { animation: ripple 3.2s ease-in-out infinite; animation-delay: calc(var(--n, 0) * -.16s); }
+/* 3. swiping a rail: cards come in from the right a little small and set back, settle full size, and sink away on
+   the left, driven by the swipe itself. The scale composes with the bob's translate and rotate */
+@supports (animation-timeline: view()) {
+  @keyframes current { from { scale: .9; opacity: .75; } 35%, 65% { scale: 1; opacity: 1; } to { scale: .92; opacity: .8; } }
+  .afloat .rail > .float { animation-name: bob, current; animation-duration: 6.4s, auto; animation-timing-function: ease-in-out, linear;
+    animation-iteration-count: infinite, 1; animation-fill-mode: none, both; animation-timeline: auto, view(inline);
+    animation-delay: calc(var(--i, 0) * -.8s), 0s; }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

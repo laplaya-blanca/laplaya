@@ -5,7 +5,7 @@ import { lightAt, openState, type Light } from './lib/time';
 import { orderText, useCart } from './lib/cart';
 import { flavourColours } from './lib/flavor';
 import { Shore } from './components/Shore';
-import { Art, CategoryBar, Scene, type View } from './components/Menu';
+import { Art, CategoryBar, Scene, useAfloat, type View } from './components/Menu';
 import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
 import { Events, Footer } from './components/Shoreline';
 import { Water } from './components/Water';
@@ -41,6 +41,7 @@ export function App() {
   const tideTimer = useRef(0);
   const markRef = useRef<HTMLDivElement>(null);
   const openItem = useCallback((item: Item) => setOpen({ t: 'item', item }), []);
+  const picksRef = useAfloat<HTMLElement>();
 
   const load = useCallback(() => {
     setFailed(false);
@@ -154,11 +155,11 @@ export function App() {
         )}
 
         {picks.length > 0 && (
-          <section aria-labelledby="picks-h" className="pt-6">
+          <section ref={picksRef} aria-labelledby="picks-h" className="pt-6">
             <h2 id="picks-h" className="px-6 text-[13px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">House favourites</h2>
             <div className="rail mt-3">
-              {picks.map((p) => (
-                <button key={p.id} onClick={() => setOpen({ t: 'item', item: p })} className="w-[132px] text-left">
+              {picks.map((p, i) => (
+                <button key={p.id} onClick={() => setOpen({ t: 'item', item: p })} style={{ ['--i' as string]: i }} className="float w-[132px] text-left">
                   <span className="block aspect-square overflow-hidden rounded-[22px] shadow-[0_10px_24px_rgba(6,20,29,.12)]">
                     <PickArt item={p} />
                   </span>

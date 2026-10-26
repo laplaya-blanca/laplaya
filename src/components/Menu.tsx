@@ -64,9 +64,41 @@ function titleSize(name: string) {
 // the owner may type a category in capitals; titles read as words, not signage
 const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\p{L}/gu, (m) => m.toUpperCase()) : s);
 
-export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Category; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
+// Afloat: only the stretches of menu on or near the screen move (cards bobbing on the swell, the title's letters
+// riding a ripple), so a phone never animates more than two or three sections at once. One observer for all.
+let floats: IntersectionObserver | null = null;
+export function useAfloat<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    floats ??= new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('afloat', e.isIntersecting)), { rootMargin: '15% 0px' });
+    floats.observe(el);
+    return () => floats?.unobserve(el);
+  }, []);
+  return ref;
+}
+
+// the title set letter by letter so a ripple can run through it; read aloud as the plain word
+function Ripple({ text }: { text: string }) {
+  let n = 0;
   return (
-    <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden>
+        {text.split(' ').map((word, w) => (
+          <span key={w}>{w > 0 && ' '}<span className="inline-block whitespace-nowrap">
+            {[...word].map((c, i) => <span key={i} className="letter" style={{ ['--n' as string]: n++ }}>{c}</span>)}
+          </span></span>
+        ))}
+      </span>
+    </>
+  );
+}
+
+export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Category; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
+  const ref = useAfloat<HTMLElement>();
+  return (
+    <section ref={ref} id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
       {/* the category's name in the logo's lettering and cream, like "La Playa Blanca" on the shore */}
       <div className="px-5">
         <p className="flex items-center gap-2.5 text-[14px] font-semibold text-[var(--ink-soft)]">
@@ -75,13 +107,13 @@ export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Ca
         </p>
         <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="font-brand font-extrabold uppercase leading-[.95] tracking-[.02em] text-[#F9F6E3]"
           style={{ fontSize: titleSize(cat.name) }}>
-          {titleCase(cat.name)}
+          <Ripple text={titleCase(cat.name)} />
         </h2></div>
         <p className="mt-3 max-w-[34ch] text-[16px] leading-snug text-[var(--ink-soft)]">{cat.description}</p>
       </div>
       {view === 'rail' ? (
         <div className="rail mt-4" role="list" aria-label={cat.name}>
-          {cat.items.map((it) => <Card key={it.id} item={it} onOpen={onOpen} onAdd={onAdd} />)}
+          {cat.items.map((it, i) => <Card key={it.id} item={it} i={i} onOpen={onOpen} onAdd={onAdd} />)}
           <div aria-hidden className="w-1" />
         </div>
       ) : (
@@ -208,9 +240,9 @@ function Price({ item, className = '' }: { item: Item; className?: string }) {
     : <span className="text-[15px] font-bold text-[var(--ink-soft)]">Ask at the counter</span>;
 }
 
-const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (i: Item) => void; onAdd: Add }) {
+const Card = memo(function Card({ item, i, onOpen, onAdd }: { item: Item; i: number; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
-    <article role="listitem" className={'paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
+    <article role="listitem" style={{ ['--i' as string]: i }} className={'float paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
       <button onClick={() => onOpen(item)} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
         <div className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'opacity-55 grayscale' : '')} />
