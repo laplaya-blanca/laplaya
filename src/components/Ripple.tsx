@@ -36,8 +36,11 @@ void main() {
   gl_FragColor = vec4(c, 1.);
 }`;
 
-export function Ripple({ tall, wide, className = '' }: { tall: Shot; wide: Shot; className?: string }) {
+// rain: 0..1, how hard it is raining on the lake; drops ring the water on their own, small and many
+export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; wide: Shot; rain?: number; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const rainRef = useRef(rain);
+  rainRef.current = rain;
 
   useEffect(() => {
     const canvas = ref.current; if (!canvas) return;
@@ -132,6 +135,15 @@ export function Ripple({ tall, wide, className = '' }: { tall: Shot; wide: Shot;
       const [x, y] = at(e);
       if (onWater(y)) { lastMove = e.timeStamp; drop(x, y, e.pointerType === 'mouse' && !e.buttons ? 0.35 : 0.7); }
     };
+    // raindrops: a few small rings a second at random on the water (photo space below the lake line, mapped to the canvas)
+    const shower = window.setInterval(() => {
+      const r = rainRef.current;
+      if (!r || !ready || !visible || document.hidden || Math.random() > r) return;
+      const ca = canvas.clientWidth / canvas.clientHeight, coverY = ca > imgAspect ? imgAspect / ca : 1;
+      const py = shot.water + 0.04 + Math.random() * (1 - shot.water - 0.04);
+      const y = (py - 0.5) / coverY + 0.5;
+      if (y < 1) drop(Math.random(), y, 0.18 + Math.random() * 0.22);
+    }, 140);
     host.addEventListener('pointerdown', down, { passive: true });
     host.addEventListener('pointermove', move, { passive: true });
 
@@ -145,7 +157,7 @@ export function Ripple({ tall, wide, className = '' }: { tall: Shot; wide: Shot;
     io.observe(canvas);
 
     return () => {
-      dead = true; photo.onload = null; clearTimeout(hint);
+      dead = true; photo.onload = null; clearTimeout(hint); clearInterval(shower);
       cancelAnimationFrame(raf); ro.disconnect(); io.disconnect();
       canvas.removeEventListener('webglcontextlost', lost);
       host.removeEventListener('pointerdown', down); host.removeEventListener('pointermove', move);

@@ -82,6 +82,20 @@ html[data-intro='boot']::after { content: ''; position: fixed; inset: 0; z-index
 html[data-intro] .rise { animation-play-state: paused; }
 @keyframes shimmer { 0%, 100% { opacity: .35; } 50% { opacity: .8; } }
 .glint { animation: shimmer var(--d, 4s) ease-in-out infinite; }
+/* weather over the shore (Weather.tsx): clouds drift across, fog breathes, a storm flashes now and then, and on a
+   clear night fireflies wander and glow. All transform/opacity, and only while the shore is on screen (.afloat) */
+@keyframes cloud { from { translate: -6% 0; } to { translate: 6% 0; } }
+.afloat .cloud { animation: cloud calc(70s + var(--i) * 25s) ease-in-out infinite alternate; animation-delay: calc(var(--i) * -30s); }
+@keyframes fog { 0%, 100% { opacity: .85; translate: -2% 0; } 50% { opacity: 1; translate: 2% 0; } }
+.afloat .fog { animation: fog 24s ease-in-out infinite; }
+@keyframes flash { 0%, 91%, 93.5%, 100% { opacity: 0; } 92% { opacity: .22; } 94.5% { opacity: .12; } }
+.flash { opacity: 0; mix-blend-mode: soft-light; }
+.afloat .flash { animation: flash 11s linear infinite; }
+.firefly { opacity: 0; background: #FFF3B0; box-shadow: 0 0 6px 2px rgba(255,226,120,.75), 0 0 16px 6px rgba(255,214,90,.28); }
+@keyframes wander { 0%, 100% { translate: 0 0; } 33% { translate: var(--dx) var(--dy); } 66% { translate: calc(var(--dx) * -.6) calc(var(--dy) * .4); } }
+@keyframes glow { 0%, 100% { opacity: 0; } 35%, 55% { opacity: .95; } }
+.afloat .firefly { animation: wander var(--d) ease-in-out infinite, glow var(--b) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -1.7s), calc(var(--i) * -.9s); }
 @keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .skeleton { background: linear-gradient(90deg, var(--paper-2) 0%, var(--paper) 50%, var(--paper-2) 100%) 0 0 / 200% 100%; animation: skeleton 1.4s linear infinite; }
 

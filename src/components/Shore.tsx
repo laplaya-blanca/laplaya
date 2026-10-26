@@ -1,4 +1,6 @@
 import type { Light } from '../lib/time';
+import { wet, type Weather } from '../lib/weather';
+import { SkyOver } from './Weather';
 import { img } from '../lib/content';
 import { Ripple } from './Ripple';
 import { useAfloat } from './Menu';
@@ -13,7 +15,7 @@ type Open = { open: true; until: string } | { open: false; opens: string } | nul
 // The menu's water already shows along the bottom edge, and the categories float just above it as bubbles: one tap goes
 // straight to that stretch of the menu. Scrolling down, the water rises over the shore (see .sink in styles.css).
 // On a first visit the logo intro opens onto it.
-export function Shore({ light, open, hours, count, cats, onPick }: { light: Light; open: Open; hours: string; count: number; cats: { key: string; name: string }[]; onPick: (key: string) => void }) {
+export function Shore({ light, weather, open, hours, count, cats, onPick }: { light: Light; weather: Weather; open: Open; hours: string; count: number; cats: { key: string; name: string }[]; onPick: (key: string) => void }) {
   const night = light.dark;
   const ref = useAfloat<HTMLElement>();
   const shot = night ? 'night' : 'lake'; // a real night photo after dark, the golden-hour shore otherwise
@@ -27,20 +29,24 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
       {/* touch the lake: rings spread across the water in the photo */}
       <Ripple key={shot} className="absolute inset-0 size-full"
         tall={{ src: img('/assets/hero-' + shot + '-tall.jpg', 1080), water: WATER[shot].tall }}
-        wide={{ src: img('/assets/hero-' + shot + '-wide.jpg', 2048), water: WATER[shot].wide }} />
+        wide={{ src: img('/assets/hero-' + shot + '-wide.jpg', 2048), water: WATER[shot].wide }}
+        rain={wet(weather.sky) ? { drizzle: 0.35, rain: 0.7, storm: 1 }[weather.sky as 'drizzle'] : 0} />
       {/* the hour's light */}
       <div aria-hidden className="absolute inset-0 mix-blend-multiply transition-colors duration-1000" style={{ background: 'var(--grade)' }} />
       {/* legibility: soft veil behind the title, deeper water behind the button */}
       <div aria-hidden className="absolute inset-0" style={{ background: night
         ? 'linear-gradient(180deg, rgba(6,14,28,.55) 0%, rgba(6,14,28,.15) 45%, rgba(6,14,28,.6) 100%)'
         : 'linear-gradient(180deg, rgba(255,246,230,.55) 0%, rgba(255,246,230,0) 42%, rgba(6,20,29,0) 62%, rgba(6,20,29,.45) 100%)' }} />
-      {night && (
+      {night && weather.sky === 'clear' && (
         <div aria-hidden className="absolute inset-0 pointer-events-none">
           {Array.from({ length: 26 }).map((_, i) => (
             <span key={i} className="glint absolute rounded-full bg-white" style={{ width: (i % 3) + 1.5, height: (i % 3) + 1.5, left: ((i * 37) % 100) + '%', top: 2 + ((i * 23) % 30) + '%', opacity: 0.8, ['--d' as string]: 2.5 + (i % 5) + 's' }} />
           ))}
         </div>
       )}
+
+      {/* the weather at the lake right now, and fireflies on a clear night */}
+      <SkyOver weather={weather} night={night} />
 
       {/* top bar: logo and open state */}
       <div className="edge relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(18px,env(safe-area-inset-top))]">
@@ -75,7 +81,7 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
       <div className="absolute inset-x-0 bottom-[34px] z-10 flex flex-col gap-2.5">
         <div className="edge px-5">
           <p className="glass3d inline-block rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
-            <span>{light.clock} · {light.label}{count ? ' · ' + count + ' to try' : ''}</span>
+            <span>{light.clock} · {weather.label || light.label}{count ? ' · ' + count + ' to try' : ''}</span>
           </p>
         </div>
         {cats.length > 0 && (

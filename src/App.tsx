@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { loadContent, type Content, type Item } from './lib/content';
 import { lightAt, openState, type Light } from './lib/time';
+import { useWeather, wet, type Weather } from './lib/weather';
 import { orderText, useCart } from './lib/cart';
 import { flavourColours } from './lib/flavor';
 import { Shore } from './components/Shore';
@@ -27,6 +28,7 @@ function useLight() {
 
 export function App() {
   const light = useLight();
+  const weather = useWeather();
   const [content, setContent] = useState<Content | null>(null);
   const [failed, setFailed] = useState(false);
   const [open, setOpen] = useState<Open>(null);
@@ -130,14 +132,14 @@ export function App() {
   return (
     <>
       {intro && <Intro onDone={() => setIntro(false)} />}
-      <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} cats={cats} onPick={goTo} />
+      <Shore light={light} weather={weather} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} cats={cats} onPick={goTo} />
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && !pastMenu && cats.length > 0} />
 
       <Water dark={light.dark} ready={!!content} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
       <main ref={menuRef} id="menu" aria-label="Menu" className="on-water relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="edge px-6 pt-8">
-          <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light)}</h2>
+          <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light, weather)}</h2>
           <p className="mt-2 text-[16px] text-[var(--ink-soft)]">Swipe through each stretch of the lake, tap anything to see it closer.</p>
         </div>
 
@@ -212,7 +214,9 @@ export function App() {
 
 function PickArt({ item }: { item: Item }) { return <Art item={item} w={280} className="size-full" />; }
 
-function greeting(l: Light) {
+function greeting(l: Light, w: Weather) {
+  if (w.sky === 'snow') return 'Snow on the hills. Hot chocolate weather.';
+  if (wet(w.sky)) return l.dark ? 'Rain on the dark lake. Stay for something warm.' : 'Rain on the lake. Something warm?';
   switch (l.phase) {
     case 'morning': return 'Good morning from the lake.';
     case 'afternoon': return 'The water’s warm. What are you having?';
