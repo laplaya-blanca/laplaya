@@ -9,6 +9,8 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+/* nothing may widen the page: Android Chrome zooms the whole dashboard out to fit any overflow */
+html, body { overflow-x: clip; }
 body.locked { overflow: hidden; }
 body { background: var(--sand); color: var(--ink); font: 15px/1.45 'Manrope', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 h1, h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; color: var(--teal-d); margin: 0; letter-spacing: -.01em; }
@@ -99,8 +101,8 @@ main { margin-left: 252px; padding: 34px clamp(18px, 4vw, 48px) 120px; max-width
 .search input { padding-left: 40px !important; border-radius: 999px !important; }
 
 /* ---------- menu ---------- */
-.tabs { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; margin: 0 -2px 8px; scrollbar-width: thin; }
-.tab { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 15px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; color: var(--teal-d); cursor: pointer; }
+.tabs { position: relative; display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; margin: 0 -2px 8px; scrollbar-width: thin; }
+.tab { position: relative; flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 15px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; color: var(--teal-d); cursor: pointer; }
 .tab.on { background: var(--teal); border-color: var(--teal); color: #fff; }
 .tab .count { font-size: 12px; font-weight: 600; }
 .tab .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
