@@ -4,7 +4,9 @@ import { img, money } from '../lib/content';
 import { FlavorArt } from './FlavorArt';
 
 // photographed categories get their own scene; the rest open on their signature item's flavour art
-const SCENES: Record<string, string> = { crepe: '/assets/scene-crepe.jpg', waffle: '/assets/scene-waffle.jpg', 'bubble-waffle': '/assets/scene-waffle.jpg', smoothies: '/assets/scene-smoothie.jpg' };
+const SCENES: Record<string, string> = { crepe: '/assets/scene-crepe.jpg', waffle: '/assets/scene-waffle.jpg', 'bubble-waffle': '/assets/scene-waffle.jpg', smoothies: '/assets/scene-smoothie.jpg',
+  'n-cup': '/assets/cat-n-cup.jpg', 'fresh-juice': '/assets/cat-fresh-juice.jpg', shakes: '/assets/cat-shakes.jpg', matcha: '/assets/cat-matcha.jpg',
+  'hot-drinks': '/assets/cat-hot-drinks.jpg', boba: '/assets/cat-boba.jpg', 'ice-cream': '/assets/cat-ice-cream.jpg' };
 
 export type Add = (item: Item, from?: HTMLElement | null) => void;
 export type View = 'rail' | 'list';
@@ -89,9 +91,11 @@ export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { 
   );
 });
 
+// the owner's own photo when there is one; until then the category's photo, so nothing looks unfinished
 function Art({ item, w, className }: { item: Item; w: number; className: string }) {
-  return item.photo
-    ? <img src={img(item.photo, w)} alt={item.name} loading="lazy" className={className + ' object-cover'} />
+  const src = item.photo ? img(item.photo, w) : SCENES[item.catKey] ? img(SCENES[item.catKey], w) : '';
+  return src
+    ? <img src={src} alt={item.photo ? item.name : ''} loading="lazy" className={className + ' object-cover'} />
     : <FlavorArt name={item.name} kind={item.kind} className={className} />;
 }
 
