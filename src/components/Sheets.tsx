@@ -216,22 +216,27 @@ export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; tot
 
 // ---------- categories as a mosaic ----------
 export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; onPick: (k: string) => void; onClose: () => void }) {
+  // one wide tile, then two rows of pairs. If that would leave the last tile alone on its row, the last wide tile
+  // becomes a pair with the one after it instead, so every row ends full
+  const wide = cats.map((_, i) => i % 5 === 0);
+  const lastWide = cats.length - 1 - ((cats.length - 1) % 5);
+  if ((cats.length - 1 - lastWide) % 2) wide[lastWide] = false;
   return (
     <Sheet label="All categories" onClose={onClose}>
       <div className="flex items-center justify-between px-6 pt-1">
-        <h2 className="font-serif text-[32px] font-semibold" data-autofocus tabIndex={-1}>The whole lake</h2>
+        <h2 className="font-brand text-[30px] font-extrabold uppercase leading-none tracking-[.02em]" data-autofocus tabIndex={-1}>The whole lake</h2>
         <CloseButton onClick={onClose} />
       </div>
       <div className="grid grid-cols-2 gap-3 px-4 pt-3">
         {cats.map((c, i) => {
           return (
-            <button key={c.key} onClick={() => onPick(c.key)} className={'relative overflow-hidden rounded-[22px] text-left ' + (i % 5 === 0 ? 'col-span-2 h-36' : 'h-40')}>
+            <button key={c.key} onClick={() => onPick(c.key)} className={'relative overflow-hidden rounded-[22px] text-left ' + (wide[i] ? 'col-span-2 h-36' : 'h-40')}>
               {sceneImage(c, 600)
-                ? <img src={sceneImage(c, 600)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+                ? <img src={sceneImage(c, 600)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
                 : <ShoreScene seed={c.name} w={600} />}
               <span className="absolute inset-0" style={{ background: SHADE, opacity: 0.9 }} />
               <span className="absolute bottom-3 left-4 right-3 text-[#FBF6EA]">
-                <span className="block font-serif text-[24px] font-semibold leading-none">{c.name}</span>
+                <span className="block font-brand text-[22px] font-extrabold uppercase leading-[.95] tracking-[.02em]">{c.name}</span>
                 <span className="mt-1 block text-[13px] font-bold opacity-90">{c.items.length} · {priceRange(c.items)}</span>
               </span>
             </button>
