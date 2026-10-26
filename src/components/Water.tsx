@@ -1,6 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-// The lake behind the menu, drawn live so the glass bars have real water moving under them. By day: clear
+// The lake behind the menu. First choice is real filmed water (a 6s Pexels loop of open water with light on it),
+// shown as filmed at night and tinted to the lake's turquoise by day. It only starts loading as the menu comes near,
+// plays only while the menu is on screen, and if a phone won't autoplay it (iOS Low Power Mode, data saver) the
+// drawn water below stays instead.
+//
+// The drawn water, so the glass bars always have something moving under them. By day: clear
 // shallows over sand, light rippling across the bottom and sun glitter on top. At night: a slow dark swell with
 // silver light skating over the crests. Drawn at a fraction of screen resolution (water is soft anyway), ~30fps, and only while the
 // menu is on screen. No WebGL or reduced motion → nothing renders and the plain --water colour stays.
@@ -68,6 +73,9 @@ void main(){
   gl_FragColor = vec4(c, 1.);
 }`;
 
+// the menu starts exactly at the bottom edge of the hero; trim 1px so merely touching the edge reads as off screen
+const EDGE = { rootMargin: '0px 0px -1px 0px' };
+
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const LOOKS = {
   day: { deep: hex('#0A5563'), shallow: hex('#1A8A92'), shine: hex('#FFFFFF'), gloss: 1.0, beach: 1 },
@@ -78,6 +86,9 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
   const ref = useRef<HTMLCanvasElement>(null);
   const look = useRef(LOOKS.day);
   const repaint = useRef<() => void>(() => {});
+  const film = useRef<HTMLVideoElement>(null);
+  const filming = useRef(false);
+  const [rolling, setRolling] = useState(false);
 
   useEffect(() => { look.current = dark ? LOOKS.night : LOOKS.day; repaint.current(); }, [dark]);
 
@@ -119,11 +130,11 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
     };
     const loop = (now: number) => {
       raf = 0;
-      if (dead || !visible || document.hidden) return;
+      if (dead || !visible || document.hidden || filming.current) return;
       if (now - last > 32) { last = now; paint(now); }
       raf = requestAnimationFrame(loop);
     };
-    const kick = () => { if (!raf && !dead && visible && !document.hidden) raf = requestAnimationFrame(loop); };
+    const kick = () => { if (!raf && !dead && visible && !document.hidden && !filming.current) raf = requestAnimationFrame(loop); };
     repaint.current = () => { if (!dead) paint(performance.now()); };
 
     size(); paint(t0);
@@ -135,7 +146,7 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
     ro.observe(canvas);
     // only while the menu itself is on screen: the hero and footer cover the water anyway
     const menu = document.getElementById('menu');
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; kick(); });
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; kick(); }, EDGE);
     if (menu) io.observe(menu); else { visible = true; kick(); }
     const vis = () => kick();
     document.addEventListener('visibilitychange', vis);
@@ -149,5 +160,34 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
     };
   }, []);
 
-  return <canvas ref={ref} aria-hidden className={className} style={{ opacity: 0, transition: 'opacity .6s' }} />;
+  // the filmed water: load as the menu nears, play while it's on screen, hand over from the drawn water once it rolls
+  useEffect(() => {
+    const v = film.current, menu = document.getElementById('menu');
+    if (!v || !menu || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let seen = false;
+    const play = () => { if (seen && !document.hidden) v.play().catch(() => {}); else v.pause(); };
+    // start fetching a little before the menu arrives; play only while it is actually on screen
+    const soon = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !v.getAttribute('src')) { v.src = '/assets/water.mp4'; v.load(); soon.disconnect(); }
+    }, { rootMargin: '60% 0px' });
+    const io = new IntersectionObserver(([e]) => { seen = e.isIntersecting; play(); }, EDGE);
+    soon.observe(menu); io.observe(menu);
+    const rolls = () => { filming.current = true; setRolling(true); };
+    v.addEventListener('playing', rolls);
+    document.addEventListener('visibilitychange', play);
+    return () => { soon.disconnect(); io.disconnect(); v.removeEventListener('playing', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
+  }, []);
+
+  return (
+    <div aria-hidden className={'isolate overflow-hidden ' + className}>
+      <canvas ref={ref} className="absolute inset-0 size-full" style={{ opacity: 0, transition: 'opacity .6s' }} />
+      <video ref={film} muted loop playsInline preload="none" disablePictureInPicture tabIndex={-1}
+        className="absolute inset-0 size-full object-cover transition-opacity duration-700"
+        style={{ opacity: rolling ? 1 : 0, filter: dark ? 'brightness(.85) saturate(.9)' : 'brightness(1.08)' }} />
+      {/* by day the grey-blue footage takes the lake's turquoise, keeping its own light and shade */}
+      {rolling && !dark && <div className="absolute inset-0 bg-[#14909A] mix-blend-color" />}
+      {/* a light veil so the brightest glints never wash out the text set on the water */}
+      {rolling && <div className={'absolute inset-0 ' + (dark ? 'bg-[#03121A]/28' : 'bg-[#032C33]/30')} />}
+    </div>
+  );
 }

@@ -34,7 +34,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 [tabindex="-1"]:focus { outline: none; }
 }
 /* text set straight on the moving water vs. text on paper floating in it */
-.on-water { --ink: var(--w-ink); --ink-soft: var(--w-ink-soft); --line: var(--w-line); color: var(--ink); text-shadow: 0 1px 14px rgba(3, 26, 33, .35); }
+.on-water { --ink: var(--w-ink); --ink-soft: var(--w-ink-soft); --line: var(--w-line); color: var(--ink); text-shadow: 0 1px 2px rgba(3, 20, 26, .55), 0 1px 14px rgba(3, 26, 33, .45); }
 .on-water .paper { --ink: var(--p-ink); --ink-soft: var(--p-ink-soft); --line: var(--p-line); color: var(--ink); text-shadow: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 body.locked { overflow: hidden; }
