@@ -8,6 +8,7 @@ import { Shore } from './components/Shore';
 import { Art, CategoryBar, Scene, type View } from './components/Menu';
 import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
 import { Events, Footer } from './components/Shoreline';
+import { Water } from './components/Water';
 
 type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'search' };
 
@@ -121,6 +122,7 @@ export function App() {
       <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} onEnter={enter} />
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
+      <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
       <main ref={menuRef} id="menu" aria-label="Menu" className="relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">
