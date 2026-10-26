@@ -1,0 +1,25 @@
+{
+  "bases": [
+    { "name": "Crêpe", "price": 4, "color": "#F2E2C4", "icon": "crepe" },
+    { "name": "Belgian Waffle", "price": 4.5, "color": "#E8B25E", "icon": "waffle" },
+    { "name": "Bubble Waffle", "price": 5, "color": "#DFC38C", "icon": "waffle" }
+  ],
+  "sauces": [
+    { "name": "Nutella", "price": 1.5, "color": "#5A3A2E" },
+    { "name": "White Chocolate", "price": 1.5, "color": "#F3E9D2" },
+    { "name": "Lotus Biscoff", "price": 1.75, "color": "#C88A4A" },
+    { "name": "Oreo Crumble", "price": 1.5, "color": "#2E2A2C" },
+    { "name": "Berry", "price": 1.25, "color": "#D8617F" }
+  ],
+  "toppings": [
+    { "name": "Banana", "price": 0.75 },
+    { "name": "Strawberry", "price": 0.75 },
+    { "name": "Oreo", "price": 0.75 },
+    { "name": "Kinder", "price": 0.75 },
+    { "name": "Lotus", "price": 0.75 },
+    { "name": "Mixed Nuts", "price": 0.75 },
+    { "name": "Marshmallow", "price": 0.75 },
+    { "name": "Sprinkles", "price": 0.75 }
+  ],
+  "cream": { "name": "Whipped cream", "price": 0.75 }
+}

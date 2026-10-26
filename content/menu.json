@@ -1,0 +1,1214 @@
+{
+  "categories": [
+    {
+      "name": "Pancake",
+      "description": "Fluffy stacked pancakes, your way",
+      "icon": "pancake",
+      "temp": "Warm",
+      "items": [
+        {
+          "name": "Nutella",
+          "price": 6,
+          "description": "Silky hazelnut–cocoa, warm and generous",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Oreo",
+          "price": 6.5,
+          "description": "Crushed cookies-and-cream, dark and dreamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Kinder",
+          "price": 6.5,
+          "description": "Soft milk-chocolate Kinder, pure nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Snickers",
+          "price": 6.5,
+          "description": "Caramel, peanuts and chocolate, piled on",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Brownie",
+          "price": 6.5,
+          "description": "Fudgy brownie chunks, deep chocolate",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Playa Blanca",
+          "price": 8.5,
+          "description": "The house signature — our full spread",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Signature"
+          ]
+        },
+        {
+          "name": "Arequipe",
+          "price": 5,
+          "description": "Golden dulce de leche, slow and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Crispy",
+          "price": 7,
+          "description": "Crunchy layered crisp, extra texture",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lotus",
+          "price": 7.5,
+          "description": "Caramelised Biscoff, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Fruits",
+          "price": 7.5,
+          "description": "Fresh seasonal fruit, bright and juicy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Crêpe",
+      "description": "Thin French crêpe, folded and filled",
+      "icon": "crepe",
+      "temp": "Warm",
+      "items": [
+        {
+          "name": "Nutella",
+          "price": 6,
+          "description": "Silky hazelnut–cocoa, warm and generous",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Oreo",
+          "price": 7,
+          "description": "Crushed cookies-and-cream, dark and dreamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Kinder",
+          "price": 7,
+          "description": "Soft milk-chocolate Kinder, pure nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Snickers",
+          "price": 6.5,
+          "description": "Caramel, peanuts and chocolate, piled on",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Brownie",
+          "price": 6.5,
+          "description": "Fudgy brownie chunks, deep chocolate",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Fruits",
+          "price": 7,
+          "description": "Fresh seasonal fruit, bright and juicy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Fettuccine",
+          "price": 6.5,
+          "description": "Ribboned crêpe, a playful house cut",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Playa Blanca",
+          "price": 7,
+          "description": "The house signature — our full spread",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Signature"
+          ]
+        },
+        {
+          "name": "Arequipe",
+          "price": 6,
+          "description": "Golden dulce de leche, slow and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Crispy",
+          "price": 7,
+          "description": "Crunchy layered crisp, extra texture",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Barbie",
+          "price": 6.5,
+          "description": "Pretty in pink, strawberry sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Flio",
+          "price": 6,
+          "description": "A house twist, lightly indulgent",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lotus",
+          "price": 6.5,
+          "description": "Caramelised Biscoff, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Sushi",
+          "price": 5,
+          "description": "Rolled and sliced, crêpe “sushi” style",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Marshmallow",
+          "price": 6,
+          "description": "Toasted marshmallow, pillowy soft",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Sushi Brownie",
+          "price": 6.5,
+          "description": "Rolled crêpe sushi, brownie centre",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Waffle",
+      "description": "Crisp Belgian waffle, loaded high",
+      "icon": "waffle",
+      "temp": "Warm",
+      "items": [
+        {
+          "name": "Nutella",
+          "price": 6.5,
+          "description": "Silky hazelnut–cocoa, warm and generous",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Oreo",
+          "price": 7,
+          "description": "Crushed cookies-and-cream, dark and dreamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Kinder",
+          "price": 7,
+          "description": "Soft milk-chocolate Kinder, pure nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Snickers",
+          "price": 7,
+          "description": "Caramel, peanuts and chocolate, piled on",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Brownie",
+          "price": 7,
+          "description": "Fudgy brownie chunks, deep chocolate",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Fruits",
+          "price": 8,
+          "description": "Fresh seasonal fruit, bright and juicy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Playa Blanca",
+          "price": 8,
+          "description": "The house signature — our full spread",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Signature"
+          ]
+        },
+        {
+          "name": "Arequipe",
+          "price": 6,
+          "description": "Golden dulce de leche, slow and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Crispy",
+          "price": 8,
+          "description": "Crunchy layered crisp, extra texture",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lotus",
+          "price": 7.5,
+          "description": "Caramelised Biscoff, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cheese cake",
+          "price": 9,
+          "description": "Baked cheesecake crumble, rich and tangy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Bubble Waffle",
+      "description": "Hong Kong bubble waffle, rolled and loaded",
+      "icon": "waffle",
+      "temp": "Warm",
+      "items": [
+        {
+          "name": "Fruits",
+          "price": 8,
+          "description": "Fresh seasonal fruit, bright and juicy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Kinder",
+          "price": 7.5,
+          "description": "Soft milk-chocolate Kinder, pure nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Lotus",
+          "price": 8,
+          "description": "Caramelised Biscoff, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Arequipe",
+          "price": 8,
+          "description": "Golden dulce de leche, slow and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Nutella",
+          "price": 7.5,
+          "description": "Silky hazelnut–cocoa, warm and generous",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "N Cup",
+      "description": "Layered dessert cups, spoon-ready",
+      "icon": "glass",
+      "temp": "Cold",
+      "items": [
+        {
+          "name": "Oreo Cheesecake",
+          "price": 7,
+          "description": "Oreo cheesecake layered in a cup",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Strawberry Cheesecake",
+          "price": 6,
+          "description": "Strawberry cheesecake, cool in a cup",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Brownie",
+          "price": 5,
+          "description": "Fudgy brownie chunks, deep chocolate",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lotus Cheesecake",
+          "price": 7,
+          "description": "Biscoff cheesecake, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Crunchy N Cup",
+          "price": 6,
+          "description": "Layers of crunch, cream and chocolate",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Dubai N Cup",
+          "price": 7,
+          "description": "Pistachio–kunafa chocolate, Dubai style",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Smoothies",
+      "description": "Blended fresh, thick and cold",
+      "icon": "glass",
+      "temp": "Iced",
+      "items": [
+        {
+          "name": "Strawberry",
+          "price": 3,
+          "description": "Sun-ripe strawberry, cool and creamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Mango",
+          "price": 3,
+          "description": "Tropical mango, thick and golden",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Caramel",
+          "price": 3,
+          "description": "Buttery caramel, a smooth swirl",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Nutella with strawberry",
+          "price": 3.5,
+          "description": "Hazelnut–cocoa meets fresh strawberry",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Blueberry",
+          "price": 3,
+          "description": "Wild blueberry, tart and bright",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Banana",
+          "price": 3,
+          "description": "Sweet banana, mellow and creamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Fresh Juice",
+      "description": "Pressed fresh, nothing added",
+      "icon": "juice",
+      "temp": "Fresh",
+      "items": [
+        {
+          "name": "Orange",
+          "price": 3,
+          "description": "Cold-pressed orange, pure sunshine",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Carrot",
+          "price": 3,
+          "description": "Fresh carrot, earthy and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Apple",
+          "price": 3,
+          "description": "Crisp pressed apple, clean finish",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Strawberry",
+          "price": 3.5,
+          "description": "Sun-ripe strawberry, cool and creamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lemonada",
+          "price": 3,
+          "description": "House lemonade, zesty and cold",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cocktail pieces fresh",
+          "price": 6,
+          "description": "Fresh fruit medley, chopped to order",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cocktail juice fresh",
+          "price": 4,
+          "description": "A mixed fresh-juice cocktail",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cocktail pieces & avocado",
+          "price": 6,
+          "description": "Fruit pieces with creamy avocado",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Orange & strawberry",
+          "price": 3.5,
+          "description": "Orange and strawberry, pressed together",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Banana with milk",
+          "price": 3.5,
+          "description": "Banana blended with cold milk",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Blue hawaii",
+          "price": 4,
+          "description": "Tropical blue cooler, beach-day bright",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Avocado",
+          "price": 7,
+          "description": "Creamy avocado, rich and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Polo fresh",
+          "price": 3.5,
+          "description": "A chilled house cooler",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Shakes",
+      "description": "Thick blended shake, extra cold",
+      "icon": "shake",
+      "temp": "Iced",
+      "items": [
+        {
+          "name": "Lotus",
+          "price": 3,
+          "description": "Caramelised Biscoff, spiced and smooth",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Nutella",
+          "price": 3,
+          "description": "Silky hazelnut–cocoa, warm and generous",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Red velvet",
+          "price": 3,
+          "description": "Red velvet shake, cocoa and cream",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Kinder",
+          "price": 3,
+          "description": "Soft milk-chocolate Kinder, pure nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Snickers",
+          "price": 3,
+          "description": "Caramel, peanuts and chocolate, piled on",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        },
+        {
+          "name": "Marshmallow",
+          "price": 3,
+          "description": "Toasted marshmallow, pillowy soft",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Bubble Gum",
+          "price": 3,
+          "description": "Candy-pink bubble-gum shake",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Arequipe",
+          "price": 3,
+          "description": "Golden dulce de leche, slow and sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Caramel",
+          "price": 3,
+          "description": "Buttery caramel, a smooth swirl",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cookies",
+          "price": 3,
+          "description": "Cookies blended into thick cream",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Mocha",
+          "price": 3,
+          "description": "Coffee and chocolate, a smooth buzz",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cerlac",
+          "price": 3,
+          "description": "Malted cereal shake, comforting",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Trix",
+          "price": 3,
+          "description": "Fruity cereal shake, full of colour",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Playa Blanca",
+          "price": 3,
+          "description": "The house signature — our full spread",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Signature"
+          ]
+        },
+        {
+          "name": "Churro",
+          "price": 5,
+          "description": "Cinnamon-sugar churro, blended cold",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Matcha",
+      "description": "Stone-ground matcha, iced and creamy",
+      "icon": "shake",
+      "temp": "Iced",
+      "items": [
+        {
+          "name": "Vanilla Matcha",
+          "price": 3.89,
+          "description": "Creamy vanilla over stone-ground matcha",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Strawberry Matcha",
+          "price": 3.89,
+          "description": "Fresh strawberry swirled into green matcha",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Drama Queen Matcha",
+          "price": 3.89,
+          "description": "Our boldest matcha — extra everything",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Passion Lemon Matcha",
+          "price": 5,
+          "description": "Passion fruit and lemon, a zesty matcha",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Coconut Cloud Matcha",
+          "price": 4.44,
+          "description": "Coconut cream floating on smooth matcha",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Matcha Latte",
+          "price": 3.89,
+          "description": "Classic matcha and milk, gently sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Blueberry Matcha",
+          "price": 5,
+          "description": "Wild blueberry beneath vivid green matcha",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Matcha Coffee",
+          "price": 3,
+          "description": "Matcha meets coffee — the best of both",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "White Pistachio Matcha",
+          "price": 3.89,
+          "description": "White chocolate and pistachio in matcha",
+          "photo": "",
+          "available": true,
+          "tags": [
+            "Nuts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hot Drinks",
+      "description": "Coffee and cocoa, served steaming",
+      "icon": "coffee",
+      "temp": "Hot",
+      "items": [
+        {
+          "name": "Espresso",
+          "price": null,
+          "description": "A short, strong shot — pure coffee",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Americano",
+          "price": null,
+          "description": "Espresso lengthened smooth and black",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Latte",
+          "price": null,
+          "description": "Espresso folded into steamed milk",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Mocha",
+          "price": null,
+          "description": "Coffee and chocolate, a smooth buzz",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "White mocha",
+          "price": null,
+          "description": "White chocolate melted into coffee",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Dark mocha",
+          "price": null,
+          "description": "Dark chocolate, deep in espresso",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Caramel macchiato",
+          "price": null,
+          "description": "Steamed milk marked with caramel and espresso",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "White macchiato",
+          "price": null,
+          "description": "Espresso over milk, white-chocolate sweet",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Hot lotus",
+          "price": null,
+          "description": "Warm Biscoff, spiced and silky in a cup",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Hot white chocolate",
+          "price": null,
+          "description": "Melted white chocolate, steamed and creamy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Hot milk chocolate",
+          "price": null,
+          "description": "Classic hot chocolate, rich and cosy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Hot cerelac",
+          "price": null,
+          "description": "Steamed malted Cerelac, warm nostalgia",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Hot caramel",
+          "price": null,
+          "description": "Buttery caramel, steamed into warm milk",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cappuccino",
+          "price": null,
+          "description": "Espresso under a deep cap of foam",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Pumpkin Spice Latte",
+          "price": null,
+          "description": "Autumn in a cup — pumpkin and warm spice",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "BOBA",
+      "description": "Iced tea with chewy pearls",
+      "icon": "boba",
+      "temp": "Iced",
+      "items": [
+        {
+          "name": "Peach & Strawberry",
+          "price": null,
+          "description": "Peach iced tea, strawberry pop",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach & Mango",
+          "price": null,
+          "description": "Peach iced tea, tropical mango",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach & Passion fruit",
+          "price": null,
+          "description": "Peach iced tea, tangy passion fruit",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach & Lychee",
+          "price": null,
+          "description": "Peach iced tea, floral lychee",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach & Lemon",
+          "price": null,
+          "description": "Peach iced tea, bright lemon",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Tropical",
+          "price": null,
+          "description": "Tropical iced tea, sunshine in a cup",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach",
+          "price": null,
+          "description": "Classic peach iced tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lemon",
+          "price": null,
+          "description": "Zesty lemon iced tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Blue Milk",
+          "price": null,
+          "description": "Dreamy blue milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Pink Milk",
+          "price": null,
+          "description": "Rosy pink milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Matcha",
+          "price": null,
+          "description": "Stone-ground matcha, smooth and green",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach (Milk)",
+          "price": null,
+          "description": "Creamy peach milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Mango (Milk)",
+          "price": null,
+          "description": "Creamy mango milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Vanilla",
+          "price": null,
+          "description": "Soft vanilla milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Coconut",
+          "price": null,
+          "description": "Cool coconut milk tea",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Tapioca Pearls",
+          "price": null,
+          "description": "Classic chewy tapioca pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Strawberry (Bobas)",
+          "price": null,
+          "description": "Popping strawberry pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Tropical (Bobas)",
+          "price": null,
+          "description": "Popping tropical pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Lychee (Bobas)",
+          "price": null,
+          "description": "Popping lychee pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Mango (Bobas)",
+          "price": null,
+          "description": "Popping mango pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Blueberry (Bobas)",
+          "price": null,
+          "description": "Popping blueberry pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Passion Fruit (Bobas)",
+          "price": null,
+          "description": "Popping passion-fruit pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Peach (Bobas)",
+          "price": null,
+          "description": "Popping peach pearls",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cheese Cake (Topping)",
+          "price": null,
+          "description": "Cheesecake foam topping",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Cotton Candy (Topping)",
+          "price": null,
+          "description": "Cloud of spun cotton candy",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Biscuit (Topping)",
+          "price": null,
+          "description": "Crushed biscuit topping",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Ice Cream",
+      "description": "Cold, creamy, made in-house",
+      "icon": "scoop",
+      "temp": "Cold",
+      "items": [
+        {
+          "name": "Croissant",
+          "price": null,
+          "description": "Ice-cream stuffed croissant",
+          "photo": "",
+          "available": true,
+          "tags": []
+        },
+        {
+          "name": "Blanca ice cream",
+          "price": null,
+          "description": "Our house Blanca scoop",
+          "photo": "",
+          "available": true,
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

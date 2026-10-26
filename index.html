@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#123f4d">
 <script src="./support.js"></script>
+<!-- Netlify Identity: only loaded when an invite / recovery / login link lands here, then hands the owner on to /admin -->
+<script>
+  if (/(invite|recovery|confirmation|email_change)_token=|access_token=/.test(location.hash)) {
+    var s = document.createElement('script');
+    s.src = 'https://identity.netlify.com/v1/netlify-identity-widget.js';
+    s.onload = function () {
+      window.netlifyIdentity.on('login', function () { document.location.href = '/admin/'; });
+    };
+    document.head.appendChild(s);
+  }
+</script>
 </head>
 <body>
 <x-dc>
@@ -214,13 +225,13 @@
     <span style="font-family:'Fraunces',serif; font-weight:600; font-style:italic; font-size:clamp(34px,9vw,48px); line-height:1.12; color:#F0D9A8;">Visit us</span>
   </a>
   <div style="display:flex; align-items:center; flex-wrap:wrap; gap:14px 26px; margin-top:30px; opacity:{{ mnavLinkO }}; transform:{{ mnavLinkT }}; transition:transform .5s cubic-bezier(.2,.8,.2,1) .3s, opacity .4s ease .3s;">
-    <a href="tel:+96171245911" data-cursor="link" style="display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F5F1E3; text-decoration:none; cursor:none;">
+    <a href="{{ telHref }}" data-cursor="link" style="display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F5F1E3; text-decoration:none; cursor:none;">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      +961 71 245 911
+      {{ phoneLabel }}
     </a>
-    <a href="https://instagram.com/la.playa.blanca" target="_blank" rel="noopener" data-cursor="link" style="display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F0D9A8; text-decoration:none; cursor:none;">
+    <a href="{{ igHref }}" target="_blank" rel="noopener" data-cursor="link" style="display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F0D9A8; text-decoration:none; cursor:none;">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>
-      @la.playa.blanca
+      {{ igLabel }}
     </a>
   </div>
 </div>
@@ -421,14 +432,14 @@
             </div>
           </div>
           <div data-build-in>
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-family:'Manrope',sans-serif; font-weight:700; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:#14586B;"><span style="color:#E8A44C;">03</span> Toppings <span style="opacity:.55; font-weight:600; text-transform:none; letter-spacing:.2px;">+$0.75 each</span></div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-family:'Manrope',sans-serif; font-weight:700; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:#14586B;"><span style="color:#E8A44C;">03</span> Toppings <span style="opacity:.55; font-weight:600; text-transform:none; letter-spacing:.2px;">{{ topHint }}</span></div>
             <div style="display:flex; flex-wrap:wrap; gap:10px;">
               <sc-for list="{{ topOpts }}" as="o" hint-placeholder-count="8"><button data-k="{{ o.k }}" onClick="{{ onTopClick }}" data-cursor="grow" style="{{ o.style }}" style-hover="transform:translateY(-2px)">{{ o.label }}</button></sc-for>
             </div>
           </div>
           <div data-build-in>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-family:'Manrope',sans-serif; font-weight:700; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; color:#14586B;"><span style="color:#E8A44C;">04</span> Finish</div>
-            <button onClick="{{ onToggleCream }}" data-cursor="grow" style="{{ creamBtnStyle }}" style-hover="transform:translateY(-2px)">Whipped cream <span style="opacity:.6; font-weight:800;">+$0.75</span></button>
+            <button onClick="{{ onToggleCream }}" data-cursor="grow" style="{{ creamBtnStyle }}" style-hover="transform:translateY(-2px)">{{ creamLabel }} <span style="opacity:.6; font-weight:800;">{{ creamPrice }}</span></button>
           </div>
           <div data-build-in style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:20px 22px; border-radius:20px; background:#FFFFFF; border:1px solid rgba(31,122,140,.14); box-shadow:0 12px 30px rgba(20,58,64,.09);">
             <div>
@@ -514,7 +525,7 @@
               <span class="lbl">Send inquiry</span>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
-            <p style="margin:12px 0 0; text-align:center; font-family:'Manrope',sans-serif; font-size:11.5px; color:rgba(20,58,64,.5);">We usually reply within a day. Or reach us on <a href="https://instagram.com/la.playa.blanca" target="_blank" rel="noopener" data-cursor="link" style="color:#1F7A8C; font-weight:700; text-decoration:none; cursor:none;">Instagram</a>.</p>
+            <p style="margin:12px 0 0; text-align:center; font-family:'Manrope',sans-serif; font-size:11.5px; color:rgba(20,58,64,.5);">We usually reply within a day. Or reach us on <a href="{{ igHref }}" target="_blank" rel="noopener" data-cursor="link" style="color:#1F7A8C; font-weight:700; text-decoration:none; cursor:none;">Instagram</a>.</p>
             <p id="events-error" role="alert" style="display:none; margin:12px 0 0; text-align:center; font-family:'Manrope',sans-serif; font-size:13px; line-height:1.45; color:#c0455f; background:rgba(231,96,122,.1); border:1px solid rgba(231,96,122,.28); border-radius:12px; padding:11px 14px;"></p>
           </form>
 
@@ -564,15 +575,15 @@
         </div>
         <div data-outro-in>
           <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#F0D9A8; margin-bottom:12px;">Hours</div>
-          <p style="margin:0; font-family:'Fraunces',serif; font-size:20px; line-height:1.35; color:#F5F1E3;">Daily, in season<br>Afternoons till late</p>
-          <p style="margin:10px 0 0; font-size:13px; color:rgba(245,241,227,.7);">Call ahead to confirm seasonal hours.</p>
+          <p style="margin:0; font-family:'Fraunces',serif; font-size:20px; line-height:1.35; color:#F5F1E3;">{{ hoursHeadline }}<br>{{ hoursSubline }}</p>
+          <p style="margin:10px 0 0; font-size:13px; color:rgba(245,241,227,.7);">{{ hoursNote }}</p>
         </div>
         <div data-outro-in>
           <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#F0D9A8; margin-bottom:12px;">Say hello</div>
-          <a href="tel:+96171245911" data-cursor="link" style="display:block; font-family:'Fraunces',serif; font-size:20px; line-height:1.35; color:#F5F1E3; text-decoration:none; cursor:none;">+961 71 245 911</a>
-          <a href="https://instagram.com/la.playa.blanca" target="_blank" rel="noopener" data-cursor="link" style="display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-size:14px; color:#F0D9A8; text-decoration:none; cursor:none; font-weight:600;">
+          <a href="{{ telHref }}" data-cursor="link" style="display:block; font-family:'Fraunces',serif; font-size:20px; line-height:1.35; color:#F5F1E3; text-decoration:none; cursor:none;">{{ phoneLabel }}</a>
+          <a href="{{ igHref }}" target="_blank" rel="noopener" data-cursor="link" style="display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-size:14px; color:#F0D9A8; text-decoration:none; cursor:none; font-weight:600;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>
-            @la.playa.blanca
+            {{ igLabel }}
           </a>
         </div>
       </div>
@@ -708,7 +719,8 @@
         <button onClick="{{ onCloseDetail }}" data-cursor="grow" aria-label="Close" style="position:absolute; top:18px; right:18px; z-index:3; display:grid; place-items:center; width:40px; height:40px; border-radius:12px; border:1px solid rgba(245,241,227,.28); background:rgba(245,241,227,.12); color:#F5F1E3; cursor:none;" style-hover="background:rgba(245,241,227,.24)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
-        <!-- IMAGE SLOT (detail hero): drop <img> as first child of this card for a photo header. -->
+        <!-- detail hero: owner photo via the Image CDN (display:none when the item has none) -->
+        <div aria-hidden="true" style="{{ detail.heroStyle }}"></div>
         <div style="position:relative; z-index:2; padding:38px 30px 30px;">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
             <span style="display:grid; place-items:center; width:52px; height:52px; border-radius:15px; background:rgba(245,241,227,.14); border:1px solid rgba(245,241,227,.24); color:#F5F1E3;">{{ detail.iconEl }}</span>
@@ -752,6 +764,8 @@ class Component extends DCLogic {
       navOpen: false,     // mobile nav overlay
       detail: null,       // gallery detail overlay (item object)
       build: { base: 'crepe', sauce: 'nutella', toppings: [], cream: true },
+      builder: { bases: [], sauces: [], toppings: [], cream: { label: 'Whipped cream', p: 0 } },  // from /content/builder.json
+      site: {},           // hours + contact from /content/site.json
       reduced: false,
       webglOK: true,
       isMobile: (typeof window !== 'undefined' && window.innerWidth < 820)
@@ -772,12 +786,10 @@ class Component extends DCLogic {
     if (!this.state.menu.length) {
       var self = this;
       if (window.LPB_MENU) {
-        this.state.menu = window.LPB_MENU.items;
-        this.state.categories = window.LPB_MENU.categories;
+        Object.assign(this.state, this._contentState());
       } else {
         window.addEventListener('lpb-menu-ready', function () {
-          var M = window.LPB_MENU;
-          self.setState({ menu: M.items, categories: M.categories });
+          self.setState(self._contentState());
         }, { once: true });
       }
     }
@@ -1205,7 +1217,25 @@ class Component extends DCLogic {
   _decorate(it, iconSize) {
     var TINT = { 'Pancake': 'rgba(232,164,76,.15)', 'Crêpe': 'rgba(231,96,122,.11)', 'Waffle': 'rgba(232,164,76,.17)', 'Bubble Waffle': 'rgba(232,164,76,.15)', 'N Cup': 'rgba(231,96,122,.13)', 'Matcha': 'rgba(168,198,134,.2)', 'Smoothies': 'rgba(231,96,122,.13)', 'Fresh Juice': 'rgba(168,198,134,.17)', 'Shakes': 'rgba(31,122,140,.13)', 'BOBA': 'rgba(168,198,134,.15)', 'Ice Cream': 'rgba(31,122,140,.11)', 'Hot Drinks': 'rgba(139,94,60,.16)' };
     var tint = TINT[it.cat] || 'rgba(31,122,140,.10)';
-    return Object.assign({}, it, { iconEl: this._icon(it.icon, iconSize || 22), frond: this._icon('frond', 118), tint: tint, tintStyle: { position: 'absolute', inset: 0, background: 'radial-gradient(130% 90% at 100% 0%, ' + tint + ', rgba(255,255,255,0) 62%)', pointerEvents: 'none' } });
+    // an owner-uploaded photo replaces the icon tile (grid + detail) and adds a detail header; sized via the Image CDN
+    var iconEl = it.photo
+      ? React.createElement('img', { src: window.lpbImg(it.photo, 160), alt: '', loading: 'lazy', decoding: 'async', style: { width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' } })
+      : this._icon(it.icon, iconSize || 22);
+    var heroStyle = it.photo
+      ? { position: 'relative', zIndex: 2, height: 'clamp(170px,32vh,250px)', backgroundImage: 'linear-gradient(180deg, rgba(12,44,54,.5), rgba(12,44,54,0) 45%), url("' + window.lpbImg(it.photo, 940) + '")', backgroundSize: 'cover', backgroundPosition: 'center' }
+      : { display: 'none' };
+    return Object.assign({}, it, { iconEl: iconEl, heroStyle: heroStyle, frond: this._icon('frond', 118), tint: tint, tintStyle: { position: 'absolute', inset: 0, background: 'radial-gradient(130% 90% at 100% 0%, ' + tint + ', rgba(255,255,255,0) 62%)', pointerEvents: 'none' } });
+  }
+  // menu + builder + site content from /content/*.json (see menu-data.js); keeps the current build valid
+  _contentState() {
+    var M = window.LPB_MENU, B = window.LPB_BUILDER, b = this.state.build;
+    var has = function (list, k) { return list.some(function (o) { return o.k === k; }); };
+    var build = Object.assign({}, b, {
+      base: has(B.bases, b.base) ? b.base : (B.bases[0] && B.bases[0].k),
+      sauce: has(B.sauces, b.sauce) ? b.sauce : (B.sauces[0] && B.sauces[0].k),
+      toppings: b.toppings.filter(function (t) { return has(B.toppings, t); })
+    });
+    return { menu: M.items, categories: M.categories, builder: B, site: window.LPB_SITE || {}, build: build };
   }
   _pick(cat, names) {
     var self = this;
@@ -1324,7 +1354,7 @@ class Component extends DCLogic {
   // "Let the tide decide" — a wave washes the screen and recedes to reveal a random dish
   _surprise() {
     var self = this, gsap = window.gsap;
-    var pool = this.state.menu; if (!pool.length) return;
+    var pool = this.state.menu.filter(function (m) { return !m.soldOut; }); if (!pool.length) return;
     var it = pool[Math.floor(Math.random() * pool.length)];
     var idx = this._catItems(it.cat).findIndex(function (m) { return m.id === it.id; });
     var reveal = function () { self.setState({ menuCat: it.cat, fanCenter: Math.max(0, idx), detail: self._decorate(it, 26) }); };
@@ -1467,11 +1497,11 @@ class Component extends DCLogic {
   toggleTopping(t) { var a = this.state.build.toppings.slice(); var i = a.indexOf(t); if (i >= 0) a.splice(i, 1); else a.push(t); this.setState({ build: Object.assign({}, this.state.build, { toppings: a }) }); }
   toggleCream() { this.setState({ build: Object.assign({}, this.state.build, { cream: !this.state.build.cream }) }); }
   addBuildToCart() {
-    var b = this.state.build, price = this._buildPrice();
-    var bn = { crepe: 'Crêpe', belgian: 'Belgian Waffle', bubble: 'Bubble Waffle' };
-    var sn = { nutella: 'Nutella', white: 'White Chocolate', biscoff: 'Lotus Biscoff', oreo: 'Oreo Crumble', berry: 'Berry' };
+    var b = this.state.build, price = this._buildPrice(), B = this.state.builder;
+    var base = this._opt(B.bases, b.base), sauce = this._opt(B.sauces, b.sauce);
+    if (!base) return;
     var extra = (b.toppings.length ? (' · ' + b.toppings.length + ' topping' + (b.toppings.length > 1 ? 's' : '')) : '') + (b.cream ? ' · cream' : '');
-    var item = { id: 'build-' + b.base + '-' + b.sauce + '-' + b.toppings.slice().sort().join('') + (b.cream ? '-c' : ''), name: 'Custom ' + bn[b.base], cat: 'Build Your Own', price: price, priceLabel: '$' + price.toFixed(2), desc: sn[b.sauce] + extra, tags: ['Custom'], icon: (b.base === 'crepe' ? 'crepe' : 'waffle') };
+    var item = { id: 'build-' + b.base + '-' + b.sauce + '-' + b.toppings.slice().sort().join('') + (b.cream ? '-c' : ''), name: 'Custom ' + base.label, cat: 'Build Your Own', price: price, priceLabel: '$' + price.toFixed(2), desc: (sauce ? sauce.label : '') + extra, tags: ['Custom'], icon: base.icon || (b.base === 'crepe' ? 'crepe' : 'waffle') };
     this.addToCart(item);
   }
 
@@ -1494,6 +1524,7 @@ class Component extends DCLogic {
 
   addToCart(item, evt) {
     var self = this;
+    if (item.soldOut) return;  // owner flipped "available" off in /admin
     this.setState(function (s) {
       var cart = Object.assign({}, s.cart);
       var ex = cart[item.id];
@@ -1532,7 +1563,8 @@ class Component extends DCLogic {
   _waCheckout() {
     var rows = this._cartArr();
     if (!rows.length) { this.setState({ cartOpen: false }); return; }
-    var num = '96171245911'; // La Playa Blanca order line — +961 71 245 911
+    var contact = (this.state.site && this.state.site.contact) || {};
+    var num = String(contact.whatsapp || '96171245911').replace(/\D/g, ''); // order line, editable in /admin
     var url = 'https://wa.me/' + num + '?text=' + encodeURIComponent(this._orderText());
     window.open(url, '_blank', 'noopener');
     this.setState({ cartOpen: false });
@@ -1560,13 +1592,12 @@ class Component extends DCLogic {
     window.gsap.to(dot, { keyframes: [{ scale: 1.2, duration: 0.2 }, { scale: 0.4, duration: 0.65 }] });
   }
 
-  // ---------- builder pricing ----------
+  // ---------- builder pricing (prices from /content/builder.json) ----------
+  _opt(list, k) { return (list || []).find(function (o) { return o.k === k; }); }
   _buildPrice() {
-    var BASE = { crepe: 4, belgian: 4.5, bubble: 5 };
-    var SAUCE = { nutella: 1.5, white: 1.5, biscoff: 1.75, oreo: 1.5, berry: 1.25 };
-    var TOP = 0.75, CREAM = 0.75;
-    var b = this.state.build;
-    var p = (BASE[b.base] || 0) + (SAUCE[b.sauce] || 0) + b.toppings.length * TOP + (b.cream ? CREAM : 0);
+    var B = this.state.builder, b = this.state.build, self = this;
+    var p = ((this._opt(B.bases, b.base) || {}).p || 0) + ((this._opt(B.sauces, b.sauce) || {}).p || 0) + (b.cream ? B.cream.p : 0);
+    b.toppings.forEach(function (t) { p += (self._opt(B.toppings, t) || {}).p || 0; });
     return p;
   }
 
@@ -1943,13 +1974,17 @@ class Component extends DCLogic {
     var cartItems = this._cartArr().map(function (r) { return { id: r.item.id, name: r.item.name, cat: r.item.cat, qty: r.qty, iconEl: self._icon(r.item.icon, 20) }; });
 
     // builder options
-    var b = st.build;
+    var b = st.build, B = st.builder;
+    var hours = (st.site && st.site.hours) || {}, contact = (st.site && st.site.contact) || {};
     var optStyle = function (a) { return Object.assign({}, chipBase, a ? { background: '#1F7A8C', color: '#F5F1E3', borderColor: '#1F7A8C' } : { background: '#FFFFFF', color: '#14586B', borderColor: 'rgba(31,122,140,.22)' }); };
-    var baseOpts = [{ k: 'crepe', label: 'Crêpe', p: 4 }, { k: 'belgian', label: 'Belgian Waffle', p: 4.5 }, { k: 'bubble', label: 'Bubble Waffle', p: 5 }].map(function (o) { var a = b.base === o.k; return { k: o.k, label: o.label, price: '$' + o.p.toFixed(2), active: a, style: optStyle(a) }; });
-    var sauceOpts = [{ k: 'nutella', label: 'Nutella' }, { k: 'white', label: 'White Chocolate' }, { k: 'biscoff', label: 'Lotus Biscoff' }, { k: 'oreo', label: 'Oreo Crumble' }, { k: 'berry', label: 'Berry' }].map(function (o) { var a = b.sauce === o.k; return { k: o.k, label: o.label, active: a, style: optStyle(a) }; });
-    var topOpts = [{ k: 'banana', label: 'Banana' }, { k: 'strawberry', label: 'Strawberry' }, { k: 'oreo', label: 'Oreo' }, { k: 'kinder', label: 'Kinder' }, { k: 'lotus', label: 'Lotus' }, { k: 'nuts', label: 'Mixed Nuts' }, { k: 'marshmallow', label: 'Marshmallow' }, { k: 'sprinkles', label: 'Sprinkles' }].map(function (o) { var a = b.toppings.indexOf(o.k) >= 0; return { k: o.k, label: o.label, active: a, style: optStyle(a) }; });
-    var baseColor = { crepe: '#F2E2C4', belgian: '#E8B25E', bubble: '#DFC38C' }[b.base];
-    var sauceColor = { nutella: '#5A3A2E', white: '#F3E9D2', biscoff: '#C88A4A', oreo: '#2E2A2C', berry: '#D8617F' }[b.sauce];
+    var baseOpts = B.bases.map(function (o) { var a = b.base === o.k; return { k: o.k, label: o.label, price: '$' + o.p.toFixed(2), active: a, style: optStyle(a) }; });
+    var sauceOpts = B.sauces.map(function (o) { var a = b.sauce === o.k; return { k: o.k, label: o.label, active: a, style: optStyle(a) }; });
+    // one shared topping price shows in the heading; mixed prices go on each chip instead
+    var topSame = B.toppings.every(function (o) { return o.p === (B.toppings[0] || {}).p; });
+    var topOpts = B.toppings.map(function (o) { var a = b.toppings.indexOf(o.k) >= 0; return { k: o.k, label: topSame ? o.label : (o.label + ' +$' + o.p.toFixed(2)), active: a, style: optStyle(a) }; });
+    var topHint = topSame && B.toppings.length ? ('+$' + B.toppings[0].p.toFixed(2) + ' each') : '';
+    var baseColor = (this._opt(B.bases, b.base) || {}).color || '#F2E2C4';
+    var sauceColor = (this._opt(B.sauces, b.sauce) || {}).color || '#5A3A2E';
     var dotCols = ['#E7607A', '#E8A44C', '#A8C686', '#8B5E3C', '#1F7A8C'];
     var dots = []; for (var di = 0; di < b.toppings.length; di++) dots.push({ i: di, style: { width: '15px', height: '15px', borderRadius: '50%', background: dotCols[di % dotCols.length], boxShadow: '0 4px 8px rgba(20,58,64,.25)', animation: 'lpbPop .5s cubic-bezier(.34,1.56,.64,1)' } });
 
@@ -2063,8 +2098,18 @@ class Component extends DCLogic {
       onCloseTicket: function () { self.setState({ ticketOpen: false }); },
 
       // builder
-      baseOpts: baseOpts, sauceOpts: sauceOpts, topOpts: topOpts,
+      baseOpts: baseOpts, sauceOpts: sauceOpts, topOpts: topOpts, topHint: topHint,
+      creamLabel: B.cream.label, creamPrice: '+$' + B.cream.p.toFixed(2),
       buildDots: dots,
+
+      // hours + contact (owner-editable, /content/site.json)
+      hoursHeadline: hours.headline || 'Daily, in season',
+      hoursSubline: hours.subline || 'Afternoons till late',
+      hoursNote: hours.note || '',
+      phoneLabel: contact.phone || '+961 71 245 911',
+      telHref: 'tel:' + (contact.phone || '+961 71 245 911').replace(/[^+\d]/g, ''),
+      igLabel: '@' + (contact.instagram || 'la.playa.blanca').replace(/^@/, ''),
+      igHref: 'https://instagram.com/' + (contact.instagram || 'la.playa.blanca').replace(/^@/, ''),
       creamOn: b.cream,
       baseDiscStyle: { position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', width: '200px', height: '72px', borderRadius: '46% 46% 42% 42% / 60% 60% 42% 42%', background: baseColor, boxShadow: '0 12px 22px rgba(20,58,64,.2), inset 0 -6px 14px rgba(0,0,0,.14)', transition: 'background-color .4s ease' },
       sauceDiscStyle: { position: 'absolute', bottom: '82px', left: '50%', transform: 'translateX(-50%)', width: '176px', height: '32px', borderRadius: '50%', background: sauceColor, boxShadow: '0 6px 14px rgba(20,58,64,.22)', transition: 'background-color .4s ease' },
