@@ -1,12 +1,11 @@
 import { memo, useEffect, useRef, type MouseEvent } from 'react';
 import type { Category, Item } from '../lib/content';
 import { img, money } from '../lib/content';
-import { FlavorArt } from './FlavorArt';
+import { flavourColours, seeded } from '../lib/flavor';
 
-// photographed categories get their own scene; the rest open on their signature item's flavour art
-const SCENES: Record<string, string> = { crepe: '/assets/scene-crepe.jpg', waffle: '/assets/scene-waffle.jpg', 'bubble-waffle': '/assets/scene-waffle.jpg', smoothies: '/assets/scene-smoothie.jpg',
-  'n-cup': '/assets/cat-n-cup.jpg', 'fresh-juice': '/assets/cat-fresh-juice.jpg', shakes: '/assets/cat-shakes.jpg', matcha: '/assets/cat-matcha.jpg',
-  'hot-drinks': '/assets/cat-hot-drinks.jpg', boba: '/assets/cat-boba.jpg', 'ice-cream': '/assets/cat-ice-cream.jpg' };
+// category headers with a photo of their own; the rest (and any category the owner adds) open on the shore
+const SCENES: Record<string, string> = { crepe: '/assets/scene-crepe.jpg', waffle: '/assets/scene-waffle.jpg', smoothies: '/assets/scene-smoothie.jpg',
+  'fresh-juice': '/assets/cat-fresh-juice.jpg', matcha: '/assets/cat-matcha.jpg', 'hot-drinks': '/assets/cat-hot-drinks.jpg', boba: '/assets/cat-boba.jpg' };
 
 export type Add = (item: Item, from?: HTMLElement | null) => void;
 export type View = 'rail' | 'list';
@@ -57,7 +56,6 @@ export function CategoryBar({ cats, active, onPick, view, setView, visible }: { 
 
 // ---------- one category = one stretch of water ----------
 export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { cat: Category; index: number; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
-  const lead = cat.items.find((i) => i.signature && !i.soldOut) || cat.items[0];
   const hero = sceneImage(cat, 1000);
   return (
     <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-16 pt-6">
@@ -65,7 +63,7 @@ export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { 
         <div className="relative h-[34svh] min-h-[220px] max-h-[340px]">
           {hero
             ? <img src={hero} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
-            : <FlavorArt name={lead.name} kind={cat.kind} className="absolute inset-0 size-full" />}
+            : <ShoreScene seed={cat.name} w={1000} />}
           <div className="absolute inset-0" style={{ background: SHADE, opacity: 0.92 }} />
         </div>
         <div className="absolute inset-x-0 bottom-0 p-5 text-[#FBF6EA]">
@@ -91,12 +89,30 @@ export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { 
   );
 });
 
-// the owner's own photo when there is one; until then the category's photo, so nothing looks unfinished
+// a category header with no photo: the wide shore, framed a little differently per category
+export function ShoreScene({ seed, w }: { seed: string; w: number }) {
+  const x = Math.round(15 + seeded(seed)() * 70);
+  return <img src={img('/assets/hero-lake-wide.jpg', w)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: x + '% 60%' }} />;
+}
+
+// the owner's own photo when there is one. Until then a general card rather than a stand-in product shot
+// (a picture of one shake on every shake reads as a promise): the shore at a slightly different framing,
+// washed in the item's flavour colour, with its name written across the water.
 function Art({ item, w, className }: { item: Item; w: number; className: string }) {
-  const src = item.photo ? img(item.photo, w) : SCENES[item.catKey] ? img(SCENES[item.catKey], w) : '';
-  return src
-    ? <img src={src} alt={item.photo ? item.name : ''} loading="lazy" className={className + ' object-cover'} />
-    : <FlavorArt name={item.name} kind={item.kind} className={className} />;
+  if (item.photo) return <img src={img(item.photo, w)} alt={item.name} loading="lazy" className={className + ' object-cover'} />;
+  const rnd = seeded(item.name + item.cat);
+  const tint = flavourColours(item.name, item.kind)[0];
+  const small = w < 300;
+  return (
+    <span className={className + ' relative block overflow-hidden bg-[var(--sea-2)]'}>
+      <img src={img('/assets/hero-lake-tall.jpg', Math.max(w, 200))} alt="" loading="lazy" className="absolute inset-0 size-full object-cover"
+        style={{ objectPosition: Math.round(rnd() * 100) + '% ' + Math.round(35 + rnd() * 55) + '%' }} />
+      <span className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 20%, color-mix(in srgb, ${tint} 55%, transparent) 100%)` }} />
+      {small
+        ? <span className="absolute inset-0 grid place-items-center font-serif text-[26px] font-semibold text-[#FBF6EA] [text-shadow:0_2px_10px_rgba(6,20,29,.45)]">{item.name.charAt(0)}</span>
+        : <span className="absolute inset-x-4 bottom-[14%] text-center font-script text-[clamp(46px,13vw,64px)] leading-[.95] text-[#FBF6EA] [text-shadow:0_2px_14px_rgba(6,20,29,.5)]">{item.name}</span>}
+    </span>
+  );
 }
 
 function AddButton({ item, onAdd, big = false }: { item: Item; onAdd: Add; big?: boolean }) {

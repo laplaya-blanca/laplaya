@@ -123,7 +123,14 @@ export function Footer({ site }: { site: Site | null }) {
           </div>
         )}
       </div>
-      <p className="mt-12 text-[13px] text-[#F3ECDD]/70">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun · Crafted by Mohammad Yassin</p>
+      {/* sign-off: the house, then the maker's signature, set apart by a hairline */}
+      <div className="mt-14 flex flex-col items-center text-center text-[#F3ECDD]">
+        <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
+        <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/70">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
+        <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#F2D79E]/60 to-transparent" />
+        <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[#F2D79E]/80">Crafted by</p>
+        <p className="mt-1 font-serif text-[24px] italic font-medium tracking-[-.01em]">Mohammad Yassin</p>
+      </div>
     </footer>
   );
 }
