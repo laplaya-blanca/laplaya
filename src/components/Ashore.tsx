@@ -134,9 +134,9 @@ export function Hello({ c }: { c: Site['contact'] }) {
 // the maker's signature, linked to his Instagram, in a ring of Instagram's colours turning slowly
 export function Signature() {
   return (
-    <a href="https://instagram.com/iamohammadyassin" target="_blank" rel="noopener" className="signature group mt-2 flex flex-col items-center">
+    <a href="https://instagram.com/iamohammadyassin" target="_blank" rel="noopener" className="signature group mt-2 flex flex-col items-center lg:mt-0 lg:flex-row lg:gap-4">
       <span className="font-serif text-[24px] font-semibold tracking-[-.01em] text-[#F3ECDD] transition-colors group-active:text-[var(--glint)]">Mohammad Yassin</span>
-      <span className="ig-ring mt-3 inline-flex rounded-full p-[1.5px]">
+      <span className="ig-ring mt-3 inline-flex lg:mt-0 rounded-full p-[1.5px]">
         <span className="flex h-9 items-center gap-2 rounded-full bg-[#0B1E26] px-3.5 text-[13px] font-bold text-[#F3ECDD]">
           <InstagramMark size={16} />@iamohammadyassin
         </span>

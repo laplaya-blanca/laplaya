@@ -194,7 +194,7 @@ export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; tot
               <p className="font-serif text-[30px] font-semibold leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
               <p className="mt-2 text-[13px] font-extrabold uppercase tracking-[.16em] text-[#14586B]/70">Beach pickup · {time}</p>
             </div>
-            <img src="/assets/logo.jpg" alt="" className="size-14 rotate-6 rounded-lg border-2 border-white object-cover shadow-md" />
+            <img src="/assets/logo.jpg" alt="" decoding="async" className="size-14 rotate-6 rounded-lg border-2 border-white object-cover shadow-md" />
           </div>
           <ul className="mt-5 border-y-2 border-dashed border-[#1F7A8C]/25 py-2">
             {lines.map((l) => (
@@ -232,7 +232,7 @@ export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; o
           return (
             <button key={c.key} onClick={() => onPick(c.key)} className={'relative overflow-hidden rounded-[22px] text-left ' + (wide[i] ? 'col-span-2 h-36' : 'h-40')}>
               {sceneImage(c, 600)
-                ? <img src={sceneImage(c, 600)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+                ? <img src={sceneImage(c, 600)} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
                 : <ShoreScene seed={c.name} w={600} />}
               <span className="absolute inset-0" style={{ background: SHADE, opacity: 0.9 }} />
               <span className="absolute bottom-3 left-4 right-3 text-[#FBF6EA]">

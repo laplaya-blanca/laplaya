@@ -169,9 +169,11 @@ html[data-intro] .rise { animation-play-state: paused; }
 /* light on the water in a glittering path: warm sun by day, silver moon after dark. A soft column of light, and
    flecks on it that flare and fade on their own, softened so they read as glints rather than lines */
 /* starts below the tide's troughs and is clipped there, so no glint ever lands on the waves */
-.glitter { position: absolute; top: 18px; right: 10%; width: 110px; height: 290px; overflow: hidden; pointer-events: none;
+.glitter { position: absolute; top: 18px; right: 10%; width: 110px; height: 195px; overflow: hidden; pointer-events: none;
   --light: 255, 230, 186; background: radial-gradient(35% 50% at 50% 45%, rgba(var(--light), .16), transparent 70%); }
 :root[data-dark] .glitter { --light: 214, 228, 240; }
+/* on a wide screen a narrow path of light reads as stray dashes beside the layout, so it stays a phone's detail */
+@media (min-width: 768px) { .glitter { display: none; } }
 .glitter > span { position: absolute; left: 50%; top: calc(var(--g) * 23px + 10px); width: calc(var(--w) * 1px); height: 2.5px; border-radius: 3px;
   translate: calc(-50% + var(--x) * 1px) 0; background: rgba(var(--light), .95); box-shadow: 0 0 8px 1px rgba(var(--light), .55);
   filter: blur(.6px); opacity: .18; }
