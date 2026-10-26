@@ -10,7 +10,7 @@
           "name": "Nutella",
           "price": 6,
           "description": "Silky hazelnut–cocoa, warm and generous",
-          "photo": "",
+          "photo": "/uploads/nutella-mvpcrnl4mwnl.jpg",
           "available": true,
           "tags": [
             "Nuts"
@@ -20,7 +20,7 @@
           "name": "Oreo",
           "price": 6.5,
           "description": "Crushed cookies-and-cream, dark and dreamy",
-          "photo": "",
+          "photo": "/uploads/oreo-mvpcs0mv6v4z.jpg",
           "available": true,
           "tags": []
         },
@@ -28,7 +28,7 @@
           "name": "Kinder",
           "price": 6.5,
           "description": "Soft milk-chocolate Kinder, pure nostalgia",
-          "photo": "",
+          "photo": "/uploads/kinder-mvpcsbf4u9kq.jpg",
           "available": true,
           "tags": [
             "Nuts"
@@ -38,7 +38,7 @@
           "name": "Snickers",
           "price": 6.5,
           "description": "Caramel, peanuts and chocolate, piled on",
-          "photo": "",
+          "photo": "/uploads/snickers-mvpcsi8lms0q.jpg",
           "available": true,
           "tags": [
             "Nuts"
@@ -48,7 +48,7 @@
           "name": "Brownie",
           "price": 6.5,
           "description": "Fudgy brownie chunks, deep chocolate",
-          "photo": "",
+          "photo": "/uploads/brownie-mvpcsq79ude7.jpg",
           "available": true,
           "tags": []
         },
@@ -56,7 +56,7 @@
           "name": "Playa Blanca",
           "price": 8.5,
           "description": "The house signature — our full spread",
-          "photo": "",
+          "photo": "/uploads/playa-blanca-mvpcsywatd86.jpg",
           "available": true,
           "tags": [
             "Signature"
@@ -66,7 +66,7 @@
           "name": "Arequipe",
           "price": 5,
           "description": "Golden dulce de leche, slow and sweet",
-          "photo": "",
+          "photo": "/uploads/arequipe-mvpct5lm51tj.jpg",
           "available": true,
           "tags": []
         },
@@ -74,7 +74,7 @@
           "name": "Crispy",
           "price": 7,
           "description": "Crunchy layered crisp, extra texture",
-          "photo": "",
+          "photo": "/uploads/crispy-mvpctcnxyxhu.jpg",
           "available": true,
           "tags": []
         },
@@ -82,7 +82,7 @@
           "name": "Lotus",
           "price": 7.5,
           "description": "Caramelised Biscoff, spiced and smooth",
-          "photo": "",
+          "photo": "/uploads/lotus-mvpctj062eb4.jpg",
           "available": true,
           "tags": []
         },
@@ -90,7 +90,7 @@
           "name": "Fruits",
           "price": 7.5,
           "description": "Fresh seasonal fruit, bright and juicy",
-          "photo": "",
+          "photo": "/uploads/fruits-mvpctpcjv039.jpg",
           "available": true,
           "tags": []
         }
