@@ -177,7 +177,8 @@ function readShot(im: HTMLImageElement): Shot {
   } catch { return { white: false }; }
 }
 
-// The owner's studio shots are on white. Each one is set on the same beach table: the dish is scaled so it fills the
+// The owner's studio shots are on white. Once a dish has been re-plated (scripts/replate.mjs) that picture is shown
+// as it is. Until then, each one is set on the same beach table: the dish is scaled so it fills the
 // same share of the frame at the same height whether he shot it close or far, and multiplied over the table so the
 // white turns into the table and the beach while the dish and its own shadow stay. Photos not shot on white are
 // shown as they are. Works for whatever he uploads next, without touching the files.
@@ -207,6 +208,15 @@ function Photo({ item, w, className }: { item: Item; w: number; className: strin
     if (!shots.has(item.photo)) shots.set(item.photo, readShot(e.currentTarget));
     setShot(shots.get(item.photo));
   };
+  // the dish already re-plated on its table, when there is one for this time of day; if it won't load, the
+  // original is set on the table as below
+  const [broken, setBroken] = useState(false);
+  const ready = !broken && (night ? item.plated.night : item.plated.day);
+  if (ready) return (
+    <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>
+      <img src={img(ready, w)} alt={item.name} loading="lazy" onError={() => setBroken(true)} className="size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+    </span>
+  );
   const src = img(item.photo, w);
   if (!shot?.white) return (
     <span className={className + ' relative block overflow-hidden bg-[#F4ECDF]'}>

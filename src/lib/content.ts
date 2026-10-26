@@ -10,10 +10,14 @@ export type Item = {
   desc: string;
   tags: string[];
   photo: string;
+  // the photo already set on its beach table (scripts/replate.mjs), by day and after dark, when there is one
+  plated: Plated;
   soldOut: boolean;
   signature: boolean;
   kind: Kind;
 };
+
+export type Plated = { day?: string; night?: string };
 
 export type Kind = 'pancake' | 'crepe' | 'waffle' | 'glass' | 'juice' | 'shake' | 'coffee' | 'boba' | 'scoop';
 
@@ -54,7 +58,12 @@ const safePhoto = (p: unknown) => (typeof p === 'string' && /^\/?(uploads|assets
 
 type RawMenu = { categories?: { name?: string; description?: string; icon?: string; temp?: string; items?: Record<string, unknown>[] }[] };
 
-function buildMenu(raw: RawMenu): Category[] {
+// assets/plated.json: owner photo → the same dish already set on its beach table. Only our own files in assets/plated/,
+// and only for the photo they were made from, so a fresh upload shows on its own until it has been re-plated too.
+type RawPlated = Record<string, { day?: unknown; night?: unknown }>;
+const safePlated = (p: unknown) => (typeof p === 'string' && /^\/assets\/plated\/[\w.\-]+$/.test(p) ? p : undefined);
+
+function buildMenu(raw: RawMenu, plated: RawPlated = {}): Category[] {
   const out: Category[] = [];
   const seen = new Set<string>();
   (Array.isArray(raw?.categories) ? raw.categories : []).forEach((c, ci) => {
@@ -80,6 +89,7 @@ function buildMenu(raw: RawMenu): Category[] {
         desc: (typeof row.description === 'string' && row.description) || c.description || '',
         tags: own.filter((t) => t !== 'Signature'),
         photo: safePhoto(row.photo),
+        plated: { day: safePlated(plated[safePhoto(row.photo)]?.day), night: safePlated(plated[safePhoto(row.photo)]?.night) },
         soldOut: row.available === false,
         signature: own.includes('Signature'),
         kind
@@ -112,9 +122,10 @@ const get = (name: string) =>
   });
 
 export async function loadContent(): Promise<Content> {
-  const [menu, site, gallery] = await Promise.all([get('menu'), get('site'), get('gallery').catch(() => ({ photos: [] }))]);
+  const plated = fetch('/assets/plated.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  const [menu, site, gallery, ready] = await Promise.all([get('menu'), get('site'), get('gallery').catch(() => ({ photos: [] })), plated]);
   return {
-    categories: buildMenu(menu),
+    categories: buildMenu(menu, ready),
     site: normaliseSite(site),
     gallery: ((gallery && gallery.photos) || []).map((p: { image?: string; caption?: string }) => ({ image: safePhoto(p.image), caption: p.caption || '' })).filter((p: { image: string }) => p.image)
   };

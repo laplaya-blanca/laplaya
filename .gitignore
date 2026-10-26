@@ -17,3 +17,9 @@ node_modules/
 .claude/
 .DS_Store
 dist/
+
+# re-plated photos waiting for review (scripts/replate.mjs)
+replated/
+
+# Vite dependency cache
+.vite/
