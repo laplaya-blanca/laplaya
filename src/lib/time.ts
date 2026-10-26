@@ -59,8 +59,12 @@ const PALETTES: Record<Phase, Record<string, string>> = {
 
 // paper/ink the menu is printed on: cream by day, deep lake by night
 const SURFACES = {
-  day: { '--paper': '#FBF7EE', '--paper-2': '#F3ECDC', '--ink': '#123F4D', '--ink-soft': '#456570', '--line': 'rgba(18,63,77,.14)', '--water': '#E9F1EC' },
-  night: { '--paper': '#132B3B', '--paper-2': '#0F2331', '--ink': '#F3ECDD', '--ink-soft': '#B9C6C9', '--line': 'rgba(243,236,221,.14)', '--water': '#0B1E2B' }
+  // two colours per light: lake-teal on cream by day, gold on navy by night. --glint is the accent on dark
+  // surfaces (photo overlays, footer, dock): cream by day, gold by night. --pill is the order button on the dark dock.
+  day: { '--paper': '#FBF7EE', '--paper-2': '#F3ECDC', '--ink': '#123F4D', '--ink-soft': '#456570', '--line': 'rgba(18,63,77,.14)', '--water': '#E9F1EC',
+    '--accent': '#123F4D', '--accent-ink': '#FBF7EE', '--accent-glow': 'rgba(18,63,77,.28)', '--glint': '#F3E9D2', '--pill': '#FBF7EE', '--pill-ink': '#123F4D' },
+  night: { '--paper': '#132B3B', '--paper-2': '#0F2331', '--ink': '#F3ECDD', '--ink-soft': '#B9C6C9', '--line': 'rgba(243,236,221,.14)', '--water': '#0B1E2B',
+    '--accent': '#E2C27A', '--accent-ink': '#0B1E2B', '--accent-glow': 'rgba(226,194,122,.3)', '--glint': '#E2C27A', '--pill': '#E2C27A', '--pill-ink': '#0B1E2B' }
 };
 
 const LABELS: Record<Phase, string> = {

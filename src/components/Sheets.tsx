@@ -13,7 +13,7 @@ export function Dock({ count, total, bump, onSearch, onTide, onCart, onCats, sho
     <div ref={(el) => { if (el) el.inert = !show; }}
       className={'fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 transition-transform duration-300 ' + (show ? 'translate-y-0' : 'translate-y-[140%]')}
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-      <div className="flex w-full max-w-[520px] items-center gap-1.5 glass3d rounded-[26px] p-1.5 text-[#F6EFDF] [--color-glass3d:hsl(200_70%_8%/.55)]">
+      <div className="flex w-full max-w-[520px] items-center gap-1.5 glass3d rounded-[26px] p-1.5 text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.74)]">
         <div className="flex flex-1 items-center justify-around">
         <DockBtn label="All categories" onClick={onCats}><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></DockBtn>
         <DockBtn label="Search the menu" onClick={onSearch}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></DockBtn>
@@ -21,7 +21,7 @@ export function Dock({ count, total, bump, onSearch, onTide, onCart, onCats, sho
         </div>
         <motion.button key={bump} onClick={onCart} data-cart-target
           initial={still || !bump ? false : { scale: 0.9 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 520, damping: 14 }}
-          className="flex h-12 shrink-0 items-center gap-2.5 rounded-[20px] bg-[var(--amber)] pl-3.5 pr-4 font-extrabold text-[var(--amber-ink)]"
+          className="flex h-12 shrink-0 items-center gap-2.5 rounded-[20px] bg-[var(--pill)] pl-3.5 pr-4 font-extrabold text-[var(--pill-ink)]"
           aria-label={count ? 'Your order: ' + count + ' items, ' + money(total) : 'Your order is empty'}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
           {count ? <><span className="tabular-nums">{count}</span><span className="tabular-nums opacity-80">{money(total) || ''}</span></> : <span>Order</span>}
@@ -53,14 +53,14 @@ export function ItemSheet({ item, onClose, onAdd, qty }: { item: Item; onClose: 
         <p className="mt-3 text-[17px] leading-relaxed text-[var(--ink-soft)]">{item.soldOut ? 'Sold out today — back soon.' : item.desc}</p>
         {(item.signature || item.tags.length > 0) && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {item.signature && <span className="rounded-full bg-[var(--amber)]/20 px-3 py-1.5 text-[13px] font-bold">House favourite</span>}
+            {item.signature && <span className="rounded-full bg-[var(--accent)]/20 px-3 py-1.5 text-[13px] font-bold">House favourite</span>}
             {item.tags.map((t) => <span key={t} className="rounded-full bg-[var(--paper-2)] px-3 py-1.5 text-[13px] font-bold">{t === 'Nuts' ? 'Contains nuts' : t}</span>)}
           </div>
         )}
         <div className="mt-6 flex items-center justify-between gap-4">
           <Price item={item} className="text-[28px]" />
           <button disabled={item.soldOut} onClick={(e) => onAdd(item, e.currentTarget)}
-            className="flex h-14 items-center gap-2 rounded-full bg-[var(--amber)] px-7 text-[17px] font-extrabold text-[var(--amber-ink)] shadow-[0_12px_26px_rgba(232,164,76,.4)] active:scale-[.97] transition-transform disabled:bg-[var(--paper-2)] disabled:text-[var(--ink-soft)] disabled:shadow-none">
+            className="flex h-14 items-center gap-2 rounded-full bg-[var(--accent)] px-7 text-[17px] font-extrabold text-[var(--accent-ink)] shadow-[0_12px_26px_var(--accent-glow)] active:scale-[.97] transition-transform disabled:bg-[var(--paper-2)] disabled:text-[var(--ink-soft)] disabled:shadow-none">
             {item.soldOut ? 'Sold out' : qty ? 'Add another · ' + qty + ' in order' : 'Add to order'}
           </button>
         </div>
@@ -117,7 +117,7 @@ export function CartSheet({ lines, total, unpriced, onQty, onClose, onWhatsApp, 
             <span className="font-serif text-[30px] font-semibold tabular-nums">{money(total) || '$0'}</span>
           </div>
           <div className="mt-5 grid gap-3 px-6">
-            <button onClick={onWhatsApp} className="flex h-14 items-center justify-center gap-2.5 rounded-full bg-[#1F8F5F] text-[17px] font-extrabold text-white shadow-[0_12px_26px_rgba(31,143,95,.35)] active:scale-[.98] transition-transform">
+            <button onClick={onWhatsApp} className="flex h-14 items-center justify-center gap-2.5 rounded-full bg-[var(--accent)] text-[17px] font-extrabold text-[var(--accent-ink)] shadow-[0_12px_26px_var(--accent-glow)] active:scale-[.98] transition-transform">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z" /></svg>
               Send order on WhatsApp
             </button>
@@ -148,7 +148,7 @@ export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; tot
           <ul className="mt-5 border-y-2 border-dashed border-[#1F7A8C]/25 py-2">
             {lines.map((l) => (
               <li key={l.item.id} className="flex items-baseline gap-3 py-2">
-                <span className="text-[20px] font-extrabold text-[#C9842F] tabular-nums">{l.qty}×</span>
+                <span className="text-[20px] font-extrabold text-[#14586B] tabular-nums">{l.qty}×</span>
                 <span className="flex-1 font-serif text-[24px] font-semibold leading-tight">{l.item.name}<span className="block text-[13px] font-sans font-bold uppercase tracking-[.12em] text-[#14586B]/60">{l.item.cat}</span></span>
                 {l.item.price != null && <span className="text-[17px] font-bold tabular-nums">{money(l.item.price * l.qty)}</span>}
               </li>
