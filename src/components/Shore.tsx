@@ -1,5 +1,9 @@
 import type { Light } from '../lib/time';
 import { img } from '../lib/content';
+import { Ripple } from './Ripple';
+
+// where the lake begins in each photo, as a fraction of its height
+const WATER = { lake: { tall: 0.57, wide: 0.6 }, night: { tall: 0.49, wide: 0.62 } } as const;
 
 type Open = { open: true; until: string } | { open: false; opens: string } | null;
 
@@ -10,11 +14,15 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
   const night = light.dark;
   const shot = night ? 'night' : 'lake'; // a real night photo after dark, the golden-hour shore otherwise
   return (
-    <header className="relative min-h-[100svh] overflow-hidden flex flex-col bg-[var(--sea-3)]">
+    <header className="relative min-h-[100svh] overflow-hidden flex flex-col bg-[var(--sea-3)] touch-pan-y">
       <picture aria-hidden>
         <source media="(min-width: 768px)" srcSet={img('/assets/hero-' + shot + '-wide.jpg', 2048)} />
         <img src={img('/assets/hero-' + shot + '-tall.jpg', 1080)} alt="" {...{ fetchpriority: 'high' }} decoding="async" className="absolute inset-0 size-full object-cover" />
       </picture>
+      {/* touch the lake: rings spread across the water in the photo */}
+      <Ripple key={shot} className="absolute inset-0 size-full"
+        tall={{ src: img('/assets/hero-' + shot + '-tall.jpg', 1080), water: WATER[shot].tall }}
+        wide={{ src: img('/assets/hero-' + shot + '-wide.jpg', 2048), water: WATER[shot].wide }} />
       {/* the hour's light */}
       <div aria-hidden className="absolute inset-0 mix-blend-multiply transition-colors duration-1000" style={{ background: 'var(--grade)' }} />
       {/* legibility: soft veil behind the title, deeper water behind the button */}
@@ -32,7 +40,7 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
       {/* top bar: logo and open state */}
       <div className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(18px,env(safe-area-inset-top))]">
         <img src="/assets/logo.jpg" alt="La Playa Blanca logo" className="size-12 rounded-[14px] object-cover shadow-[0_8px_24px_rgba(0,0,0,.18)]" />
-        <div className="glass3d flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-bold text-[#F6EFDF] [--color-glass3d:hsl(200_70%_8%/.35)]">
+        <div className="glass3d flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-bold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.35)]">
           {open ? (
             <span className="flex items-center gap-2">
               <span className={'size-2 rounded-full ' + (open.open ? 'bg-[#3FB37F] shadow-[0_0_0_4px_rgba(63,179,127,.25)]' : 'bg-[#D9566B]')} />
@@ -50,7 +58,7 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
         <h1 style={{ animationDelay: '0.12s' }} className="rise mt-3 font-serif font-semibold leading-[.9] tracking-[-.02em] text-[clamp(58px,17vw,112px)]">
           La Playa<br /><em className="font-medium">Blanca</em>
         </h1>
-        <p style={{ animationDelay: '0.22s', color: night ? '#E8C98E' : '#A2531F' }} className="rise mt-2 font-script text-[clamp(40px,11vw,64px)] leading-none">
+        <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-2 font-script text-[clamp(40px,11vw,64px)] leading-none">
           Nos vemos en la playa
         </p>
         <p style={{ animationDelay: '0.3s' }} className="rise mt-5 max-w-[30ch] text-[17px] font-medium leading-snug">
@@ -60,13 +68,13 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
 
       {/* enter */}
       <div className="absolute inset-x-0 bottom-[max(22px,env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2.5 px-6">
-        <button onClick={onEnter} className="group flex h-14 items-center gap-3 rounded-full bg-[var(--amber)] pl-7 pr-2 text-[17px] font-extrabold text-[var(--amber-ink)] shadow-[0_14px_34px_rgba(232,164,76,.45)] active:scale-[.97] transition-transform">
+        <button onClick={onEnter} className="group flex h-14 items-center gap-3 rounded-full bg-[var(--accent)] pl-7 pr-2 text-[17px] font-extrabold text-[var(--accent-ink)] shadow-[0_14px_34px_var(--accent-glow)] active:scale-[.97] transition-transform">
           Wade into the menu
-          <span className="grid size-10 place-items-center rounded-full bg-[var(--amber-ink)] text-[var(--amber)]">
+          <span className="grid size-10 place-items-center rounded-full bg-[var(--accent-ink)] text-[var(--accent)]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
           </span>
         </button>
-        <p className="glass3d rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--color-glass3d:hsl(200_70%_8%/.3)]">
+        <p className="glass3d rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
           <span>{light.label} · {light.clock} on the lake{count ? ' · ' + count + ' things to try' : ''}</span>
         </p>
       </div>

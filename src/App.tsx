@@ -8,6 +8,7 @@ import { Shore } from './components/Shore';
 import { Art, CategoryBar, Scene, type View } from './components/Menu';
 import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
 import { Events, Footer } from './components/Shoreline';
+import { Water } from './components/Water';
 
 type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'search' };
 
@@ -121,6 +122,7 @@ export function App() {
       <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} onEnter={enter} />
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
+      <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
       <main ref={menuRef} id="menu" aria-label="Menu" className="relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">
@@ -133,7 +135,7 @@ export function App() {
             <p className="font-serif text-[24px] font-semibold">The menu is washing back in…</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We couldn’t load it just now. You can still order by phone or WhatsApp.</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button onClick={load} className="h-12 rounded-full bg-[var(--amber)] px-6 font-extrabold text-[var(--amber-ink)]">Try again</button>
+              <button onClick={load} className="h-12 rounded-full bg-[var(--accent)] px-6 font-extrabold text-[var(--accent-ink)]">Try again</button>
               <a href="https://wa.me/96171245911" className="flex h-12 items-center rounded-full bg-[var(--paper-2)] px-5 font-bold">WhatsApp us</a>
             </div>
           </div>
@@ -169,7 +171,7 @@ export function App() {
           <div role="status" className="mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
             <p className="font-serif text-[24px] font-semibold">Fresh menu on its way</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We’re updating it right now. Ask at the counter, or message us on WhatsApp.</p>
-            <a href="https://wa.me/96171245911" className="mt-4 inline-flex h-12 items-center rounded-full bg-[var(--amber)] px-6 font-extrabold text-[var(--amber-ink)]">WhatsApp us</a>
+            <a href="https://wa.me/96171245911" className="mt-4 inline-flex h-12 items-center rounded-full bg-[var(--accent)] px-6 font-extrabold text-[var(--accent-ink)]">WhatsApp us</a>
           </div>
         )}
 

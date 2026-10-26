@@ -35,7 +35,7 @@ export function Events({ site }: { site: Site | null }) {
         <img src="/assets/events-aisle.jpg" alt="A wedding aisle set up on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
         <div className="absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
-          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[#F2D79E]">Events & catering</p>
+          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Events & catering</p>
           <h2 id="events-h" className="mt-2 font-serif text-[42px] font-semibold leading-[.98]">Celebrate on the shore</h2>
           <p className="mt-2 max-w-[34ch] text-[16px] leading-snug text-[#FBF6EA]/90">Tell us about your day and we’ll build something sweet around it.</p>
         </div>
@@ -76,7 +76,7 @@ export function Events({ site }: { site: Site | null }) {
               <label className="text-[14px] font-bold">Tell us about it<textarea className={field + ' h-28 py-3'} name="message" placeholder="Location, vibe, crêpe station, boba bar…" /></label>
             </div>
             {state === 'error' && <p role="alert" className="mt-4 rounded-2xl bg-[var(--coral)]/12 px-4 py-3 text-[15px] font-semibold text-[var(--coral)]">{err}</p>}
-            <button disabled={state === 'sending'} className="mt-5 h-14 w-full rounded-full bg-[var(--amber)] text-[17px] font-extrabold text-[var(--amber-ink)] disabled:opacity-60">
+            <button disabled={state === 'sending'} className="mt-5 h-14 w-full rounded-full bg-[var(--accent)] text-[17px] font-extrabold text-[var(--accent-ink)] disabled:opacity-60">
               {state === 'sending' ? 'Sending…' : 'Send inquiry'}
             </button>
             <p className="mt-3 text-center text-[14px] text-[var(--ink-soft)]">We usually reply within a day{ig ? <> — or reach us on <a className="font-bold underline" href={'https://instagram.com/' + encodeURIComponent(ig)} target="_blank" rel="noopener">Instagram</a></> : null}.</p>
@@ -93,16 +93,16 @@ export function Footer({ site }: { site: Site | null }) {
   return (
     <footer className="mt-10 px-6 pb-[calc(var(--dock-h)+48px)] pt-28"
       style={{ background: 'linear-gradient(180deg, var(--water) 0, var(--sea-2) 96px, var(--sea-3) 220px, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)' }}>
-      <p className="font-script text-[58px] leading-none text-[#F2D79E]">Nos vemos en la playa</p>
+      <p className="font-script text-[58px] leading-none text-[var(--glint)]">Nos vemos en la playa</p>
       <p className="mt-2 text-[16px] text-[#F3ECDD]/85">See you at the beach.</p>
       <div className="mt-10 grid gap-8 text-[#F3ECDD]">
         <div>
-          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[#F2D79E]">Find us</p>
+          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us</p>
           <p className="mt-2 font-serif text-[22px] font-semibold">Qaraaoun, West Bekaa</p>
           <a className="mt-1 inline-block text-[16px] font-bold underline underline-offset-4" href="https://www.google.com/maps/search/?api=1&query=La+Playa+Blanca+Qaraoun" target="_blank" rel="noopener">Open in Maps</a>
         </div>
         <div>
-          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[#F2D79E]">Hours</p>
+          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
           {filled ? (
             <ul className="mt-2 text-[16px]">
               {h!.weekly.map((w) => <li key={w.day} className="flex justify-between py-0.5"><span>{w.day}</span><span className="tabular-nums">{w.closed ? 'Closed' : w.open + ' – ' + w.close}</span></li>)}
@@ -114,7 +114,7 @@ export function Footer({ site }: { site: Site | null }) {
         </div>
         {c && (
           <div>
-            <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[#F2D79E]">Say hello</p>
+            <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Say hello</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <a className="flex h-11 items-center rounded-full bg-white/12 px-4 font-bold" href={'tel:' + c.phone.replace(/[^\d+]/g, '')}>{c.phone}</a>
               <a className="flex h-11 items-center rounded-full bg-white/12 px-4 font-bold" href={'https://wa.me/' + String(c.whatsapp).replace(/\D/g, '')} target="_blank" rel="noopener">WhatsApp</a>
@@ -127,8 +127,8 @@ export function Footer({ site }: { site: Site | null }) {
       <div className="mt-14 flex flex-col items-center text-center text-[#F3ECDD]">
         <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
         <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/70">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
-        <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#F2D79E]/60 to-transparent" />
-        <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[#F2D79E]/80">Crafted by</p>
+        <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent" />
+        <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80">Crafted by</p>
         <p className="mt-1 font-serif text-[24px] italic font-medium tracking-[-.01em]">Mohammad Yassin</p>
       </div>
     </footer>

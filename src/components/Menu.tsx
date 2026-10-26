@@ -34,7 +34,7 @@ export function CategoryBar({ cats, active, onPick, view, setView, visible }: { 
     <nav aria-label="Menu categories" ref={(el) => { if (el) el.inert = !visible; }}
       className={'fixed inset-x-0 top-0 z-30 transition-transform duration-300 ' + (visible ? 'translate-y-0' : '-translate-y-full')}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <div className="flex items-center gap-2 glass3d mx-2 mt-2 rounded-[24px] py-1.5 pl-1.5 pr-1.5 text-[#F6EFDF] [--color-glass3d:hsl(200_70%_8%/.45)]">
+      <div className="flex items-center gap-2 glass3d mx-2 mt-2 rounded-[24px] py-1.5 pl-1.5 pr-1.5 text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.68)]">
         <div ref={rail} className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-2 [scrollbar-width:none]">
           {cats.map((c) => (
             <button key={c.key} onClick={() => onPick(c.key)} aria-current={c.key === active ? 'true' : undefined}
@@ -55,25 +55,27 @@ export function CategoryBar({ cats, active, onPick, view, setView, visible }: { 
 }
 
 // ---------- one category = one stretch of water ----------
+// as big as the longest word allows on a phone (uppercase Fraunces Black runs ~0.72em a letter)
+function titleSize(name: string) {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 3);
+  return `min(${Math.min(26, 128 / longest).toFixed(1)}vw, 168px)`;
+}
+
 export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { cat: Category; index: number; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
   const hero = sceneImage(cat, 1000);
   return (
-    <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-16 pt-6">
-      <div className="relative mx-4 overflow-hidden rounded-[28px]">
-        <div className="relative h-[34svh] min-h-[220px] max-h-[340px]">
-          {hero
-            ? <img src={hero} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
-            : <ShoreScene seed={cat.name} w={1000} />}
-          <div className="absolute inset-0" style={{ background: SHADE, opacity: 0.92 }} />
-        </div>
-        <div className="absolute inset-x-0 bottom-0 p-5 text-[#FBF6EA]">
-          <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[#F2D79E]">
-            {String(index + 1).padStart(2, '0')} · {cat.temp || 'Fresh'}
-          </p>
-          <h2 id={'h-' + cat.key} className="mt-1 font-serif text-[44px] font-semibold leading-[.95] tracking-[-.01em]">{cat.name}</h2>
-          <p className="mt-1.5 text-[15px] leading-snug text-[#FBF6EA]/90">{cat.description}</p>
-          <p className="mt-2 text-[13px] font-bold text-[#FBF6EA]/80">{cat.items.length} to choose · {priceRange(cat.items)}</p>
-        </div>
+    <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
+      {/* the category's name, set huge, with its photograph showing through the letters */}
+      <div className="px-5">
+        <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">
+          {String(index + 1).padStart(2, '0')} · {cat.temp || 'Fresh'} · {cat.items.length} to choose · {priceRange(cat.items)}
+        </p>
+        <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="photo-type font-serif font-black uppercase leading-[.86] tracking-[-.02em]"
+          style={{ fontSize: titleSize(cat.name), backgroundImage: `linear-gradient(rgba(14,52,64,.42), rgba(14,52,64,.42)), url("${hero || img('/assets/hero-lake-wide.jpg', 1000)}")`,
+            backgroundPosition: hero ? 'center 55%' : Math.round(15 + seeded(cat.name)() * 70) + '% 62%' }}>
+          {cat.name}
+        </h2></div>
+        <p className="mt-3 max-w-[34ch] text-[16px] leading-snug text-[var(--ink-soft)]">{cat.description}</p>
       </div>
       {view === 'rail' ? (
         <div className="rail mt-4" role="list" aria-label={cat.name}>
@@ -119,7 +121,7 @@ function AddButton({ item, onAdd, big = false }: { item: Item; onAdd: Add; big?:
   const click = (e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onAdd(item, e.currentTarget); };
   return (
     <button onClick={click} disabled={item.soldOut} aria-label={item.soldOut ? item.name + ' is sold out' : 'Add ' + item.name + ' to your order'}
-      className={'grid shrink-0 place-items-center rounded-full bg-[var(--amber)] text-[var(--amber-ink)] shadow-[0_8px_18px_rgba(232,164,76,.35)] transition-transform active:scale-90 disabled:bg-[var(--paper-2)] disabled:text-[var(--ink-soft)] disabled:shadow-none ' + (big ? 'size-12' : 'size-11')}>
+      className={'grid shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--accent-ink)] shadow-[0_8px_18px_var(--accent-glow)] transition-transform active:scale-90 disabled:bg-[var(--paper-2)] disabled:text-[var(--ink-soft)] disabled:shadow-none ' + (big ? 'size-12' : 'size-11')}>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
     </button>
   );
@@ -138,7 +140,7 @@ const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (
         <div className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />
           {item.signature && !item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--paper)]/92 px-3 py-1 text-[12px] font-extrabold text-[var(--ink)]">House favourite</span>}
-          {item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--coral)] px-3 py-1 text-[12px] font-extrabold text-white">Sold out today</span>}
+          {item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--ink)] px-3 py-1 text-[12px] font-extrabold text-[var(--paper)]">Sold out today</span>}
         </div>
         <div className="px-4 pt-3.5">
           <h3 className="font-serif text-[23px] font-semibold leading-[1.05]">{item.name}</h3>

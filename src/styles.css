@@ -7,7 +7,7 @@
   --sea-1: #4FB6BF; --sea-2: #1F8A99; --sea-3: #14586B;
   --sun: #FFF4D6; --glow: rgba(255, 248, 220, .6); --hills: #8FB0A9;
   --paper: #FBF7EE; --paper-2: #F3ECDC; --ink: #123F4D; --ink-soft: #456570; --line: rgba(18, 63, 77, .14); --water: #E9F1EC;
-  --amber: #E8A44C; --amber-ink: #3A2A12; --coral: #D9566B;
+  --accent: #123F4D; --accent-ink: #FBF7EE; --accent-glow: rgba(18,63,77,.28); --glint: #F3E9D2; --pill: #FBF7EE; --pill-ink: #123F4D; --coral: #D9566B;
   --dock-h: 72px;
   color-scheme: light;
 }
@@ -28,7 +28,7 @@ body {
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
-:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; border-radius: 10px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
 [tabindex="-1"]:focus { outline: none; }
 }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -53,6 +53,15 @@ body.locked { overflow: hidden; }
 @keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .skeleton { background: linear-gradient(90deg, var(--paper-2) 0%, var(--paper) 50%, var(--paper-2) 100%) 0 0 / 200% 100%; animation: skeleton 1.4s linear infinite; }
 
+/* photo-in-letters: the category photo fills the type. Static fill (no animated background), so it paints once. */
+.photo-type { color: var(--ink); background-size: cover; background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+@supports not ((background-clip: text) or (-webkit-background-clip: text)) { .photo-type { -webkit-text-fill-color: currentColor; background: none; } }
+/* titles rise into place as they scroll in, driven by the scroll itself (transform/opacity only) where supported */
+@supports (animation-timeline: view()) {
+  @keyframes reveal { from { opacity: 0; transform: translateY(28px) scale(.97); } }
+  .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+}
+
 /* horizontal swipe rails: native scroll-snap, edge-to-edge with a peek of the next card */
 .rail { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; padding: 4px 20px 22px; scrollbar-width: none; overscroll-behavior-x: contain; }
 .rail::-webkit-scrollbar { display: none; }
@@ -68,7 +77,6 @@ body.locked { overflow: hidden; }
    The noise is the same inline tile as .grain, so nothing loads from a third-party host. */
 .glass3d {
   --filter-glass3d: blur(14px) saturate(1.6);
-  --color-glass3d: hsl(189 80% 10% / 0.2);
   position: relative; z-index: 4;
   box-shadow:
     0 0 0.75px hsl(205 20% 10% / 0.2),
@@ -83,7 +91,7 @@ body.locked { overflow: hidden; }
 .glass3d::before {
   z-index: 3;
   -webkit-backdrop-filter: var(--filter-glass3d); backdrop-filter: var(--filter-glass3d);
-  background-color: var(--color-glass3d);
+  background-color: var(--glass-tint, hsl(189 80% 10% / 0.2)); /* each bar sets --glass-tint */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 100px;
 }
