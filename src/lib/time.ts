@@ -76,11 +76,29 @@ const LABELS: Record<Phase, string> = {
   morning: 'Morning haze', afternoon: 'Afternoon on the lake', golden: 'Golden hour', sunset: 'Sunset on the water', night: 'Night lake'
 };
 
-export function phaseFor(hour: number): Phase {
-  if (hour >= 5.5 && hour < 11) return 'morning';
-  if (hour >= 11 && hour < 16) return 'afternoon';
-  if (hour >= 16 && hour < 18.25) return 'golden';
-  if (hour >= 18.25 && hour < 20) return 'sunset';
+// When the sun rises and sets over Lake Qaraoun on this date, as Beirut clock hours (NOAA's short formula, good to a
+// couple of minutes). So golden hour and night follow the season and the clock change instead of fixed summer times:
+// late October the sun is down before five, in June not until nearly eight.
+const LAT = 33.56, LON = 35.69;
+export function sunTimes(d = new Date()) {
+  const rad = Math.PI / 180;
+  const day = (Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5;
+  const g = (2 * Math.PI / 365) * (day - 1);
+  const eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+  const decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+  const ha = Math.acos(Math.cos(90.833 * rad) / (Math.cos(LAT * rad) * Math.cos(decl)) - Math.tan(LAT * rad) * Math.tan(decl)) / rad;
+  // Beirut's offset from UTC right now (+2 in winter, +3 in summer)
+  const offset = ((beirutHour(d).hour - (d.getUTCHours() + d.getUTCMinutes() / 60) + 36) % 24) - 12;
+  const at = (min: number) => min / 60 + offset;
+  return { rise: at(720 - 4 * (LON + ha) - eq), set: at(720 - 4 * (LON - ha) - eq) };
+}
+
+// golden hour runs into the sunset, which lasts until the afterglow is gone; morning starts just before sunrise
+export function phaseFor(hour: number, { rise, set } = sunTimes()): Phase {
+  if (hour >= rise - 0.25 && hour < 11) return 'morning';
+  if (hour >= 11 && hour < set - 1.75) return 'afternoon';
+  if (hour >= set - 1.75 && hour < set - 0.25) return 'golden';
+  if (hour >= set - 0.25 && hour < set + 0.5) return 'sunset';
   return 'night';
 }
 
@@ -94,10 +112,11 @@ export function lightAt(d = new Date()): Light {
   const real = beirutHour(d), forced = previewHour();
   const hour = forced ?? real.hour;
   const clock = forced == null ? real.clock : String(Math.floor(forced)).padStart(2, '0') + ':' + String(Math.round((forced % 1) * 60)).padStart(2, '0');
-  const phase = phaseFor(hour);
+  const sky = sunTimes(d);
+  const phase = phaseFor(hour, sky);
   const dark = phase === 'night';
-  // sun arcs from 6:00 (left horizon) to 19:30 (right horizon); the moon takes its place after dark
-  const t = (hour - 6) / 13.5;
+  // sun arcs from sunrise (left horizon) to sunset (right horizon); the moon takes its place after dark
+  const t = (hour - sky.rise) / (sky.set - sky.rise);
   const sun = t > 0 && t < 1 ? { x: 0.12 + t * 0.76, y: Math.sin(t * Math.PI) } : null;
   return { phase, label: LABELS[phase], hour, clock, dark, sun, vars: { ...PALETTES[phase], ...(dark ? SURFACES.night : SURFACES.day) } };
 }
