@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-// The lake behind the menu. First choice is real filmed water (a 6s Pexels loop of open water with light on it),
+// The lake behind the menu. First choice is real filmed water (a 6s Pexels loop of open water with light on it, cut
+// portrait for phones and landscape for wide screens),
 // shown as filmed, a touch dimmer at night. It only starts loading as the menu comes near,
 // plays only while the menu is on screen, and if a phone won't autoplay it (iOS Low Power Mode, data saver) the
 // drawn water below stays instead.
@@ -181,13 +182,17 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
     tellFilm.current = play;
     // start fetching a little before the menu arrives; play only while it is actually on screen
     const soon = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !v.getAttribute('src')) { v.src = '/assets/water.mp4'; v.load(); soon.disconnect(); }
+      // a phone only ever shows a tall middle slice of the frame, so it gets a portrait cut under half the size
+      if (e.isIntersecting && !v.getAttribute('src')) { v.src = matchMedia('(max-aspect-ratio: 1/1)').matches ? '/assets/water-tall.mp4' : '/assets/water-wide.mp4'; v.preload = 'auto'; v.load(); soon.disconnect(); }
     }, { rootMargin: '60% 0px' });
     soon.observe(menu);
-    const rolls = () => { filming.current = true; setRolling(true); };
+    // hand over only once the whole loop can play without stopping to load (a 6s loop then never stalls again);
+    // until then the drawn water keeps moving instead of a film that stutters while it downloads
+    const rolls = () => { if (v.readyState < 4) return; filming.current = true; setRolling(true); };
     v.addEventListener('playing', rolls);
+    v.addEventListener('canplaythrough', rolls);
     document.addEventListener('visibilitychange', play);
-    return () => { tellFilm.current = () => {}; soon.disconnect(); v.removeEventListener('playing', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
+    return () => { tellFilm.current = () => {}; soon.disconnect(); v.removeEventListener('playing', rolls); v.removeEventListener('canplaythrough', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
   }, []);
 
   // only while the menu, Events & Catering or the footer (all set on the water) is on screen: the hero covers it anyway
