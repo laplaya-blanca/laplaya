@@ -16,3 +16,4 @@ node_modules/
 *.orig
 .claude/
 .DS_Store
+dist/

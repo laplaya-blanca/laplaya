@@ -1,6 +1,11 @@
-# Static site — no build step. Content edits from /admin are commits that redeploy automatically.
+# Vite builds the public site into dist/ (admin/, content/, uploads/, assets/ are copied in as-is).
+# Content edits from /admin are commits to main, which rebuild and redeploy automatically (~1 min).
 [build]
-  publish = "."
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 # Every admin page (incl. the Decap fallback at /admin/classic/): no search indexing, no framing (clickjacking)
 [[headers]]
