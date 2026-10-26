@@ -100,7 +100,7 @@ export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Ca
   return (
     <section ref={ref} id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
       {/* the category's name in the logo's lettering and cream, like "La Playa Blanca" on the shore */}
-      <div className="px-5">
+      <div className="edge px-5">
         <p className="flex items-center gap-2.5 text-[14px] font-semibold text-[var(--ink-soft)]">
           <span className="rounded-full bg-[#007385] px-2.5 py-0.5 font-brand text-[11px] font-bold uppercase tracking-[.16em] text-[#F9F6E3] [text-shadow:none]">{cat.temp || 'Fresh'}</span>
           {cat.items.length} items, {priceRange(cat.items)}

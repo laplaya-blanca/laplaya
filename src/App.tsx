@@ -136,7 +136,7 @@ export function App() {
       <Water dark={light.dark} ready={!!content} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
       <main ref={menuRef} id="menu" aria-label="Menu" className="on-water relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
-        <div className="px-6 pt-8">
+        <div className="edge px-6 pt-8">
           <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light)}</h2>
           <p className="mt-2 text-[16px] text-[var(--ink-soft)]">Swipe through each stretch of the lake, tap anything to see it closer.</p>
         </div>
@@ -163,7 +163,7 @@ export function App() {
 
         {picks.length > 0 && (
           <section ref={picksRef} aria-labelledby="picks-h" className="pt-6">
-            <h2 id="picks-h" className="px-6 text-[13px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">House favourites</h2>
+            <h2 id="picks-h" className="edge px-6 text-[13px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">House favourites</h2>
             <div className="rail mt-3">
               {picks.map((p, i) => (
                 <div key={p.id} className="slot"><button onClick={() => setOpen({ t: 'item', item: p })} style={{ ['--i' as string]: i }} className="float w-[132px] text-left">
