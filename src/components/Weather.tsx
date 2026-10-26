@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { wet, type Sky, type Weather } from '../lib/weather';
+import type { Phase } from '../lib/time';
 
 // The sky over the shore photo: the real weather at the lake, and fireflies over the sand on a clear night.
 // Veils, clouds and fireflies are plain layers moved by CSS (the GPU's job). Only falling rain and snow are drawn, on
@@ -8,8 +9,9 @@ import { wet, type Sky, type Weather } from '../lib/weather';
 
 const FALL = { drizzle: 70, rain: 150, storm: 240, snow: 110 } as Partial<Record<Sky, number>>; // per 1000×1000px
 
-export function SkyOver({ weather, night }: { weather: Weather; night: boolean }) {
+export function SkyOver({ weather, night, phase }: { weather: Weather; night: boolean; phase: Phase }) {
   const { sky } = weather;
+  const birds = (phase === 'morning' || phase === 'golden' || phase === 'sunset') && (sky === 'clear' || sky === 'cloudy');
   const cloudy = sky !== 'clear' && sky !== 'fog';
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -28,6 +30,7 @@ export function SkyOver({ weather, night }: { weather: Weather; night: boolean }
       {FALL[sky] && <Fall sky={sky} wind={weather.wind} night={night} />}
       {sky === 'storm' && <div className="flash absolute inset-0 bg-[#EEF3FF]" />}
       {night && !wet(sky) && sky !== 'snow' && <Fireflies />}
+      {birds && <Birds dusk={phase !== 'morning'} />}
     </div>
   );
 }
@@ -42,6 +45,22 @@ function Fireflies() {
   return <>{FLIES.map((f, i) => (
     <span key={i} className="firefly absolute rounded-full" style={{ left: f.x + '%', top: f.y + '%', width: f.s, height: f.s,
       ['--dx' as string]: f.dx + 'px', ['--dy' as string]: f.dy + 'px', ['--d' as string]: f.d + 's', ['--b' as string]: f.b + 's', ['--i' as string]: i }} />
+  ))}</>;
+}
+
+// a few gulls crossing the sky at sunrise, golden hour and sunset: silhouettes gliding slowly across, now and then a
+// few wingbeats. Each is a plain span carried across (and a span inside it that flaps), so the GPU moves them
+const GULLS = [
+  { y: 12, s: 28, d: 46, delay: 0 }, { y: 16, s: 21, d: 52, delay: -4 }, { y: 9, s: 18, d: 58, delay: -9 },
+  { y: 22, s: 24, d: 64, delay: -30 }, { y: 19, s: 16, d: 70, delay: -36 }
+];
+function Birds({ dusk }: { dusk: boolean }) {
+  return <>{GULLS.map((g, i) => (
+    <span key={i} className="gull absolute left-0" style={{ top: g.y + '%', width: g.s, height: g.s * 0.42, ['--d' as string]: g.d + 's', ['--delay' as string]: g.delay + 's', ['--i' as string]: i }}>
+      <span className="wings block size-full">
+        <svg viewBox="0 0 24 10" className="block size-full overflow-visible"><path d="M0 2.5 Q6 -1 12 6.5 Q18 -1 24 2.5" fill="none" stroke={dusk ? 'rgba(48,30,34,.62)' : 'rgba(52,66,72,.5)'} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </span>
+    </span>
   ))}</>;
 }
 

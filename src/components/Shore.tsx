@@ -46,7 +46,7 @@ export function Shore({ light, weather, open, hours, count, cats, onPick }: { li
       )}
 
       {/* the weather at the lake right now, and fireflies on a clear night */}
-      <SkyOver weather={weather} night={night} />
+      <SkyOver weather={weather} night={night} phase={light.phase} />
 
       {/* top bar: logo and open state */}
       <div className="edge relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(18px,env(safe-area-inset-top))]">

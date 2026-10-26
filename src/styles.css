@@ -96,6 +96,15 @@ html[data-intro] .rise { animation-play-state: paused; }
 @keyframes glow { 0%, 100% { opacity: 0; } 35%, 55% { opacity: .95; } }
 .afloat .firefly { animation: wander var(--d) ease-in-out infinite, glow var(--b) ease-in-out infinite;
   animation-delay: calc(var(--i) * -1.7s), calc(var(--i) * -.9s); }
+/* gulls glide across the sky (left to right, drifting up and down a little), the flock loosely together; every few
+   seconds a few wingbeats, otherwise a glide */
+.gull { opacity: 0; }
+@keyframes glide { 0% { transform: translate3d(-8vw, 0, 0); opacity: 0; } 6%, 92% { opacity: 1; } 50% { transform: translate3d(50vw, -2.5vh, 0); } 100% { transform: translate3d(108vw, 1vh, 0); opacity: 0; } }
+@keyframes flap { 0%, 30%, 100% { transform: scaleY(1); } 6%, 18% { transform: scaleY(-.55); } 12%, 24% { transform: scaleY(1); } }
+.afloat .gull { animation: glide var(--d) linear infinite; animation-delay: var(--delay); }
+.afloat .wings { animation: flap calc(3s + var(--i) * .7s) ease-in-out infinite; transform-origin: 50% 65%; }
+/* on a phone the sky is behind the title: smaller and fainter, farther off */
+@media (max-width: 767px) { .gull { scale: .75; } .afloat .gull .wings { opacity: .75; } }
 @keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .skeleton { background: linear-gradient(90deg, var(--paper-2) 0%, var(--paper) 50%, var(--paper-2) 100%) 0 0 / 200% 100%; animation: skeleton 1.4s linear infinite; }
 
@@ -156,6 +165,13 @@ html[data-intro] .rise { animation-play-state: paused; }
     animation-delay: calc(var(--i, 0) * -.8s), 0s; }
 }
 
+/* 4. each card is reflected in the water below it: the browser's own mirror image of the card, upside down, showing
+   only its last few centimetres in faint bands that fade with depth, as ripples break a reflection. It is drawn with
+   the card (no copy of the photo) and bobs with it. Browsers without it (Firefox) simply show no reflection */
+@supports (-webkit-box-reflect: below) {
+  .rail:has(> .slot > .float.paper) { padding-bottom: 64px; }
+  .rail .float.paper { -webkit-box-reflect: below 5px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Crect x='0' y='86.0' width='100' height='1.15' fill-opacity='0.020'/%3E%3Crect x='0' y='87.1' width='100' height='1.15' fill-opacity='0.033'/%3E%3Crect x='0' y='88.2' width='100' height='1.15' fill-opacity='0.067'/%3E%3Crect x='0' y='89.3' width='100' height='1.15' fill-opacity='0.060'/%3E%3Crect x='0' y='90.4' width='100' height='1.15' fill-opacity='0.114'/%3E%3Crect x='0' y='91.5' width='100' height='1.15' fill-opacity='0.087'/%3E%3Crect x='0' y='92.6' width='100' height='1.15' fill-opacity='0.161'/%3E%3Crect x='0' y='93.7' width='100' height='1.15' fill-opacity='0.113'/%3E%3Crect x='0' y='94.8' width='100' height='1.15' fill-opacity='0.209'/%3E%3Crect x='0' y='95.9' width='100' height='1.15' fill-opacity='0.140'/%3E%3Crect x='0' y='97.0' width='100' height='1.15' fill-opacity='0.256'/%3E%3Crect x='0' y='98.1' width='100' height='1.15' fill-opacity='0.167'/%3E%3Crect x='0' y='99.2' width='100' height='1.15' fill-opacity='0.303'/%3E%3C/svg%3E"); }
+}
 
 /* 4. the catering form is a slab of glass lying in the water: the moving water shows through, graded toward the
    hour's own sea colour so it still reads as part of the lake, with a slow band of light passing over it */
