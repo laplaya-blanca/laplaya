@@ -1,6 +1,7 @@
 import type { Light } from '../lib/time';
 import { img } from '../lib/content';
 import { Ripple } from './Ripple';
+import { useAfloat } from './Menu';
 
 // where the lake begins in each photo, as a fraction of its height
 const WATER = { lake: { tall: 0.57, wide: 0.6 }, night: { tall: 0.49, wide: 0.62 } } as const;
@@ -9,12 +10,16 @@ type Open = { open: true; until: string } | { open: false; opens: string } | nul
 
 // First screen: a photograph of the shore, graded to the hour it is in Qaraaoun right now
 // (cool morning, untouched golden hour, rose sunset, blue night with a moon and stars).
-// One tap (or a normal scroll) takes you straight into the menu underneath — no preloader, no scroll-jacking.
-export function Shore({ light, open, hours, count, onEnter }: { light: Light; open: Open; hours: string; count: number; onEnter: () => void }) {
+// The menu's water already shows along the bottom edge, and the categories float just above it as bubbles: one tap goes
+// straight to that stretch of the menu. Scrolling down, the water rises over the shore (see .sink in styles.css).
+// On a first visit the logo intro opens onto it.
+export function Shore({ light, open, hours, count, cats, onPick }: { light: Light; open: Open; hours: string; count: number; cats: { key: string; name: string }[]; onPick: (key: string) => void }) {
   const night = light.dark;
+  const ref = useAfloat<HTMLElement>();
   const shot = night ? 'night' : 'lake'; // a real night photo after dark, the golden-hour shore otherwise
   return (
-    <header className="relative min-h-[100svh] overflow-hidden flex flex-col bg-[var(--sea-3)] touch-pan-y">
+    <header ref={ref} className="sink relative min-h-[calc(100svh-var(--peek))] overflow-hidden bg-[var(--sea-3)] touch-pan-y">
+      <div className="sink-in absolute inset-0 flex flex-col">
       <picture aria-hidden>
         <source media="(min-width: 768px)" srcSet={img('/assets/hero-' + shot + '-wide.jpg', 2048)} />
         <img src={img('/assets/hero-' + shot + '-tall.jpg', 1080)} alt="" {...{ fetchpriority: 'high' }} decoding="async" className="absolute inset-0 size-full object-cover" />
@@ -55,28 +60,33 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
       {/* title, in the open sky */}
       <div className={'relative z-10 px-6 pt-[9svh] ' + (night ? 'text-[#F6EFDF]' : 'text-[#103A47]')}>
         <p style={{ animationDelay: '0.05s' }} className="rise text-[13px] font-bold uppercase tracking-[.22em] opacity-80">Qaraaoun · West Bekaa</p>
-        <h1 style={{ animationDelay: '0.12s' }} className="rise mt-3 font-serif font-semibold leading-[.9] tracking-[-.02em] text-[clamp(58px,17vw,112px)]">
-          La Playa<br /><em className="font-medium">Blanca</em>
+        <h1 style={{ animationDelay: '0.12s', color: night ? '#F9F6E3' : '#007385' }} className="rise mt-3 font-brand font-extrabold uppercase leading-[.92] tracking-[.02em] text-[clamp(50px,14.5vw,104px)]">
+          La Playa<br />Blanca
         </h1>
-        <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-2 font-script text-[clamp(40px,11vw,64px)] leading-none">
+        <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-3 font-serif text-[clamp(24px,6.6vw,34px)] font-medium leading-tight tracking-[-.01em]">
           Nos vemos en la playa
         </p>
         <p style={{ animationDelay: '0.3s' }} className="rise mt-5 max-w-[30ch] text-[17px] font-medium leading-snug">
-          Crêpes, waffles, boba and shakes on the white-sand shore of the lake.
+          Crepes, waffles, boba and shakes on the white-sand shore of the lake.
         </p>
       </div>
 
-      {/* enter */}
-      <div className="absolute inset-x-0 bottom-[max(22px,env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2.5 px-6">
-        <button onClick={onEnter} className="group flex h-14 items-center gap-3 rounded-full bg-[var(--accent)] pl-7 pr-2 text-[17px] font-extrabold text-[var(--accent-ink)] shadow-[0_14px_34px_var(--accent-glow)] active:scale-[.97] transition-transform">
-          Wade into the menu
-          <span className="grid size-10 place-items-center rounded-full bg-[var(--accent-ink)] text-[var(--accent)]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
-          </span>
-        </button>
-        <p className="glass3d rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
-          <span>{light.label} · {light.clock} on the lake{count ? ' · ' + count + ' things to try' : ''}</span>
+      {/* the categories, floating just above the waterline */}
+      <div className="absolute inset-x-0 bottom-[34px] z-10 flex flex-col gap-2.5">
+        <p className="glass3d mx-5 self-start rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.3)]">
+          <span>{light.clock} · {light.label}{count ? ' · ' + count + ' to try' : ''}</span>
         </p>
+        {cats.length > 0 && (
+          <nav aria-label="Jump to a category" className="bubbles flex gap-2.5 overflow-x-auto px-5 pb-3 pt-2 [scrollbar-width:none]">
+            {cats.map((c, i) => (
+              <button key={c.key} onClick={() => onPick(c.key)} style={{ ['--i' as string]: i }}
+                className="bubble h-11 shrink-0 rounded-full bg-[#F9F6E3]/92 px-4 font-brand text-[14px] font-bold uppercase tracking-[.06em] text-[#007385] shadow-[0_10px_24px_rgba(3,25,33,.28)] active:scale-95 transition-transform">
+                {c.name.toLowerCase().replace(/(^|\s)\p{L}/gu, (m) => m.toUpperCase())}
+              </button>
+            ))}
+          </nav>
+        )}
+      </div>
       </div>
     </header>
   );

@@ -1,6 +1,6 @@
 {
   "bases": [
-    { "name": "Crêpe", "price": 4, "color": "#F2E2C4", "icon": "crepe" },
+    { "name": "Crepe", "price": 4, "color": "#F2E2C4", "icon": "crepe" },
     { "name": "Belgian Waffle", "price": 4.5, "color": "#E8B25E", "icon": "waffle" },
     { "name": "Bubble Waffle", "price": 5, "color": "#DFC38C", "icon": "waffle" }
   ],

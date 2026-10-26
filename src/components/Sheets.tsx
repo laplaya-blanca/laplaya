@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { animate, motion, useReducedMotion } from 'motion/react';
 import type { Category, Item } from '../lib/content';
 import { money } from '../lib/content';
 import type { Line } from '../lib/cart';
-import { Art, Price, priceRange, sceneImage, ShoreScene, SHADE, type Add } from './Menu';
+import { Art, Price, priceRange, sceneImage, ShoreScene, SHADE, takeLift, type Add } from './Menu';
 import { CloseButton, Sheet } from './Sheet';
 
 // ---------- bottom dock: always under the thumb ----------
@@ -40,11 +40,62 @@ function DockBtn({ label, onClick, children }: { label: string; onClick: () => v
 }
 
 // ---------- item ----------
-export function ItemSheet({ item, onClose, onAdd, qty }: { item: Item; onClose: () => void; onAdd: Add; qty: number }) {
+// The card's photo lifts out of the water into the item view, and sinks back into its card on close: a copy of the
+// card photo flies between the two places (one fixed element, so the plate re-frames itself as the box changes shape)
+// while the sheet slides up underneath. Opened from search or the order there is no card, and the sheet just slides.
+const LIFT = { type: 'spring', stiffness: 380, damping: 38 } as const;
+function useLift(target: React.RefObject<HTMLDivElement | null>) {
+  const still = useReducedMotion();
+  const card = useRef<HTMLElement | null>(null);
+  const closing = useRef(false);
+  const fly = (from: DOMRect, to: DOMRect, src: HTMLElement, done: () => void) => {
+    // the copy is made of an element we may already have hidden, so it is made visible again (and kept from screen readers)
+    const ghost = src.cloneNode(true) as HTMLElement;
+    ghost.setAttribute('aria-hidden', 'true');
+    Object.assign(ghost.style, { visibility: 'visible', position: 'fixed', zIndex: '70', margin: '0', pointerEvents: 'none', left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px', borderRadius: '24px', aspectRatio: 'auto', boxShadow: '0 24px 60px rgba(4,20,28,.35)' });
+    document.body.appendChild(ghost);
+    animate(ghost, { left: to.left, top: to.top, width: to.width, height: to.height }, LIFT).then(() => { ghost.remove(); done(); });
+  };
+  useLayoutEffect(() => {
+    const el = takeLift(), box = target.current;
+    if (!el || !box || still || !el.isConnected) return;
+    card.current = el;
+    const panel = box.closest<HTMLElement>('[role=dialog]')!;
+    const shift = new DOMMatrix(getComputedStyle(panel).transform).m42; // the sheet is still below the screen
+    const to = box.getBoundingClientRect();
+    const end = new DOMRect(to.left, to.top - shift, to.width, to.height);
+    el.style.visibility = 'hidden'; box.style.visibility = 'hidden';
+    fly(el.getBoundingClientRect(), end, el, () => { box.style.visibility = ''; });
+    // however the sheet goes away (another sheet replacing it too), the card never stays empty
+    return () => { setTimeout(() => { el.style.visibility = ''; }, 900); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // closing: back down into its card, if that card is still on screen
+  return (close: () => void) => {
+    if (closing.current) return; // Escape and a tap on the backdrop together close once
+    closing.current = true;
+    const el = card.current, box = target.current;
+    if (el && box && el.isConnected) {
+      const back = el.getBoundingClientRect();
+      if (back.bottom > 0 && back.top < innerHeight) {
+        el.style.visibility = 'hidden';
+        fly(box.getBoundingClientRect(), back, box, () => { el.style.visibility = ''; });
+        box.style.visibility = 'hidden';
+      } else el.style.visibility = '';
+    }
+    close();
+  };
+}
+
+export function ItemSheet({ item, onClose: close, onAdd, qty }: { item: Item; onClose: () => void; onAdd: Add; qty: number }) {
+  const photo = useRef<HTMLDivElement>(null);
+  const sink = useLift(photo);
+  const onClose = () => sink(close);
   return (
     <Sheet label={item.name} onClose={onClose}>
-      <div className="relative mx-4 mt-1 aspect-[4/3] overflow-hidden rounded-[24px]">
-        <Art item={item} w={1000} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />
+      <div className="relative mx-4 mt-1 aspect-[4/3]">
+        <div ref={photo} className="absolute inset-0 overflow-hidden rounded-[24px]">
+          <Art item={item} w={1000} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />
+        </div>
         <div className="absolute right-3 top-3"><CloseButton onClick={onClose} /></div>
       </div>
       <div className="px-6 pt-5">
@@ -140,7 +191,7 @@ export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; tot
         <div className="relative rounded-[22px] border-2 border-dashed border-[#1F7A8C]/35 bg-[#FBF8EE] p-6 text-[#14586B]">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-serif text-[30px] font-semibold italic leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
+              <p className="font-serif text-[30px] font-semibold leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
               <p className="mt-2 text-[13px] font-extrabold uppercase tracking-[.16em] text-[#14586B]/70">Beach pickup · {time}</p>
             </div>
             <img src="/assets/logo.jpg" alt="" className="size-14 rotate-6 rounded-lg border-2 border-white object-cover shadow-md" />

@@ -5,10 +5,11 @@ import { lightAt, openState, type Light } from './lib/time';
 import { orderText, useCart } from './lib/cart';
 import { flavourColours } from './lib/flavor';
 import { Shore } from './components/Shore';
-import { Art, CategoryBar, Scene, type View } from './components/Menu';
+import { Art, CategoryBar, Scene, useAfloat, type View } from './components/Menu';
 import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
 import { Events, Footer } from './components/Shoreline';
 import { Water } from './components/Water';
+import { Intro, shouldIntro } from './components/Intro';
 
 type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'search' };
 
@@ -32,6 +33,8 @@ export function App() {
   const [tide, setTide] = useState(false);
   const [active, setActive] = useState('');
   const [inMenu, setInMenu] = useState(false);
+  const [pastMenu, setPastMenu] = useState(false);
+  const [intro, setIntro] = useState(shouldIntro);
   const [bump, setBump] = useState(0);
   const [view, setViewState] = useState<View>(() => { try { return (localStorage.getItem('lpb-view') as View) || 'rail'; } catch { return 'rail'; } });
   const { cart, lines, count, total, unpriced, dispatch } = useCart();
@@ -39,6 +42,7 @@ export function App() {
   const tideTimer = useRef(0);
   const markRef = useRef<HTMLDivElement>(null);
   const openItem = useCallback((item: Item) => setOpen({ t: 'item', item }), []);
+  const picksRef = useAfloat<HTMLElement>();
 
   const load = useCallback(() => {
     setFailed(false);
@@ -66,10 +70,16 @@ export function App() {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+  useEffect(() => {
+    // the menu's end has gone up under the bar: Events & Catering isn't a category, so the bar steps aside
+    const el = menuRef.current; if (!el) return;
+    const io = new IntersectionObserver(([e]) => setPastMenu(!e.isIntersecting && e.boundingClientRect.bottom < 80), { rootMargin: '-80px 0px 0px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const setView = (v: View) => { setViewState(v); try { localStorage.setItem('lpb-view', v); } catch { /* not remembered */ } };
   const goTo = (key: string) => { setOpen(null); requestAnimationFrame(() => document.getElementById('cat-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
-  const enter = () => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // the add: a drop in the item's flavour colour arcs into the order button, which springs
   const add = useCallback((item: Item, from?: HTMLElement | null) => {
@@ -119,11 +129,12 @@ export function App() {
 
   return (
     <>
-      <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} onEnter={enter} />
-      <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
+      {intro && <Intro onDone={() => setIntro(false)} />}
+      <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} cats={cats} onPick={goTo} />
+      <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && !pastMenu && cats.length > 0} />
 
-      <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
-      <main ref={menuRef} id="menu" aria-label="Menu" className="relative pb-6">
+      <Water dark={light.dark} ready={!!content} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
+      <main ref={menuRef} id="menu" aria-label="Menu" className="on-water relative pb-6">
         <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">
           <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light)}</h2>
@@ -131,7 +142,7 @@ export function App() {
         </div>
 
         {failed && (
-          <div role="alert" className="mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
+          <div role="alert" className="paper mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
             <p className="font-serif text-[24px] font-semibold">The menu is washing back in…</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We couldn’t load it just now. You can still order by phone or WhatsApp.</p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -151,32 +162,32 @@ export function App() {
         )}
 
         {picks.length > 0 && (
-          <section aria-labelledby="picks-h" className="pt-6">
+          <section ref={picksRef} aria-labelledby="picks-h" className="pt-6">
             <h2 id="picks-h" className="px-6 text-[13px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">House favourites</h2>
             <div className="rail mt-3">
-              {picks.map((p) => (
-                <button key={p.id} onClick={() => setOpen({ t: 'item', item: p })} className="w-[132px] text-left">
+              {picks.map((p, i) => (
+                <div key={p.id} className="slot"><button onClick={() => setOpen({ t: 'item', item: p })} style={{ ['--i' as string]: i }} className="float w-[132px] text-left">
                   <span className="block aspect-square overflow-hidden rounded-[22px] shadow-[0_10px_24px_rgba(6,20,29,.12)]">
                     <PickArt item={p} />
                   </span>
                   <span className="mt-2 block font-serif text-[17px] font-semibold leading-tight">{p.name}</span>
                   <span className="block text-[13px] text-[var(--ink-soft)]">{p.cat}</span>
-                </button>
+                </button></div>
               ))}
             </div>
           </section>
         )}
 
         {content && !cats.length && (
-          <div role="status" className="mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
+          <div role="status" className="paper mx-4 mt-6 rounded-[24px] bg-[var(--paper)] p-6">
             <p className="font-serif text-[24px] font-semibold">Fresh menu on its way</p>
             <p className="mt-1 text-[15px] text-[var(--ink-soft)]">We’re updating it right now. Ask at the counter, or message us on WhatsApp.</p>
             <a href="https://wa.me/96171245911" className="mt-4 inline-flex h-12 items-center rounded-full bg-[var(--accent)] px-6 font-extrabold text-[var(--accent-ink)]">WhatsApp us</a>
           </div>
         )}
 
-        {cats.map((c, i) => (
-          <Scene key={c.key} cat={c} index={i} view={view} onOpen={openItem} onAdd={add} />
+        {cats.map((c) => (
+          <Scene key={c.key} cat={c} view={view} onOpen={openItem} onAdd={add} />
         ))}
       </main>
 
