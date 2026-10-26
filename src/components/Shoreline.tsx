@@ -119,10 +119,12 @@ export function Footer({ site }: { site: Site | null }) {
         </svg>
       </div>
       <div aria-hidden className="glitter">{GLITTER.map(([x, w], i) => <span key={i} style={{ ['--g' as string]: i, ['--x' as string]: x, ['--w' as string]: w }} />)}</div>
+      {/* on a phone everything stacks; on a wide screen the map takes the left and hours and hello sit beside it */}
+      <div className="relative mx-auto max-w-[1040px]">
       <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
       <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
-      <div className="relative mt-10 grid gap-8 text-[#F3ECDD]">
-        <TreasureMap href={maps} />
+      <div className="relative mt-10 grid gap-8 text-[#F3ECDD] md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-start md:gap-x-12">
+        <div className="md:row-span-2"><TreasureMap href={maps} /></div>
         <div className="drift" style={{ ['--i' as string]: 1 }}>
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
           {filled ? (
@@ -135,6 +137,7 @@ export function Footer({ site }: { site: Site | null }) {
           {h?.note && <p className="mt-2 text-[14px] opacity-80">{h.note}</p>}
         </div>
         {c && <Hello c={c} />}
+      </div>
       </div>
       {/* sign-off: the house, then the maker's signature, set apart by a hairline */}
       <div className="relative mt-14 flex flex-col items-center text-center text-[#F3ECDD]">
