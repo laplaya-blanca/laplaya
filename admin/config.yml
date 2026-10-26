@@ -1,0 +1,160 @@
+# La Playa Blanca owner dashboard (Decap CMS). Saving here commits to GitHub and Netlify redeploys in ~1 min.
+backend:
+  name: git-gateway
+  branch: main
+  commit_messages:
+    update: "Owner update: {{collection}} ({{slug}})"
+    uploadMedia: "Owner upload: {{path}}"
+    deleteMedia: "Owner delete: {{path}}"
+
+# `npx decap-server` + http://localhost:<port>/admin/ edits the local files without logging in
+local_backend: true
+
+site_url: https://laplayaqaroun.netlify.app
+display_url: https://laplayaqaroun.netlify.app
+logo_url: /assets/logo.jpg
+
+# photos are committed full-size; the site resizes them through Netlify Image CDN
+media_folder: uploads
+public_folder: /uploads
+
+collections:
+  - name: menu
+    label: Menu
+    description: Categories and items. Untick "Available today" to mark an item sold out.
+    editor: { preview: false }
+    files:
+      - name: menu
+        label: Menu
+        file: content/menu.json
+        fields:
+          - name: categories
+            label: Categories
+            label_singular: Category
+            widget: list
+            collapsed: true
+            summary: "{{fields.name}}"
+            fields:
+              - { name: name, label: Category name, widget: string }
+              - { name: description, label: Default description, widget: string, required: false, hint: "Shown on items that have no description of their own" }
+              - name: icon
+                label: Icon
+                widget: select
+                options: [pancake, crepe, waffle, bubble, glass, juice, shake, matcha, boba, scoop, coffee]
+              - name: temp
+                label: Temperature tag
+                widget: select
+                required: false
+                options: [Warm, Hot, Cold, Iced, Fresh]
+              - name: items
+                label: Items
+                label_singular: Item
+                widget: list
+                collapsed: true
+                summary: "{{fields.name}} · ${{fields.price}}"
+                fields:
+                  - { name: name, label: Name, widget: string }
+                  - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25, required: false, hint: "Leave empty to show 'Order now' (priced in store)" }
+                  - { name: description, label: Description, widget: string, required: false }
+                  - { name: photo, label: Photo, widget: image, required: false, choose_url: false, hint: "Any phone photo is fine — the site resizes it automatically" }
+                  - { name: available, label: Available today, widget: boolean, default: true }
+                  - name: tags
+                    label: Tags
+                    widget: select
+                    multiple: true
+                    required: false
+                    options: [Signature, Nuts, Vegetarian, Vegan, Gluten-free, Dairy-free]
+
+  - name: builder
+    label: Build your own
+    editor: { preview: false }
+    files:
+      - name: builder
+        label: Build your own
+        file: content/builder.json
+        fields:
+          - name: bases
+            label: Bases
+            label_singular: Base
+            widget: list
+            summary: "{{fields.name}} · ${{fields.price}}"
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25 }
+              - { name: color, label: Colour on the preview, widget: color, required: false }
+              - { name: icon, label: Icon, widget: select, options: [crepe, waffle, pancake], default: crepe }
+          - name: sauces
+            label: Sauces
+            label_singular: Sauce
+            widget: list
+            summary: "{{fields.name}} · ${{fields.price}}"
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25 }
+              - { name: color, label: Colour on the preview, widget: color, required: false }
+          - name: toppings
+            label: Toppings
+            label_singular: Topping
+            widget: list
+            summary: "{{fields.name}} · ${{fields.price}}"
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25 }
+          - name: cream
+            label: Finish
+            widget: object
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25 }
+
+  - name: site
+    label: Hours & contact
+    editor: { preview: false }
+    files:
+      - name: site
+        label: Hours & contact
+        file: content/site.json
+        fields:
+          - name: hours
+            label: Hours
+            widget: object
+            fields:
+              - { name: headline, label: Hours line 1, widget: string, hint: "e.g. Daily, in season" }
+              - { name: subline, label: Hours line 2, widget: string, required: false, hint: "e.g. Afternoons till late" }
+              - { name: note, label: Small note, widget: string, required: false }
+              - name: weekly
+                label: Opening times (for the upcoming "Open now" badge)
+                label_singular: Day
+                widget: list
+                summary: "{{fields.day}} {{fields.open}}–{{fields.close}}"
+                fields:
+                  - { name: day, label: Day, widget: select, options: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday] }
+                  - { name: open, label: Opens, widget: string, required: false, pattern: ['^$|^([01]\d|2[0-3]):[0-5]\d$', "Use 24-hour time, like 14:00"] }
+                  - { name: close, label: Closes, widget: string, required: false, pattern: ['^$|^([01]\d|2[0-3]):[0-5]\d$', "Use 24-hour time, like 01:00"] }
+                  - { name: closed, label: Closed all day, widget: boolean, default: false }
+          - name: contact
+            label: Contact
+            widget: object
+            fields:
+              - { name: phone, label: Phone (as shown), widget: string }
+              - { name: whatsapp, label: WhatsApp order number, widget: string, pattern: ['^\d{8,15}$', "Digits only with country code, e.g. 96171245911"] }
+              - { name: instagram, label: Instagram handle, widget: string }
+          - { name: lbpRate, label: LBP per $1, widget: number, value_type: int, min: 1, hint: "For the upcoming $/LBP price toggle" }
+
+  - name: gallery
+    label: Event gallery
+    description: Event photos. They'll appear on the site once the gallery section ships with the redesign.
+    editor: { preview: false }
+    files:
+      - name: gallery
+        label: Event gallery
+        file: content/gallery.json
+        fields:
+          - name: photos
+            label: Photos
+            label_singular: Photo
+            widget: list
+            summary: "{{fields.caption}}"
+            fields:
+              - { name: image, label: Photo, widget: image, choose_url: false }
+              - { name: caption, label: Caption, widget: string, required: false }

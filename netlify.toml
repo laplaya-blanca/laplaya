@@ -1,0 +1,8 @@
+# Static site — no build step. Content edits from /admin are commits that redeploy automatically.
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"

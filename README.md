@@ -1,5 +1,25 @@
 # Handoff: La Playa Blanca — Cocktails & Desserts (immersive one-page site)
 
+## Owner dashboard & content
+All editable content lives in `content/` and is edited at **`/admin`** (Decap CMS). Saving there commits to `main` and Netlify redeploys in about a minute.
+
+| File | What it holds |
+|---|---|
+| `content/menu.json` | Categories → items (name, price, description, photo, "available today", tags) |
+| `content/builder.json` | Build-your-own bases, sauces, toppings, finish — with prices |
+| `content/site.json` | Hours text, weekly opening times, phone / WhatsApp / Instagram, LBP rate |
+| `content/gallery.json` | Event photos (rendered after the redesign) |
+
+`menu-data.js` fetches these files and exposes `window.LPB_MENU` / `LPB_BUILDER` / `LPB_SITE` / `LPB_GALLERY`, then fires `lpb-menu-ready`. Uploads go to `uploads/` and are served resized through Netlify Image CDN via `window.lpbImg(src, width)`.
+
+**One-time Netlify setup** (site must deploy from this GitHub repo):
+1. Site configuration → Identity → **Enable Identity**.
+2. Identity → Registration → **Invite only**.
+3. Identity → Services → **Enable Git Gateway**.
+4. Identity → **Invite users** → the owner's email. The invite link opens the site, they set a password, and land on `/admin`.
+
+**Local editing without logging in:** run `npx decap-server@3.11.3` and a static server (e.g. `python3 -m http.server 8787`), then open `http://localhost:8787/admin/`. Edits write straight to `content/`.
+
 ## Overview
 A single-page, scroll-driven marketing + ordering site for **La Playa Blanca**, a beachside dessert & drinks spot in Qaraaoun, West Bekaa. The experience runs as one continuous vertical journey:
 

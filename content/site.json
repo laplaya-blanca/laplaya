@@ -1,0 +1,22 @@
+{
+  "hours": {
+    "headline": "Daily, in season",
+    "subline": "Afternoons till late",
+    "note": "Call ahead to confirm seasonal hours.",
+    "weekly": [
+      { "day": "Monday", "open": "", "close": "", "closed": false },
+      { "day": "Tuesday", "open": "", "close": "", "closed": false },
+      { "day": "Wednesday", "open": "", "close": "", "closed": false },
+      { "day": "Thursday", "open": "", "close": "", "closed": false },
+      { "day": "Friday", "open": "", "close": "", "closed": false },
+      { "day": "Saturday", "open": "", "close": "", "closed": false },
+      { "day": "Sunday", "open": "", "close": "", "closed": false }
+    ]
+  },
+  "contact": {
+    "phone": "+961 71 245 911",
+    "whatsapp": "96171245911",
+    "instagram": "la.playa.blanca"
+  },
+  "lbpRate": 89500
+}
