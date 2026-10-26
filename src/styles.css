@@ -212,7 +212,8 @@ html[data-intro] .rise { animation-play-state: paused; }
 .sail { transform-box: fill-box; transform-origin: 50% 80%; }
 .afloat .sail { animation: sail 3.6s ease-in-out infinite; }
 @keyframes course { to { stroke-dashoffset: -14.2; } }
-.afloat .course { animation: course 1.4s linear infinite; }
+/* stepped: each step is a repaint, so ten a second rather than one per frame */
+.afloat .course { animation: course 1.4s steps(14) infinite; }
 @keyframes ping { 0% { scale: .4; opacity: .9; } 100% { scale: 1.6; opacity: 0; } }
 .ping { transform-box: fill-box; transform-origin: center; opacity: 0; }
 .afloat .ping { animation: ping 2.2s ease-out infinite; }
@@ -229,6 +230,12 @@ html[data-intro] .rise { animation-play-state: paused; }
   background: conic-gradient(from 0deg, #FD5949, #D6249F, #285AEB, #FDF497, #FD5949); }
 @keyframes turn { to { rotate: 1turn; } }
 .afloat .ig-ring::before { animation: turn 6s linear infinite; }
+
+/* From a laptop on, things that stand side by side in a row (the shore's category bubbles, the footer's columns and
+   hello tiles) float in step: out of step they read as a ragged, misaligned row rather than as a swell */
+@media (min-width: 1024px) {
+  .afloat .bubble, .afloat .drift { animation-delay: 0s; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

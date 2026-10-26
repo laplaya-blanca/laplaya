@@ -48,7 +48,8 @@ export function Events({ site }: { site: Site | null }) {
       {/* a phone reads the offers, then the form; from a laptop on they sit side by side across the window, the form
           at a width a form should be, on the page's edges (.edge) like everything above. */}
       <div className="edge px-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,600px)] lg:items-start lg:gap-12 xl:gap-24">
-        <ul className="mt-6 divide-y divide-[var(--line)]">
+        {/* beside the form the offers start on its heading's line and stay in view while the form scrolls past */}
+        <ul className="mt-6 divide-y divide-[var(--line)] lg:sticky lg:top-6 lg:mt-8">
           {OFFERS.map(([t, d]) => (
             <li key={t} className="py-4">
               <p className="font-serif text-[22px] font-semibold leading-tight">{t}</p>
@@ -127,7 +128,7 @@ export function Footer({ site }: { site: Site | null }) {
       <div className="relative">
         <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
         <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
-        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-x-16 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.8fr)_minmax(0,1fr)] xl:gap-x-12 2xl:gap-x-16">
+        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-x-16 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.8fr)_minmax(0,1fr)] xl:gap-x-12 2xl:gap-x-16">
           <TreasureMap href={maps} />
           <div className="grid gap-8 lg:gap-10 xl:contents">
             <div className="drift" style={{ ['--i' as string]: 1 }}>

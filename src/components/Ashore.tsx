@@ -31,6 +31,9 @@ export const Chest = ({ size = 34 }: { size?: number }) => (
   </svg>
 );
 
+// a box on the map, in the map's own 320×210 units
+const onMap = (x: number, y: number, w: number, h: number) => ({ left: (x / 320) * 100 + '%', top: (y / 210) * 100 + '%', width: (w / 320) * 100 + '%', height: (h / 210) * 100 + '%' });
+
 // Find us, as a treasure map: Lake Qaraoun drawn in ink on old paper, a little ship sailing at the top, a dotted
 // course down the water to an X on the east shore where the chest is buried. The whole map opens Google Maps.
 export function TreasureMap({ href }: { href: string }) {
@@ -38,6 +41,7 @@ export function TreasureMap({ href }: { href: string }) {
     <a href={href} target="_blank" rel="noopener" className="treasure drift block" style={{ ['--i' as string]: 0 }}>
       <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us · X marks the spot</p>
       <div className="parchment mt-3">
+        <div className="relative">
         <svg viewBox="0 0 320 210" className="block w-full" aria-hidden>
           <defs>
             <pattern id="ripples" width="22" height="12" patternUnits="userSpaceOnUse">
@@ -54,14 +58,6 @@ export function TreasureMap({ href }: { href: string }) {
             fill="#7CC0C4" fillOpacity=".45" stroke={SEA} strokeWidth="1.6" />
           <path d="M150 16 C182 24 194 58 186 90 C180 118 202 148 184 178 C170 200 140 196 132 172 C124 148 108 124 116 94 C122 66 118 30 150 16 Z" fill="url(#ripples)" />
           <text x="0" y="0" transform="translate(140 132) rotate(-78)" fill={SEA} fontFamily="Fraunces, Georgia, serif" fontStyle="italic" fontSize="11" letterSpacing="1.2">Lake Qaraoun</text>
-          {/* the course: dots marching from the ship to the X */}
-          <path className="course" d="M154 54 C142 78 170 92 160 116 C152 136 176 146 204 150" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" strokeDasharray="0.1 7" />
-          <g transform="translate(156 40)"><Ship className="sail" /></g>
-          {/* X on the east shore, with the chest beside it */}
-          <g transform="translate(212 150)">
-            <circle className="ping" r="12" fill="none" stroke="#B5452F" strokeWidth="1.5" />
-            <path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="#B5452F" strokeWidth="3.2" strokeLinecap="round" />
-          </g>
           <text x="224" y="136" fill={INK} fontFamily="Fraunces, Georgia, serif" fontStyle="italic" fontSize="12">La Playa Blanca</text>
           {/* compass rose */}
           <g transform="translate(282 182)" fill={INK}>
@@ -72,6 +68,21 @@ export function TreasureMap({ href }: { href: string }) {
           </g>
           <text x="22" y="200" fill={INK} fillOpacity=".7" fontFamily="Manrope, sans-serif" fontWeight="800" fontSize="8" letterSpacing="2">WEST BEKAA · LEBANON</text>
         </svg>
+        {/* The moving parts sit on layers of their own over the still map. Animated inside the map's svg they made the
+            browser repaint the whole parchment (clip-path, blended grain) every frame, which stuttered the scroll past
+            the catering form. The ship and the ring are animated on plain spans (the GPU won't take an animation on an
+            svg element), and the dots, which can only move by repainting, step along a few times a second. */}
+        <svg viewBox="0 0 320 210" aria-hidden className="absolute inset-0 size-full [will-change:transform]">
+          {/* the course: dots marching from the ship to the X */}
+          <path className="course" d="M154 54 C142 78 170 92 160 116 C152 136 176 146 204 150" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" strokeDasharray="0.1 7" />
+        </svg>
+        <span aria-hidden className="sail absolute" style={onMap(142, 19, 28, 32)}><svg viewBox="-14 -21 28 32" className="block size-full"><Ship /></svg></span>
+        {/* X on the east shore, with the chest beside it */}
+        <span aria-hidden className="absolute" style={onMap(199, 137, 26, 26)}>
+          <span className="ping absolute inset-0"><svg viewBox="-13 -13 26 26" className="block size-full overflow-visible"><circle r="12" fill="none" stroke="#B5452F" strokeWidth="1.5" /></svg></span>
+          <svg viewBox="-13 -13 26 26" className="absolute inset-0 size-full"><path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="#B5452F" strokeWidth="3.2" strokeLinecap="round" /></svg>
+        </span>
+        </div>
         <div className="flex items-center gap-3 px-4 pb-4 pt-1">
           <Chest size={42} />
           <div className="min-w-0 flex-1">
