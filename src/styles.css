@@ -37,10 +37,10 @@ body.locked { overflow: hidden; }
 /* paper grain, one cheap tile shared by every surface that uses .grain */
 .grain { position: relative; isolation: isolate; }
 .grain::after {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .18; mix-blend-mode: multiply;
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .06;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-:root[data-dark] .grain::after { mix-blend-mode: screen; opacity: .07; }
+:root[data-dark] .grain::after { opacity: .04; }
 
 /* drifting wave layers on the shore — transform only, so it stays smooth on phones */
 @keyframes drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
@@ -58,7 +58,6 @@ body.locked { overflow: hidden; }
 .rail::-webkit-scrollbar { display: none; }
 .rail > * { scroll-snap-align: start; flex: none; }
 
-.scene { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -68,7 +67,7 @@ body.locked { overflow: hidden; }
 /* glass3d (after glass3d.dev): frosted, saturated glass with a stacked soft shadow and a lit inner edge.
    The noise is the same inline tile as .grain, so nothing loads from a third-party host. */
 .glass3d {
-  --filter-glass3d: blur(32px) brightness(0.85) saturate(2.5);
+  --filter-glass3d: blur(14px) saturate(1.6);
   --color-glass3d: hsl(189 80% 10% / 0.2);
   position: relative; z-index: 4;
   box-shadow:

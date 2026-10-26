@@ -14,7 +14,7 @@ export type View = 'rail' | 'list';
 // a category's picture: its scene photo, else the owner's photo of its signature (or any) item
 export function sceneImage(cat: Category, w: number) {
   const shot = cat.items.find((i) => i.photo && i.signature) || cat.items.find((i) => i.photo);
-  return SCENES[cat.key] || (shot ? img(shot.photo, w) : '');
+  return SCENES[cat.key] ? img(SCENES[cat.key], w) : shot ? img(shot.photo, w) : '';
 }
 
 export const SHADE = 'linear-gradient(180deg, transparent 28%, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)';
@@ -117,7 +117,7 @@ function Price({ item, className = '' }: { item: Item; className?: string }) {
 
 const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
-    <article role="listitem" className={'grain w-[min(72vw,290px)] overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_14px_34px_rgba(6,20,29,.12)] ' + (item.soldOut ? 'opacity-70' : '')}>
+    <article role="listitem" className={'w-[min(72vw,290px)] overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)] ' + (item.soldOut ? 'opacity-70' : '')}>
       <button onClick={() => onOpen(item)} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
         <div className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />

@@ -36,6 +36,8 @@ export function App() {
   const { cart, lines, count, total, unpriced, dispatch } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
   const tideTimer = useRef(0);
+  const markRef = useRef<HTMLDivElement>(null);
+  const openItem = useCallback((item: Item) => setOpen({ t: 'item', item }), []);
 
   const load = useCallback(() => {
     setFailed(false);
@@ -56,12 +58,12 @@ export function App() {
     return () => io.disconnect();
   }, [cats, view]);
   useEffect(() => {
-    const el = menuRef.current; if (!el) return;
-    const io = new IntersectionObserver(([e]) => setInMenu(e.boundingClientRect.top < 80), { threshold: [0, 0.01, 1], rootMargin: '0px 0px -100% 0px' });
+    // a 1px marker at the top of the menu: once it passes under the top 80px we're in the menu.
+    // An observer, not a scroll listener, so scrolling never forces a layout or a React render.
+    const el = markRef.current; if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInMenu(!e.isIntersecting && e.boundingClientRect.top < 80), { rootMargin: '-80px 0px 0px 0px' });
     io.observe(el);
-    const onScroll = () => setInMenu(el.getBoundingClientRect().top < 80);
-    addEventListener('scroll', onScroll, { passive: true });
-    return () => { io.disconnect(); removeEventListener('scroll', onScroll); };
+    return () => io.disconnect();
   }, []);
 
   const setView = (v: View) => { setViewState(v); try { localStorage.setItem('lpb-view', v); } catch { /* not remembered */ } };
@@ -120,6 +122,7 @@ export function App() {
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
       <main ref={menuRef} id="menu" aria-label="Menu" className="relative pb-6">
+        <div ref={markRef} aria-hidden className="absolute top-0 h-px w-px" />
         <div className="px-6 pt-8">
           <h2 className="font-serif text-[34px] font-semibold leading-[1.02]">{greeting(light)}</h2>
           <p className="mt-2 text-[16px] text-[var(--ink-soft)]">Swipe through each stretch of the lake, tap anything to see it closer.</p>
@@ -171,7 +174,7 @@ export function App() {
         )}
 
         {cats.map((c, i) => (
-          <Scene key={c.key} cat={c} index={i} view={view} onOpen={(item) => setOpen({ t: 'item', item })} onAdd={add} />
+          <Scene key={c.key} cat={c} index={i} view={view} onOpen={openItem} onAdd={add} />
         ))}
       </main>
 

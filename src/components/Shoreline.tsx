@@ -55,7 +55,7 @@ export function Events({ site }: { site: Site | null }) {
             <p className="mt-2 text-[16px] text-[var(--ink-soft)]">We’ll be in touch soon to plan it with you.</p>
           </div>
         ) : (
-          <form onSubmit={submit} noValidate className="grain mt-6 rounded-[26px] bg-[var(--paper-2)] p-5">
+          <form onSubmit={submit} noValidate className="mt-6 rounded-[26px] bg-[var(--paper-2)] p-5">
             <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
             <input type="hidden" name="subject" value="New Events & Catering inquiry — La Playa Blanca" />
             <input type="hidden" name="from_name" value="La Playa Blanca website" />
