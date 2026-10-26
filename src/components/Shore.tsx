@@ -56,9 +56,9 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
       <div className={'relative z-10 px-6 pt-[9svh] ' + (night ? 'text-[#F6EFDF]' : 'text-[#103A47]')}>
         <p style={{ animationDelay: '0.05s' }} className="rise text-[13px] font-bold uppercase tracking-[.22em] opacity-80">Qaraaoun · West Bekaa</p>
         <h1 style={{ animationDelay: '0.12s' }} className="rise mt-3 font-serif font-semibold leading-[.9] tracking-[-.02em] text-[clamp(58px,17vw,112px)]">
-          La Playa<br /><em className="font-medium">Blanca</em>
+          La Playa<br /><span className="font-normal">Blanca</span>
         </h1>
-        <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-2 font-script text-[clamp(40px,11vw,64px)] leading-none">
+        <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-3 font-serif text-[clamp(24px,6.6vw,34px)] font-medium leading-tight tracking-[-.01em]">
           Nos vemos en la playa
         </p>
         <p style={{ animationDelay: '0.3s' }} className="rise mt-5 max-w-[30ch] text-[17px] font-medium leading-snug">

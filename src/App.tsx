@@ -175,8 +175,8 @@ export function App() {
           </div>
         )}
 
-        {cats.map((c, i) => (
-          <Scene key={c.key} cat={c} index={i} view={view} onOpen={openItem} onAdd={add} />
+        {cats.map((c) => (
+          <Scene key={c.key} cat={c} view={view} onOpen={openItem} onAdd={add} />
         ))}
       </main>
 

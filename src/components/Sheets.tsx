@@ -140,7 +140,7 @@ export function Ticket({ lines, total, unpriced, onClose }: { lines: Line[]; tot
         <div className="relative rounded-[22px] border-2 border-dashed border-[#1F7A8C]/35 bg-[#FBF8EE] p-6 text-[#14586B]">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-serif text-[30px] font-semibold italic leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
+              <p className="font-serif text-[30px] font-semibold leading-none" data-autofocus tabIndex={-1}>La Playa Blanca</p>
               <p className="mt-2 text-[13px] font-extrabold uppercase tracking-[.16em] text-[#14586B]/70">Beach pickup · {time}</p>
             </div>
             <img src="/assets/logo.jpg" alt="" className="size-14 rotate-6 rounded-lg border-2 border-white object-cover shadow-md" />

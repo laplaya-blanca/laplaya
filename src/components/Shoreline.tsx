@@ -93,13 +93,13 @@ export function Footer({ site }: { site: Site | null }) {
   return (
     <footer className="mt-10 px-6 pb-[calc(var(--dock-h)+48px)] pt-28"
       style={{ background: 'linear-gradient(180deg, var(--water) 0, var(--sea-2) 96px, var(--sea-3) 220px, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)' }}>
-      <p className="font-script text-[58px] leading-none text-[var(--glint)]">Nos vemos en la playa</p>
+      <p className="font-serif text-[40px] font-semibold leading-[1.02] tracking-[-.015em] text-[var(--glint)]">Nos vemos en la playa</p>
       <p className="mt-2 text-[16px] text-[#F3ECDD]/85">See you at the beach.</p>
       <div className="mt-10 grid gap-8 text-[#F3ECDD]">
         <div>
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us</p>
           <p className="mt-2 font-serif text-[22px] font-semibold">Qaraaoun, West Bekaa</p>
-          <a className="mt-1 inline-block text-[16px] font-bold underline underline-offset-4" href="https://www.google.com/maps/search/?api=1&query=La+Playa+Blanca+Qaraoun" target="_blank" rel="noopener">Open in Maps</a>
+          <a className="inline-flex min-h-11 items-center text-[16px] font-bold underline underline-offset-4" href="https://www.google.com/maps/search/?api=1&query=La+Playa+Blanca+Qaraoun" target="_blank" rel="noopener">Open in Maps</a>
         </div>
         <div>
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
@@ -129,7 +129,7 @@ export function Footer({ site }: { site: Site | null }) {
         <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/70">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
         <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent" />
         <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80">Crafted by</p>
-        <p className="mt-1 font-serif text-[24px] italic font-medium tracking-[-.01em]">Mohammad Yassin</p>
+        <p className="mt-1 font-serif text-[24px] font-semibold tracking-[-.01em]">Mohammad Yassin</p>
       </div>
     </footer>
   );

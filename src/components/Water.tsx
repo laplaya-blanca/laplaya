@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 // The lake behind the menu. First choice is real filmed water (a 6s Pexels loop of open water with light on it),
-// shown as filmed at night and tinted to the lake's turquoise by day. It only starts loading as the menu comes near,
+// shown as filmed, a touch dimmer at night. It only starts loading as the menu comes near,
 // plays only while the menu is on screen, and if a phone won't autoplay it (iOS Low Power Mode, data saver) the
 // drawn water below stays instead.
 //
@@ -78,7 +78,7 @@ const EDGE = { rootMargin: '0px 0px -1px 0px' };
 
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const LOOKS = {
-  day: { deep: hex('#0A5563'), shallow: hex('#1A8A92'), shine: hex('#FFFFFF'), gloss: 1.0, beach: 1 },
+  day: { deep: hex('#13222A'), shallow: hex('#3B505A'), shine: hex('#E4ECEF'), gloss: 1.15, beach: 0 },
   night: { deep: hex('#050F17'), shallow: hex('#123245'), shine: hex('#D3DEE2'), gloss: 1.15, beach: 0 }
 };
 
@@ -183,11 +183,9 @@ export function Water({ dark, className = '' }: { dark: boolean; className?: str
       <canvas ref={ref} className="absolute inset-0 size-full" style={{ opacity: 0, transition: 'opacity .6s' }} />
       <video ref={film} muted loop playsInline preload="none" disablePictureInPicture tabIndex={-1}
         className="absolute inset-0 size-full object-cover transition-opacity duration-700"
-        style={{ opacity: rolling ? 1 : 0, filter: dark ? 'brightness(.85) saturate(.9)' : 'brightness(1.08)' }} />
-      {/* by day the grey-blue footage takes the lake's turquoise, keeping its own light and shade */}
-      {rolling && !dark && <div className="absolute inset-0 bg-[#14909A] mix-blend-color" />}
+        style={{ opacity: rolling ? 1 : 0, filter: dark ? 'brightness(.85) saturate(.9)' : 'none' }} />
       {/* a light veil so the brightest glints never wash out the text set on the water */}
-      {rolling && <div className={'absolute inset-0 ' + (dark ? 'bg-[#03121A]/28' : 'bg-[#032C33]/30')} />}
+      {rolling && <div className={'absolute inset-0 ' + (dark ? 'bg-[#03121A]/28' : 'bg-[#0A1A20]/22')} />}
     </div>
   );
 }

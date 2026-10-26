@@ -63,15 +63,16 @@ function titleSize(name: string) {
 // the owner may type a category in capitals; titles read as words, not signage
 const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\p{L}/gu, (m) => m.toUpperCase()) : s);
 
-export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { cat: Category; index: number; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
+export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Category; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
     <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
-      {/* the category's name, set large in the light italic of "Blanca" on the shore */}
+      {/* the category's name, set large in the same upright serif as "La Playa" on the shore */}
       <div className="px-5">
-        <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">
-          {String(index + 1).padStart(2, '0')} · {cat.temp || 'Fresh'} · {cat.items.length} to choose · {priceRange(cat.items)}
+        <p className="flex items-center gap-2.5 text-[14px] font-semibold text-[var(--ink-soft)]">
+          <span className="rounded-full border border-[var(--line)] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[.16em] text-[var(--ink)]">{cat.temp || 'Fresh'}</span>
+          {cat.items.length} items, {priceRange(cat.items)}
         </p>
-        <div className="reveal mt-1.5"><h2 id={'h-' + cat.key} className="font-serif font-normal italic leading-[.98] tracking-[-.015em]"
+        <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="font-serif font-semibold leading-[.98] tracking-[-.02em]"
           style={{ fontSize: titleSize(cat.name) }}>
           {titleCase(cat.name)}
         </h2></div>
@@ -185,7 +186,7 @@ function Art({ item, w, className }: { item: Item; w: number; className: string 
       <span className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 20%, color-mix(in srgb, ${tint} 55%, transparent) 100%)` }} />
       {small
         ? <span className="absolute inset-0 grid place-items-center font-serif text-[26px] font-semibold text-[#FBF6EA] [text-shadow:0_2px_10px_rgba(6,20,29,.45)]">{item.name.charAt(0)}</span>
-        : <span className="absolute inset-x-4 bottom-[14%] text-center font-script text-[clamp(46px,13vw,64px)] leading-[.95] text-[#FBF6EA] [text-shadow:0_2px_14px_rgba(6,20,29,.5)]">{item.name}</span>}
+        : <span className="absolute inset-x-4 bottom-[14%] text-center font-serif text-[clamp(28px,8vw,38px)] font-semibold leading-[1.02] tracking-[-.01em] text-[#FBF6EA] [text-shadow:0_2px_14px_rgba(6,20,29,.5)]">{item.name}</span>}
     </span>
   );
 }

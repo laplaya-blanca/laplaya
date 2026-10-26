@@ -6,7 +6,7 @@
   --sky-1: #BFE6E8; --sky-2: #DDF2EF; --sky-3: #F5F3E6;
   --sea-1: #4FB6BF; --sea-2: #1F8A99; --sea-3: #14586B;
   --sun: #FFF4D6; --glow: rgba(255, 248, 220, .6); --hills: #8FB0A9;
-  --paper: #FBF7EE; --paper-2: #F3ECDC; --ink: #123F4D; --ink-soft: #456570; --line: rgba(18, 63, 77, .14); --water: #155E69;
+  --paper: #FBF7EE; --paper-2: #F3ECDC; --ink: #123F4D; --ink-soft: #456570; --line: rgba(18, 63, 77, .14); --water: #24343B;
   --w-ink: #FBF7EE; --w-ink-soft: rgba(251, 247, 238, .84); --w-line: rgba(251, 247, 238, .2);
   --p-ink: #123F4D; --p-ink-soft: #456570; --p-line: rgba(18, 63, 77, .14);
   --accent: #123F4D; --accent-ink: #FBF7EE; --accent-glow: rgba(18,63,77,.28); --glint: #F3E9D2; --pill: #FBF7EE; --pill-ink: #123F4D; --coral: #D9566B;
@@ -18,7 +18,6 @@
 @theme {
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Manrope', system-ui, sans-serif;
-  --font-script: 'Mrs Saint Delafield', 'Fraunces', cursive;
 }
 
 @layer base {
