@@ -35,7 +35,7 @@ export const Chest = ({ size = 34 }: { size?: number }) => (
 // course down the water to an X on the east shore where the chest is buried. The whole map opens Google Maps.
 export function TreasureMap({ href }: { href: string }) {
   return (
-    <a href={href} target="_blank" rel="noopener" aria-label="Find us at Qaraaoun, West Bekaa. Open in Maps" className="treasure drift block" style={{ ['--i' as string]: 0 }}>
+    <a href={href} target="_blank" rel="noopener" className="treasure drift block" style={{ ['--i' as string]: 0 }}>
       <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us · X marks the spot</p>
       <div className="parchment mt-3">
         <svg viewBox="0 0 320 210" className="block w-full" aria-hidden>
@@ -78,7 +78,7 @@ export function TreasureMap({ href }: { href: string }) {
             <p className="font-brand text-[19px] font-extrabold uppercase leading-none tracking-[.02em] text-[#3E2A14]">Qaraaoun, West Bekaa</p>
             <p className="mt-1 text-[13px] font-semibold text-[#6B4A26]">On the white sand by the lake</p>
           </div>
-          <span className="grid h-10 shrink-0 place-items-center rounded-full bg-[#3E2A14] px-4 text-[14px] font-extrabold text-[#F4E9CF]">Open map</span>
+          <span className="grid h-10 shrink-0 place-items-center rounded-full bg-[#3E2A14] px-4 text-[14px] font-extrabold text-[#F4E9CF]">Open map<span className="sr-only"> (opens in a new tab)</span></span>
         </div>
       </div>
     </a>
@@ -106,21 +106,23 @@ export const InstagramMark = ({ size = 22 }: { size?: number }) => (
 // Say hello: three glass tiles afloat, each with its mark on a disc in its own colour
 export function Hello({ c }: { c: Site['contact'] }) {
   const tiles = [
-    { href: 'tel:' + c.phone.replace(/[^\d+]/g, ''), mark: <PhoneMark />, disc: 'bg-[#F9F6E3] text-[#007385]', name: 'Call', sub: c.phone, out: false },
+    { href: 'tel:' + (c.phone || '').replace(/[^\d+]/g, ''), mark: <PhoneMark />, disc: 'bg-[#F9F6E3] text-[#007385]', name: 'Call', sub: c.phone, out: false },
     { href: 'https://wa.me/' + String(c.whatsapp).replace(/\D/g, ''), mark: <WhatsAppMark />, disc: 'bg-[#25D366] text-white', name: 'WhatsApp', sub: 'Message us', out: true },
     { href: 'https://instagram.com/' + encodeURIComponent(c.instagram), mark: <InstagramMark />, disc: 'ig text-white', name: 'Instagram', sub: '@' + c.instagram, out: true }
   ];
+  const shown = tiles.filter((_, i) => [c.phone, c.whatsapp, c.instagram][i]);
+  if (!shown.length) return null;
   return (
     <div>
       <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Say hello</p>
       <div className="mt-3 grid grid-cols-3 gap-2.5">
-        {tiles.map((t, i) => (
+        {shown.map((t, i) => (
           <div key={t.name} className="slot">
             <a href={t.href} target={t.out ? '_blank' : undefined} rel={t.out ? 'noopener' : undefined}
               className="hello glass3d splash drift flex flex-col items-center rounded-[22px] px-1.5 pb-3 pt-4 text-center" style={{ ['--i' as string]: i + 1 }}>
               <span className={'grid size-12 place-items-center rounded-full shadow-[0_6px_16px_rgba(3,20,26,.3)] ' + t.disc}>{t.mark}</span>
               <span className="mt-2.5 text-[14px] font-extrabold text-[#F9F6E3]">{t.name}</span>
-              <span className="mt-0.5 w-full truncate text-[11.5px] text-[#F9F6E3]/70">{t.sub}</span>
+              <span className="mt-0.5 w-full truncate text-[11.5px] text-[#F9F6E3]/90">{t.sub}</span>
             </a>
           </div>
         ))}

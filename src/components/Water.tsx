@@ -99,6 +99,11 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
   const film = useRef<HTMLVideoElement>(null);
   const filming = useRef(false);
   const [rolling, setRolling] = useState(false);
+  // whether any part of the page set on the water is on screen, and who wants to hear when that changes; the
+  // drawing and the film are set up once, only this watcher is renewed once the content (and Events) are in
+  const onScreen = useRef(false);
+  const tellCanvas = useRef<() => void>(() => {});
+  const tellFilm = useRef<() => void>(() => {});
 
   useEffect(() => { look.current = dark ? LOOKS.night : LOOKS.day; repaint.current(); }, [dark]);
 
@@ -121,7 +126,7 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
     const u = (n: string) => gl.getUniformLocation(prog, n);
     const uBeach = u('beach'), uT = u('t'), uAspect = u('aspect'), uDrift = u('drift'), uDeep = u('deep'), uShallow = u('shallow'), uShine = u('shine'), uGloss = u('gloss');
 
-    let raf = 0, last = 0, visible = false, dead = false;
+    let raf = 0, last = 0, dead = false;
     const t0 = performance.now();
 
     const size = () => {
@@ -140,11 +145,12 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
     };
     const loop = (now: number) => {
       raf = 0;
-      if (dead || !visible || document.hidden || filming.current) return;
+      if (dead || !onScreen.current || document.hidden || filming.current) return;
       if (now - last > 32) { last = now; paint(now); }
       raf = requestAnimationFrame(loop);
     };
-    const kick = () => { if (!raf && !dead && visible && !document.hidden && !filming.current) raf = requestAnimationFrame(loop); };
+    const kick = () => { if (!raf && !dead && onScreen.current && !document.hidden && !filming.current) raf = requestAnimationFrame(loop); };
+    tellCanvas.current = kick;
     repaint.current = () => { if (!dead) paint(performance.now()); };
 
     size(); paint(t0);
@@ -154,39 +160,43 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
     canvas.addEventListener('webglcontextlost', lost);
     const ro = new ResizeObserver(() => { if (!dead) { size(); paint(performance.now()); } });
     ro.observe(canvas);
-    // only while the menu, Events & Catering or the footer (all set on the water) is on screen: the hero covers it anyway
-    const parts = onWater();
-    const io = watch(parts, (on) => { visible = on; kick(); });
-    if (!parts.length) { visible = true; kick(); }
+    kick();
     const vis = () => kick();
     document.addEventListener('visibilitychange', vis);
 
     return () => {
-      dead = true; repaint.current = () => {};
-      cancelAnimationFrame(raf); ro.disconnect(); io.disconnect();
+      dead = true; repaint.current = () => {}; tellCanvas.current = () => {};
+      cancelAnimationFrame(raf); ro.disconnect();
       document.removeEventListener('visibilitychange', vis);
       canvas.removeEventListener('webglcontextlost', lost);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [ready]);
+  }, []);
 
   // the filmed water: load as the menu nears, play while it's on screen, hand over from the drawn water once it rolls
   useEffect(() => {
     const v = film.current, menu = document.getElementById('menu');
     if (!v || !menu || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const parts = onWater();
-    let seen = false;
-    const play = () => { if (seen && !document.hidden) v.play().catch(() => {}); else v.pause(); };
+    const play = () => { if (onScreen.current && !document.hidden) v.play().catch(() => {}); else v.pause(); };
+    tellFilm.current = play;
     // start fetching a little before the menu arrives; play only while it is actually on screen
     const soon = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !v.getAttribute('src')) { v.src = '/assets/water.mp4'; v.load(); soon.disconnect(); }
     }, { rootMargin: '60% 0px' });
-    const io = watch(parts, (on) => { seen = on; play(); });
     soon.observe(menu);
     const rolls = () => { filming.current = true; setRolling(true); };
     v.addEventListener('playing', rolls);
     document.addEventListener('visibilitychange', play);
-    return () => { soon.disconnect(); io.disconnect(); v.removeEventListener('playing', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
+    return () => { tellFilm.current = () => {}; soon.disconnect(); v.removeEventListener('playing', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
+  }, []);
+
+  // only while the menu, Events & Catering or the footer (all set on the water) is on screen: the hero covers it anyway
+  useEffect(() => {
+    const parts = onWater();
+    const tell = (on: boolean) => { onScreen.current = on; tellCanvas.current(); tellFilm.current(); };
+    if (!parts.length) { tell(true); return; }
+    const io = watch(parts, tell);
+    return () => io.disconnect();
   }, [ready]);
 
   return (

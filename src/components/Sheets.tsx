@@ -47,9 +47,12 @@ const LIFT = { type: 'spring', stiffness: 380, damping: 38 } as const;
 function useLift(target: React.RefObject<HTMLDivElement | null>) {
   const still = useReducedMotion();
   const card = useRef<HTMLElement | null>(null);
+  const closing = useRef(false);
   const fly = (from: DOMRect, to: DOMRect, src: HTMLElement, done: () => void) => {
+    // the copy is made of an element we may already have hidden, so it is made visible again (and kept from screen readers)
     const ghost = src.cloneNode(true) as HTMLElement;
-    Object.assign(ghost.style, { position: 'fixed', zIndex: '70', margin: '0', pointerEvents: 'none', left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px', borderRadius: '24px', aspectRatio: 'auto', boxShadow: '0 24px 60px rgba(4,20,28,.35)' });
+    ghost.setAttribute('aria-hidden', 'true');
+    Object.assign(ghost.style, { visibility: 'visible', position: 'fixed', zIndex: '70', margin: '0', pointerEvents: 'none', left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px', borderRadius: '24px', aspectRatio: 'auto', boxShadow: '0 24px 60px rgba(4,20,28,.35)' });
     document.body.appendChild(ghost);
     animate(ghost, { left: to.left, top: to.top, width: to.width, height: to.height }, LIFT).then(() => { ghost.remove(); done(); });
   };
@@ -68,10 +71,13 @@ function useLift(target: React.RefObject<HTMLDivElement | null>) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // closing: back down into its card, if that card is still on screen
   return (close: () => void) => {
+    if (closing.current) return; // Escape and a tap on the backdrop together close once
+    closing.current = true;
     const el = card.current, box = target.current;
     if (el && box && el.isConnected) {
       const back = el.getBoundingClientRect();
       if (back.bottom > 0 && back.top < innerHeight) {
+        el.style.visibility = 'hidden';
         fly(box.getBoundingClientRect(), back, box, () => { el.style.visibility = ''; });
         box.style.visibility = 'hidden';
       } else el.style.visibility = '';

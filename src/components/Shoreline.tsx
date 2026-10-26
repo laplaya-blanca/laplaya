@@ -31,7 +31,7 @@ export function Events({ site }: { site: Site | null }) {
   };
   const ig = site?.contact.instagram;
   // fields are panes of the same glass: a little clearer than the card, the water still moving through them
-  const field = 'pane mt-1.5 h-13 w-full rounded-2xl px-4 text-[17px] font-semibold normal-case tracking-normal text-[#F9F6E3] [text-shadow:none] placeholder:font-normal placeholder:text-[#F9F6E3]/45 outline-none';
+  const field = 'pane mt-1.5 h-13 w-full rounded-2xl px-4 text-[17px] font-semibold normal-case tracking-normal text-[#F9F6E3] [text-shadow:none] placeholder:font-normal placeholder:text-[#F9F6E3]/75 outline-none';
   const label = 'text-[13px] font-extrabold uppercase tracking-[.14em] text-[#F9F6E3]/85';
   const glass = useAfloat<HTMLDivElement>();
   return (
@@ -58,7 +58,7 @@ export function Events({ site }: { site: Site | null }) {
         {state === 'sent' ? (
           <div role="status" className="tidepool glass3d mt-6 rounded-[28px] p-7 text-center">
             <span aria-hidden className="sheen" />
-            <p className="font-brand text-[28px] font-extrabold uppercase leading-none tracking-[.02em] text-[#F9F6E3]">Gracias!</p>
+            <p tabIndex={-1} ref={(el) => el?.focus()} className="font-brand text-[28px] font-extrabold uppercase leading-none tracking-[.02em] text-[#F9F6E3]">Gracias!</p>
             <p className="mt-3 text-[16px] text-[#F9F6E3]/85">Inquiry sent. We’ll be in touch soon to plan it with you.</p>
           </div>
         ) : (
@@ -72,7 +72,7 @@ export function Events({ site }: { site: Site | null }) {
             <div className="grid gap-4">
               <label className={label}>Your name<input className={field} name="name" required autoComplete="name" /></label>
               <label className={label}>Phone / WhatsApp<input className={field} name="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="+961 …" /></label>
-              <label className={label}>Email <span className="font-semibold normal-case tracking-normal text-[#F9F6E3]/55">(optional)</span><input className={field} name="email" type="email" autoComplete="email" /></label>
+              <label className={label}>Email <span className="font-semibold normal-case tracking-normal text-[#F9F6E3]/85">(optional)</span><input className={field} name="email" type="email" autoComplete="email" /></label>
               <div className="grid grid-cols-2 gap-3">
                 <label className={label}>Event
                   <select className={field + ' pick pr-10 [&>option]:text-[#123F4D]'} name="event_type" defaultValue="Wedding">
@@ -120,7 +120,7 @@ export function Footer({ site }: { site: Site | null }) {
       </div>
       <div aria-hidden className="glitter">{GLITTER.map(([x, w], i) => <span key={i} style={{ ['--g' as string]: i, ['--x' as string]: x, ['--w' as string]: w }} />)}</div>
       <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
-      <p className="relative mt-3 text-[16px] text-[#F3ECDD]/85">See you at the beach.</p>
+      <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
       <div className="relative mt-10 grid gap-8 text-[#F3ECDD]">
         <TreasureMap href={maps} />
         <div className="drift" style={{ ['--i' as string]: 1 }}>
@@ -139,7 +139,7 @@ export function Footer({ site }: { site: Site | null }) {
       {/* sign-off: the house, then the maker's signature, set apart by a hairline */}
       <div className="relative mt-14 flex flex-col items-center text-center text-[#F3ECDD]">
         <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
-        <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/70">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
+        <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/90">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
         <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent" />
         <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80">Crafted by</p>
         <Signature />

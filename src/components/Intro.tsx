@@ -44,12 +44,15 @@ export function Intro({ onDone }: { onDone: () => void }) {
     const html = document.documentElement;
     try { sessionStorage.setItem(KEY, '1'); } catch { /* shows again next load */ }
     html.style.overflow = 'hidden';
+    // the page underneath can't take focus while the overlay is up
+    document.querySelectorAll('#root > :not([data-intro-overlay])').forEach((el) => el.setAttribute('inert', ''));
+    const free = () => document.querySelectorAll('#root > [inert]').forEach((el) => el.removeAttribute('inert'));
     html.dataset.intro = 'on'; // our own overlay is up: drop the boot cover, keep the hero's titles waiting
     const resize = () => setVp({ w: innerWidth, h: innerHeight });
     addEventListener('resize', resize);
 
     // start once the lettering has arrived (or soon anyway), hold until the lake photo is in (or soon anyway)
-    const fonts = Promise.race([document.fonts?.load(`800 20px Rubik`), wait(1200)]);
+    const fonts = Promise.race([document.fonts?.load(`800 20px Rubik`).catch(() => {}), wait(1200)]);
     const photo = document.querySelector<HTMLImageElement>('header picture img');
     const lake = Promise.race([photo && !photo.complete ? new Promise((r) => { photo.onload = photo.onerror = r; }) : null, wait(2600)]);
     let live = true;
@@ -58,19 +61,20 @@ export function Intro({ onDone }: { onDone: () => void }) {
       if (!live) return;
       // the hero's titles rise once the window has all but cleared the screen
       setTimeout(() => { if (live) delete html.dataset.intro; }, 700);
+      free();
       animate(fade, 0, { duration: 0.25, ease: 'easeOut' });
       animate(grow, wide, { duration: 1.1, ease: [0.7, 0, 0.2, 1] }).then(() => {
         html.style.overflow = '';
         if (live) onDone();
       });
     });
-    return () => { live = false; removeEventListener('resize', resize); html.style.overflow = ''; delete html.dataset.intro; };
+    return () => { live = false; free(); removeEventListener('resize', resize); html.style.overflow = ''; delete html.dataset.intro; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const letters = 'LA PLAYA BLANCA'.split('');
   return (
-    <div aria-hidden className="fixed inset-0 z-[100] touch-none">
+    <div aria-hidden data-intro-overlay className="fixed inset-0 z-[100] touch-none">
       <svg width={vp.w} height={vp.h} viewBox={`0 0 ${vp.w} ${vp.h}`} className="block">
         <defs>
           <mask id="intro-hole" maskUnits="userSpaceOnUse" x="0" y="0" width={vp.w} height={vp.h}>

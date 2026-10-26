@@ -122,7 +122,7 @@ const get = (name: string) =>
   });
 
 export async function loadContent(): Promise<Content> {
-  const plated = fetch('/assets/plated.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  const plated = fetch('/assets/plated.json').then((r) => (r.ok ? r.json() : {})).then((j: unknown) => (j && typeof j === 'object' ? j as RawPlated : {})).catch(() => ({}));
   const [menu, site, gallery, ready] = await Promise.all([get('menu'), get('site'), get('gallery').catch(() => ({ photos: [] })), plated]);
   return {
     categories: buildMenu(menu, ready),

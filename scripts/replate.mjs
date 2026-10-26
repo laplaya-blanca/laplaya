@@ -55,7 +55,8 @@ const dishes = [];
 for (const c of menu.categories || []) {
   const idBase = c.name.toLowerCase().replace(/[^a-z]/g, '') || slug(c.name);
   (c.items || []).forEach((row, i) => {
-    if (!row?.photo || !row.name) return;
+    // only the site's own photo paths (the same rule as src/lib/content.ts), so an edited menu can't send other files off
+    if (!row?.name || !/^\/?(uploads|assets)\/[\w.\-]+$/.test(row.photo || '')) return;
     dishes.push({ id: idBase + '-' + (slug(row.name) || 'item') + '-' + i, name: row.name, cat: c.name, photo: row.photo.replace(/^\//, '') });
   });
 }
