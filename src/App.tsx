@@ -72,7 +72,6 @@ export function App() {
 
   const setView = (v: View) => { setViewState(v); try { localStorage.setItem('lpb-view', v); } catch { /* not remembered */ } };
   const goTo = (key: string) => { setOpen(null); requestAnimationFrame(() => document.getElementById('cat-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
-  const enter = () => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // the add: a drop in the item's flavour colour arcs into the order button, which springs
   const add = useCallback((item: Item, from?: HTMLElement | null) => {
@@ -123,7 +122,7 @@ export function App() {
   return (
     <>
       {intro && <Intro onDone={() => setIntro(false)} />}
-      <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} onEnter={enter} />
+      <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} cats={cats} onPick={goTo} />
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
       <Water dark={light.dark} className="pointer-events-none fixed inset-0 -z-10 h-lvh w-full" />
@@ -159,13 +158,13 @@ export function App() {
             <h2 id="picks-h" className="px-6 text-[13px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">House favourites</h2>
             <div className="rail mt-3">
               {picks.map((p, i) => (
-                <button key={p.id} onClick={() => setOpen({ t: 'item', item: p })} style={{ ['--i' as string]: i }} className="float w-[132px] text-left">
+                <div key={p.id} className="slot"><button onClick={() => setOpen({ t: 'item', item: p })} style={{ ['--i' as string]: i }} className="float w-[132px] text-left">
                   <span className="block aspect-square overflow-hidden rounded-[22px] shadow-[0_10px_24px_rgba(6,20,29,.12)]">
                     <PickArt item={p} />
                   </span>
                   <span className="mt-2 block font-serif text-[17px] font-semibold leading-tight">{p.name}</span>
                   <span className="block text-[13px] text-[var(--ink-soft)]">{p.cat}</span>
-                </button>
+                </button></div>
               ))}
             </div>
           </section>

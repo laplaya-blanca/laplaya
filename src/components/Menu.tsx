@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
+import { memo, useEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import type { Category, Item } from '../lib/content';
 import { img, money } from '../lib/content';
 import { flavourColours, seeded } from '../lib/flavor';
@@ -113,7 +113,7 @@ export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Ca
       </div>
       {view === 'rail' ? (
         <div className="rail mt-4" role="list" aria-label={cat.name}>
-          {cat.items.map((it, i) => <Card key={it.id} item={it} i={i} onOpen={onOpen} onAdd={onAdd} />)}
+          {cat.items.map((it, i) => <Card key={it.id} item={it} i={i} air={air(cat.temp)} onOpen={onOpen} onAdd={onAdd} />)}
           <div aria-hidden className="w-1" />
         </div>
       ) : (
@@ -181,7 +181,27 @@ function readShot(im: HTMLImageElement): Shot {
 // same share of the frame at the same height whether he shot it close or far, and multiplied over the table so the
 // white turns into the table and the beach while the dish and its own shadow stay. Photos not shot on white are
 // shown as they are. Works for whatever he uploads next, without touching the files.
+// The table under a plate shot on white: one of four daytime angles on the same beach bar (each dish always gets the
+// same one, so a row of cards doesn't repeat itself), and after dark every plate moves to the lantern-lit table.
+// Each table says where its top is (surface: the middle of the tabletop, as a fraction of the photo's height) and what
+// light falls on it (size: how big a plate looks there; tint: multiplied over the dish only, so a plate at sunset or under the lantern is lit like its table).
+type Table = { src: string; surface: number; size?: number; tint?: string };
+const TABLES: Table[] = [
+  { src: '/assets/plate-table.jpg', surface: 0.705 },
+  { src: '/assets/plate-table-b.jpg', surface: 0.75 },
+  { src: '/assets/plate-table-c.jpg', surface: 0.66, size: 0.8 },
+  { src: '/assets/plate-table-d.jpg', surface: 0.645, tint: 'rgba(246,206,160,.55)' },
+];
+const NIGHT: Table = { src: '/assets/plate-table-night.jpg', surface: 0.75, size: 0.8, tint: 'rgba(214,160,104,.6)' };
+const nightWatch = (tell: () => void) => { const mo = new MutationObserver(tell); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-dark'] }); return () => mo.disconnect(); };
+const useNight = () => useSyncExternalStore(nightWatch, () => document.documentElement.hasAttribute('data-dark'));
+const tableFor = (id: string, night: boolean) => (night ? NIGHT : TABLES[Math.floor(seeded(id)() * TABLES.length)]);
+// where a height in the table photo lands in the frame: the 3:4 photo is cover-fitted with its 75% line held in place
+const PH = 'max(100cqh, 133.333cqw)';
+const onTable = (f: number) => `calc((100cqh - ${PH}) * .75 + ${f} * ${PH})`;
+
 function Photo({ item, w, className }: { item: Item; w: number; className: string }) {
+  const night = useNight();
   const [shot, setShot] = useState<Shot | undefined>(() => shots.get(item.photo));
   const read = (e: SyntheticEvent<HTMLImageElement>) => {
     if (!shots.has(item.photo)) shots.set(item.photo, readShot(e.currentTarget));
@@ -194,15 +214,25 @@ function Photo({ item, w, className }: { item: Item; w: number; className: strin
     </span>
   );
   const [x0, y0, x1, y1] = shot.box, { ar } = shot;
-  // L is the photo's rendered width: the dish may take 80% of the width or 56% of the height, whichever is smaller
-  const L = `min(${(80 / (x1 - x0)).toFixed(2)}cqw, ${(56 / ((y1 - y0) * ar)).toFixed(2)}cqh)`;
-  const place = { width: L, height: `calc(${L} * ${ar.toFixed(4)})`, left: `calc(50cqw - ${L} * ${((x0 + x1) / 2).toFixed(4)})`, top: `calc(70cqh - ${L} * ${(((y0 + y1) / 2) * ar).toFixed(4)})` };
+  const table = tableFor(item.id, night);
+  // L is the photo's rendered width: the dish may take 80% of the width or 56% of the height, whichever is smaller.
+  // The dish's middle sits on the middle of this table's top.
+  const k = table.size ?? 1;
+  const L = `min(${(80 * k / (x1 - x0)).toFixed(2)}cqw, ${(56 * k / ((y1 - y0) * ar)).toFixed(2)}cqh)`;
+  const top = `calc(${onTable(table.surface)} - ${L} * ${(((y0 + y1) / 2) * ar).toFixed(4)})`;
+  const place = { width: L, height: `calc(${L} * ${ar.toFixed(4)})`, left: `calc(50cqw - ${L} * ${((x0 + x1) / 2).toFixed(4)})`, top };
+  const mask = { maskImage: `url(${shot.mask})`, WebkitMaskImage: `url(${shot.mask})`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' };
+  // a soft contact shadow where the dish meets the wood, so it rests on the table instead of hovering over it
+  const dw = `${L} * ${(x1 - x0).toFixed(4)}`;
+  const shadow = { width: `calc(${dw} * 1.02)`, height: `calc(${dw} * .17)`, left: `calc(50cqw - ${dw} * .51)`, top: `calc(${top} + ${L} * ${(y1 * ar).toFixed(4)} - ${dw} * .12)` };
   return (
     <span className={className + ' relative isolate block overflow-hidden bg-[#EFE6D8] [container-type:size]'}>
-      <img src={img('/assets/plate-table.jpg', Math.min(Math.max(w, 300), 1200))} alt="" aria-hidden loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
-      <span aria-hidden className="absolute bg-white" style={{ ...place, maskImage: `url(${shot.mask})`, WebkitMaskImage: `url(${shot.mask})`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }} />
+      <img src={img(table.src, Math.min(Math.max(w, 300), 1200))} alt="" aria-hidden loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+      <span aria-hidden className="absolute rounded-[50%] mix-blend-multiply" style={{ ...shadow, background: 'radial-gradient(closest-side, rgba(52,34,18,.42), rgba(52,34,18,.18) 55%, rgba(52,34,18,0))' }} />
+      <span aria-hidden className="absolute bg-white" style={{ ...place, ...mask }} />
       <img src={src} alt={item.name} loading="lazy" onLoad={read} className="absolute max-w-none mix-blend-multiply [mask:linear-gradient(90deg,transparent,#000_5%,#000_95%,transparent),linear-gradient(transparent,#000_5%,#000_95%,transparent)] [mask-composite:intersect]"
         style={place} />
+      {table.tint && <span aria-hidden className="absolute mix-blend-multiply" style={{ ...place, ...mask, background: table.tint }} />}
     </span>
   );
 }
@@ -240,12 +270,28 @@ function Price({ item, className = '' }: { item: Item; className?: string }) {
     : <span className="text-[15px] font-bold text-[var(--ink-soft)]">Ask at the counter</span>;
 }
 
-const Card = memo(function Card({ item, i, onOpen, onAdd }: { item: Item; i: number; onOpen: (i: Item) => void; onAdd: Add }) {
+// the card photo that was just tapped, so the item view can lift it out of the water (see Lift in Sheets)
+let lifted: HTMLElement | null = null;
+export const liftFrom = (el: Element | null) => { lifted = el as HTMLElement | null; };
+export const takeLift = () => { const el = lifted; lifted = null; return el; };
+
+// what rises off the plate: steam from anything warm, a slow glint of light across anything cold
+type Air = 'steam' | 'chill' | null;
+const air = (temp: string): Air => (/warm|hot/i.test(temp) ? 'steam' : /cold|iced|fresh|frozen/i.test(temp) ? 'chill' : null);
+function Breath({ air }: { air: Air }) {
+  if (air === 'steam') return <span aria-hidden className="steam">{[0, 1, 2].map((k) => <span key={k} style={{ ['--k' as string]: k }} />)}</span>;
+  if (air === 'chill') return <span aria-hidden className="chill" />;
+  return null;
+}
+
+const Card = memo(function Card({ item, i, air, onOpen, onAdd }: { item: Item; i: number; air: Air; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
-    <article role="listitem" style={{ ['--i' as string]: i }} className={'float paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
-      <button onClick={() => onOpen(item)} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
-        <div className="relative aspect-[5/6] overflow-hidden">
+    // the still slot is what the rail snaps to; only the card inside it moves (a moving snap target makes the rail creep)
+    <div className="slot"><article role="listitem" style={{ ['--i' as string]: i }} className={'float paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
+      <button onClick={(e) => { liftFrom(e.currentTarget.querySelector('[data-art]')); onOpen(item); }} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
+        <div data-art className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'opacity-55 grayscale' : '')} />
+          {!item.soldOut && <Breath air={air} />}
           {item.signature && !item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--paper)]/92 px-3 py-1 text-[12px] font-extrabold text-[var(--ink)]">House favourite</span>}
           {item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--ink)] px-3 py-1 text-[12px] font-extrabold text-[var(--paper)]">Sold out today</span>}
         </div>
@@ -258,7 +304,7 @@ const Card = memo(function Card({ item, i, onOpen, onAdd }: { item: Item; i: num
         <Price item={item} className="text-[21px]" />
         <AddButton item={item} onAdd={onAdd} />
       </div>
-    </article>
+    </article></div>
   );
 });
 
