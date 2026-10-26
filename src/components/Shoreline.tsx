@@ -39,15 +39,15 @@ export function Events({ site }: { site: Site | null }) {
       <div className="relative h-[52svh] min-h-[340px] overflow-hidden">
         <img src="/assets/events-aisle.jpg" alt="A wedding aisle set up on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
-        <div className="absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
+        <div className="edge absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Events & catering</p>
           <h2 id="events-h" className="mt-2 font-brand text-[clamp(34px,10vw,52px)] font-extrabold uppercase leading-[.95] tracking-[.02em] text-[#F9F6E3]">Celebrate on the shore</h2>
           <p className="mt-2 max-w-[34ch] text-[16px] leading-snug text-[#FBF6EA]/90">Tell us about your day and we’ll build something sweet around it.</p>
         </div>
       </div>
-      {/* a phone reads the offers, then the form; from a laptop on they sit side by side, the form at a width a form
-          should be, on the same left edge as the menu above */}
-      <div className="px-5 lg:grid lg:max-w-[1120px] lg:grid-cols-[minmax(0,.85fr)_minmax(0,1.15fr)] lg:items-start lg:gap-16">
+      {/* a phone reads the offers, then the form; from a laptop on they sit side by side across the window, the form
+          at a width a form should be, on the page's edges (.edge) like everything above. */}
+      <div className="edge px-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,600px)] lg:items-start lg:gap-12 xl:gap-24">
         <ul className="mt-6 divide-y divide-[var(--line)]">
           {OFFERS.map(([t, d]) => (
             <li key={t} className="py-4">
@@ -56,7 +56,7 @@ export function Events({ site }: { site: Site | null }) {
             </li>
           ))}
         </ul>
-        <div ref={glass}>
+        <div ref={glass} className="max-w-[600px]">
         {state === 'sent' ? (
           <div role="status" className="tidepool glass3d mt-6 rounded-[28px] p-7 text-center">
             <span aria-hidden className="sheen" />
@@ -111,7 +111,7 @@ export function Footer({ site }: { site: Site | null }) {
   // front one) and the deep water beneath carries the sign-off. Light lies on it in a glittering path, the sun's by
   // day and the moon's after dark. Everything moves only while the footer is on screen.
   return (
-    <footer ref={shore} className="shore relative mt-28 px-6 pb-[calc(var(--dock-h)+48px)] pt-16"
+    <footer ref={shore} className="shore edge relative mt-28 px-6 pb-[calc(var(--dock-h)+48px)] pt-16"
       style={{ background: 'linear-gradient(180deg, var(--sea-2) 0, var(--sea-3) 180px, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)' }}>
       <div aria-hidden className="tide">
         <svg className="swell back" viewBox="0 0 1200 80" preserveAspectRatio="none"><path d="M0 46 C150 16 300 16 450 46 S750 76 900 46 S1050 16 1200 46 V80 H0Z" /></svg>
@@ -122,14 +122,14 @@ export function Footer({ site }: { site: Site | null }) {
       </div>
       <div aria-hidden className="glitter">{GLITTER.map(([x, w], i) => <span key={i} style={{ ['--g' as string]: i, ['--x' as string]: x, ['--w' as string]: w }} />)}</div>
       {/* On a phone everything stacks. Up to a laptop it stays one column no wider than a phone's, so the map never
-          blows up; from a laptop on, the map takes the left and hours and hello sit beside it, centred on it. The
-          whole sign-off keeps the page's left edge, like the menu and the events above it. */}
-      <div className="relative max-w-[1080px]">
+          blows up. From a laptop on it spreads across the window: the map, then hours and hello beside it; on a wide
+          window hours and hello take a column each. Its edges are the page's edges (.edge). */}
+      <div className="relative">
         <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
         <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
-        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-x-16">
+        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:gap-x-16 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.8fr)_minmax(0,1fr)] xl:gap-x-12 2xl:gap-x-16">
           <TreasureMap href={maps} />
-          <div className="grid gap-8 lg:gap-10">
+          <div className="grid gap-8 lg:gap-10 xl:contents">
             <div className="drift" style={{ ['--i' as string]: 1 }}>
               <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
               {filled ? (

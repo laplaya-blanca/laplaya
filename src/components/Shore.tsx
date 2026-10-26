@@ -43,7 +43,7 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
       )}
 
       {/* top bar: logo and open state */}
-      <div className="relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(18px,env(safe-area-inset-top))]">
+      <div className="edge relative z-10 flex items-center justify-between gap-3 px-5 pt-[max(18px,env(safe-area-inset-top))]">
         <img src="/assets/logo.jpg" alt="La Playa Blanca logo" className="size-12 rounded-[14px] object-cover shadow-[0_8px_24px_rgba(0,0,0,.18)]" />
         <div className="glass3d flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-bold text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.35)]">
           {open ? (
@@ -58,7 +58,7 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
       </div>
 
       {/* title, in the open sky */}
-      <div className={'relative z-10 px-6 pt-[9svh] ' + (night ? 'text-[#F6EFDF]' : 'text-[#103A47]')}>
+      <div className={'edge relative z-10 px-6 pt-[9svh] ' + (night ? 'text-[#F6EFDF]' : 'text-[#103A47]')}>
         <p style={{ animationDelay: '0.05s' }} className="rise text-[13px] font-bold uppercase tracking-[.22em] opacity-80">Qaraaoun · West Bekaa</p>
         <h1 style={{ animationDelay: '0.12s', color: night ? '#F9F6E3' : '#007385' }} className="rise mt-3 font-brand font-extrabold uppercase leading-[.92] tracking-[.02em] text-[clamp(50px,14.5vw,104px)]">
           La Playa<br />Blanca
@@ -77,7 +77,7 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
           <span>{light.clock} · {light.label}{count ? ' · ' + count + ' to try' : ''}</span>
         </p>
         {cats.length > 0 && (
-          <nav aria-label="Jump to a category" className="bubbles flex gap-2.5 overflow-x-auto px-5 pb-3 pt-2 [scrollbar-width:none]">
+          <nav aria-label="Jump to a category" className="edge bubbles flex gap-2.5 overflow-x-auto px-5 pb-3 pt-2 [scrollbar-width:none]">
             {cats.map((c, i) => (
               <button key={c.key} onClick={() => onPick(c.key)} style={{ ['--i' as string]: i }}
                 className="bubble h-11 shrink-0 rounded-full bg-[#F9F6E3]/92 px-4 font-brand text-[14px] font-bold uppercase tracking-[.06em] text-[#007385] shadow-[0_10px_24px_rgba(3,25,33,.28)] active:scale-95 transition-transform">

@@ -95,6 +95,13 @@ html[data-intro] .rise { animation-play-state: paused; }
 /* horizontal swipe rails: native scroll-snap, edge-to-edge with a peek of the next card */
 .rail { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; padding: 4px 20px 22px; scrollbar-width: none; overscroll-behavior-x: contain; }
 .rail::-webkit-scrollbar { display: none; }
+/* one left edge for the whole page on a laptop or bigger: the hero, the menu's headings and rows, the events and the
+   footer all start on the same line, which sits in a centred 1440px column once the window is wider than that */
+@media (min-width: 1024px) {
+  :root { --edge: max(24px, calc((100vw - 1440px) / 2)); }
+  .edge { padding-inline: var(--edge); }
+  .rail { padding-inline: var(--edge); scroll-padding-inline: var(--edge); }
+}
 .rail > * { scroll-snap-align: start; flex: none; }
 
 /* Afloat. Everything here is transform-only (the compositor's job, no layout or paint) and runs only inside a
