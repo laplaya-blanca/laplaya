@@ -296,7 +296,7 @@ function OptionList({ title, hint, list, color, edit, field, ask }) {
 function BuilderView({ data, edit, ask }) {
   const cream = data.cream || { name: 'Whipped cream', price: 0 };
   return html`<div>
-    <header class="view-head"><div><h1 tabindex="-1">Build your own</h1><p class="muted">The options and prices customers pick from. The colour is what the crêpe preview shows.</p></div></header>
+    <header class="view-head"><div><h1 tabindex="-1">Build your own</h1><p class="muted">The options and prices customers pick from. The colour is what the crepe preview shows.</p></div></header>
     <${OptionList} title="Bases" list=${data.bases} color field="bases" edit=${edit} ask=${ask}/>
     <${OptionList} title="Sauces" list=${data.sauces} color field="sauces" edit=${edit} ask=${ask}/>
     <${OptionList} title="Toppings" hint="Price per topping" list=${data.toppings} field="toppings" edit=${edit} ask=${ask}/>

@@ -97,8 +97,8 @@
       ]
     },
     {
-      "name": "Crêpe",
-      "description": "Thin French crêpe, folded and filled",
+      "name": "Crepe",
+      "description": "Thin French crepe, folded and filled",
       "icon": "crepe",
       "temp": "Warm",
       "items": [
@@ -159,7 +159,7 @@
         {
           "name": "Fettuccine",
           "price": 6.5,
-          "description": "Ribboned crêpe, a playful house cut",
+          "description": "Ribboned crepe, a playful house cut",
           "photo": "",
           "available": true,
           "tags": []
@@ -217,7 +217,7 @@
         {
           "name": "Sushi",
           "price": 5,
-          "description": "Rolled and sliced, crêpe “sushi” style",
+          "description": "Rolled and sliced, crepe “sushi” style",
           "photo": "",
           "available": true,
           "tags": []
@@ -233,7 +233,7 @@
         {
           "name": "Sushi Brownie",
           "price": 6.5,
-          "description": "Rolled crêpe sushi, brownie centre",
+          "description": "Rolled crepe sushi, brownie centre",
           "photo": "",
           "available": true,
           "tags": []

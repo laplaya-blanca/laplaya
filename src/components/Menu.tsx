@@ -79,7 +79,7 @@ export function useAfloat<T extends HTMLElement>() {
 }
 
 // the title set letter by letter so a ripple can run through it; read aloud as the plain word
-function Ripple({ text }: { text: string }) {
+export function Ripple({ text }: { text: string }) {
   let n = 0;
   return (
     <>

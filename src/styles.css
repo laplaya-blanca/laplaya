@@ -134,6 +134,91 @@ html[data-intro] .rise { animation-play-state: paused; }
 }
 
 
+/* 4. the catering form is a slab of glass lying in the water: the moving water shows through, graded toward the
+   hour's own sea colour so it still reads as part of the lake, with a slow band of light passing over it */
+.tidepool { --glass-tint: color-mix(in srgb, var(--sea-3) 46%, transparent); --filter-glass3d: blur(16px) saturate(1.5) brightness(1.04); overflow: hidden; }
+.tidepool > .sheen { position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(120% 60% at 0% 0%, rgba(249,246,227,.16), transparent 60%), radial-gradient(90% 50% at 100% 100%, color-mix(in srgb, var(--sea-1) 22%, transparent), transparent 70%); }
+.tidepool > .sheen::after { content: ''; position: absolute; inset: -20% auto -20% 0; width: 38%; transform: translate3d(-140%, 0, 0) skewX(-18deg);
+  background: linear-gradient(90deg, rgba(249,246,227,0), rgba(249,246,227,.1), rgba(249,246,227,0)); }
+@keyframes sheen { 0%, 50% { transform: translate3d(-140%, 0, 0) skewX(-18deg); } 100% { transform: translate3d(400%, 0, 0) skewX(-18deg); } }
+.afloat .tidepool > .sheen::after { animation: sheen 9s ease-in-out infinite; }
+.pane { background: rgba(249,246,227,.09); border: 1px solid rgba(249,246,227,.22); box-shadow: inset 0 1px 0 rgba(249,246,227,.12);
+  transition: background-color .2s, border-color .2s, box-shadow .2s; }
+.pane:focus { background: rgba(249,246,227,.15); border-color: rgba(249,246,227,.6); box-shadow: inset 0 1px 0 rgba(249,246,227,.18), 0 0 0 4px rgba(249,246,227,.12); }
+.pane::-webkit-calendar-picker-indicator { opacity: .7; }
+.pick { appearance: none; background-repeat: no-repeat; background-position: right 16px center; background-size: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23F9F6E3' stroke-width='2'/%3E%3C/svg%3E"); }
+
+/* 5. the footer comes ashore. Two swells ride on top of it, drifting out of step (each svg is two waves wide, so
+   sliding it one wave loops seamlessly); as the footer comes into view the tide rises into place */
+.tide { position: absolute; left: 0; right: 0; bottom: 100%; height: 64px; overflow: hidden; pointer-events: none; }
+.swell { position: absolute; bottom: -1px; left: 0; width: 200%; height: 100%; }
+.swell.back { fill: color-mix(in srgb, var(--sea-1) 38%, transparent); height: 92%; }
+.swell.front { fill: var(--sea-2); }
+.swell .foam { fill: none; stroke: rgba(249,246,227,.55); stroke-width: 2.2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+@keyframes drift { to { transform: translate3d(-50%, 0, 0); } }
+.afloat .swell.front { animation: drift 11s linear infinite; }
+.afloat .swell.back { animation: drift 17s linear infinite reverse; }
+@supports (animation-timeline: view()) {
+  @keyframes tide-in { from { translate: 0 70%; } to { translate: 0 0; } }
+  .tide { animation: tide-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+}
+/* light on the water in a glittering path: warm sun by day, silver moon after dark. A soft column of light, and
+   flecks on it that flare and fade on their own, softened so they read as glints rather than lines */
+/* starts below the tide's troughs and is clipped there, so no glint ever lands on the waves */
+.glitter { position: absolute; top: 18px; right: 10%; width: 110px; height: 290px; overflow: hidden; pointer-events: none;
+  --light: 255, 230, 186; background: radial-gradient(35% 50% at 50% 45%, rgba(var(--light), .16), transparent 70%); }
+:root[data-dark] .glitter { --light: 214, 228, 240; }
+.glitter > span { position: absolute; left: 50%; top: calc(var(--g) * 23px + 10px); width: calc(var(--w) * 1px); height: 2.5px; border-radius: 3px;
+  translate: calc(-50% + var(--x) * 1px) 0; background: rgba(var(--light), .95); box-shadow: 0 0 8px 1px rgba(var(--light), .55);
+  filter: blur(.6px); opacity: .18; }
+@keyframes twinkle { 0%, 100% { opacity: .1; scale: .5 1; } 45% { opacity: .9; scale: 1 1; } 60% { opacity: .5; } }
+.afloat .glitter > span { animation: twinkle 2.9s ease-in-out infinite; animation-delay: calc(var(--g) * -.53s); }
+/* the footer's notes rock very gently, a beat apart, like the cards above */
+@keyframes rock { 0%, 100% { translate: 0 -1.5px; } 50% { translate: 0 2px; } }
+.afloat .drift { animation: rock 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -1.6s); }
+/* a ring of water spreads from a tapped pill */
+.splash { position: relative; }
+/* (pressed: a ring right at the edge; let go: it spreads out and fades) */
+.splash::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 12px rgba(249,246,227,0); transition: box-shadow .55s ease-out; }
+.splash:active::after { box-shadow: 0 0 0 0 rgba(249,246,227,.5); transition: none; }
+
+/* 6. Find us as a treasure map on old paper: torn edges, a burnt rim, a slight tilt. The ship rocks at anchor, the
+   dotted course marches toward the X, a ring pulses from it, and pressing the map lifts the chest's lid */
+.parchment { position: relative; rotate: -1.2deg; border-radius: 6px; color: #3E2A14; text-shadow: none;
+  background: radial-gradient(120% 90% at 50% 40%, #F7EDD3 0%, #EFDDB4 62%, #D9BC85 100%);
+  box-shadow: inset 0 0 26px rgba(110, 70, 25, .45), 0 14px 30px rgba(3, 20, 26, .4);
+  clip-path: polygon(0 2%, 6% 0, 14% 1.5%, 23% .3%, 31% 1.8%, 42% .4%, 51% 1.6%, 60% 0, 71% 1.4%, 80% .2%, 89% 1.7%, 96% .4%, 100% 2%,
+    99.2% 14%, 100% 27%, 99% 41%, 100% 55%, 99.3% 70%, 100% 84%, 99.4% 98%, 93% 100%, 84% 98.6%, 74% 100%, 63% 98.4%, 52% 99.8%,
+    41% 98.5%, 30% 100%, 19% 98.6%, 9% 99.8%, 0 98%, .7% 85%, 0 71%, .8% 56%, 0 42%, .6% 28%, 0 15%); }
+.parchment::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.treasure { -webkit-tap-highlight-color: transparent; }
+.treasure .parchment { transition: rotate .3s ease, scale .3s ease; }
+.treasure:active .parchment { rotate: 0deg; scale: .985; }
+@keyframes sail { 0%, 100% { rotate: -6deg; translate: 0 0; } 50% { rotate: 5deg; translate: 0 1.5px; } }
+.sail { transform-box: fill-box; transform-origin: 50% 80%; }
+.afloat .sail { animation: sail 3.6s ease-in-out infinite; }
+@keyframes course { to { stroke-dashoffset: -14.2; } }
+.afloat .course { animation: course 1.4s linear infinite; }
+@keyframes ping { 0% { scale: .4; opacity: .9; } 100% { scale: 1.6; opacity: 0; } }
+.ping { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.afloat .ping { animation: ping 2.2s ease-out infinite; }
+.chest .lid { transform-box: view-box; transform-origin: 14px -3px; transition: rotate .35s cubic-bezier(.3,1.6,.5,1); }
+.chest .glow { transition: opacity .3s; }
+.treasure:hover .chest .lid, .treasure:active .chest .lid, .treasure:focus-visible .chest .lid { rotate: 32deg; }
+.treasure:hover .chest .glow, .treasure:active .chest .glow, .treasure:focus-visible .chest .glow { opacity: 1; }
+/* Say hello tiles: the same glass as the form, and Instagram's own gradient on its disc */
+.hello { --glass-tint: color-mix(in srgb, var(--sea-3) 40%, transparent); text-shadow: none; }
+.ig { background: radial-gradient(circle at 30% 107%, #FDF497 0%, #FDF497 5%, #FD5949 45%, #D6249F 60%, #285AEB 90%); }
+/* the maker's handle in a ring of Instagram's colours that turns slowly */
+.ig-ring { position: relative; overflow: hidden; isolation: isolate; }
+.ig-ring::before { content: ''; position: absolute; inset: -150%; z-index: -1;
+  background: conic-gradient(from 0deg, #FD5949, #D6249F, #285AEB, #FDF497, #FD5949); }
+@keyframes turn { to { rotate: 1turn; } }
+.afloat .ig-ring::before { animation: turn 6s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition-duration: 0s !important; }

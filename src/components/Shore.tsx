@@ -67,7 +67,7 @@ export function Shore({ light, open, hours, count, cats, onPick }: { light: Ligh
           Nos vemos en la playa
         </p>
         <p style={{ animationDelay: '0.3s' }} className="rise mt-5 max-w-[30ch] text-[17px] font-medium leading-snug">
-          Crêpes, waffles, boba and shakes on the white-sand shore of the lake.
+          Crepes, waffles, boba and shakes on the white-sand shore of the lake.
         </p>
       </div>
 
