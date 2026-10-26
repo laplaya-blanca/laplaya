@@ -3,8 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import type { Category, Item } from '../lib/content';
 import { money } from '../lib/content';
 import type { Line } from '../lib/cart';
-import { Art, Price, priceRange, sceneImage, SHADE, type Add } from './Menu';
-import { FlavorArt } from './FlavorArt';
+import { Art, Price, priceRange, sceneImage, ShoreScene, SHADE, type Add } from './Menu';
 import { CloseButton, Sheet } from './Sheet';
 
 // ---------- bottom dock: always under the thumb ----------
@@ -15,12 +14,14 @@ export function Dock({ count, total, bump, onSearch, onTide, onCart, onCats, sho
       className={'fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 transition-transform duration-300 ' + (show ? 'translate-y-0' : 'translate-y-[140%]')}
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
       <div className="flex w-full max-w-[520px] items-center gap-1.5 glass3d rounded-[26px] p-1.5 text-[#F6EFDF] [--color-glass3d:hsl(200_70%_8%/.55)]">
+        <div className="flex flex-1 items-center justify-around">
         <DockBtn label="All categories" onClick={onCats}><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></DockBtn>
         <DockBtn label="Search the menu" onClick={onSearch}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></DockBtn>
         <DockBtn label="Let the tide choose for me" onClick={onTide}><path d="M2 14c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3l1.4 3.6L17 8l-3.6 1.4L12 13l-1.4-3.6L7 8l3.6-1.4z" /></DockBtn>
+        </div>
         <motion.button key={bump} onClick={onCart} data-cart-target
           initial={still || !bump ? false : { scale: 0.9 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 520, damping: 14 }}
-          className="ml-auto flex h-12 min-w-0 items-center gap-2.5 rounded-[20px] bg-[var(--amber)] pl-3.5 pr-4 font-extrabold text-[var(--amber-ink)]"
+          className="flex h-12 shrink-0 items-center gap-2.5 rounded-[20px] bg-[var(--amber)] pl-3.5 pr-4 font-extrabold text-[var(--amber-ink)]"
           aria-label={count ? 'Your order: ' + count + ' items, ' + money(total) : 'Your order is empty'}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
           {count ? <><span className="tabular-nums">{count}</span><span className="tabular-nums opacity-80">{money(total) || ''}</span></> : <span>Order</span>}
@@ -172,12 +173,11 @@ export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; o
       </div>
       <div className="grid grid-cols-2 gap-3 px-4 pt-3">
         {cats.map((c, i) => {
-          const lead = c.items.find((x) => x.signature) || c.items[0];
           return (
             <button key={c.key} onClick={() => onPick(c.key)} className={'relative overflow-hidden rounded-[22px] text-left ' + (i % 5 === 0 ? 'col-span-2 h-36' : 'h-40')}>
               {sceneImage(c, 600)
                 ? <img src={sceneImage(c, 600)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
-                : <FlavorArt name={lead.name} kind={c.kind} className="absolute inset-0 size-full" />}
+                : <ShoreScene seed={c.name} w={600} />}
               <span className="absolute inset-0" style={{ background: SHADE, opacity: 0.9 }} />
               <span className="absolute bottom-3 left-4 right-3 text-[#FBF6EA]">
                 <span className="block font-serif text-[24px] font-semibold leading-none">{c.name}</span>
