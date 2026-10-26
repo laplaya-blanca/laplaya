@@ -1,14 +1,21 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#14586B">
   <title>La Playa Blanca — Owner dashboard</title>
-  <!-- Netlify Identity handles the owner's login (email + password, no GitHub account needed) -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <link rel="icon" href="/assets/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <!-- Netlify Identity login (same email + password the owner was invited with) -->
+  <script src="vendor/gotrue-1.0.1.js"></script>
 </head>
 <body>
-  <script src="https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js"></script>
+  <div id="app"><div class="boot">Loading…</div></div>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

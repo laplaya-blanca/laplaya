@@ -2,7 +2,23 @@
 [build]
   publish = "."
 
+# Every admin page (incl. the Decap fallback at /admin/classic/): no search indexing, no framing (clickjacking)
 [[headers]]
   for = "/admin/*"
   [headers.values]
     X-Robots-Tag = "noindex"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+
+# The custom dashboard loads only its own files (libraries are vendored in admin/vendor), so it can run a strict CSP.
+# Not applied to /admin/classic/, which loads Decap and the Identity widget from CDNs.
+[[headers]]
+  for = "/admin/"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
+
+[[headers]]
+  for = "/admin/index.html"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
