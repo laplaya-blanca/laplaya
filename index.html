@@ -12,7 +12,13 @@
   <link rel="icon" href="/assets/logo.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Manrope:wght@400;500;600;700;800&family=Rubik:wght@700;800&display=swap" rel="stylesheet">
+  <!-- the logo intro plays once per visit; decide before first paint so the hero never flashes under it -->
+  <script>
+    try {
+      if (!location.hash && !sessionStorage.getItem('lpb-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.dataset.intro = 'boot';
+    } catch (e) {}
+  </script>
   <!-- Netlify Identity: only loaded when an invite / recovery / login link lands here, then hands the owner on to /admin -->
   <script>
     if (/(invite|recovery|confirmation|email_change)_token=|access_token=/.test(location.hash)) {

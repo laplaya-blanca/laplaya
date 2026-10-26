@@ -57,8 +57,9 @@ export function CategoryBar({ cats, active, onPick, view, setView, visible }: { 
 // ---------- one category = one stretch of water ----------
 // as big as the longest word allows on a phone (uppercase Fraunces Black runs ~0.72em a letter)
 function titleSize(name: string) {
+  // the brand capitals run wide (about .75em a letter), so the longest word sets the size
   const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 3);
-  return `min(${Math.min(16, 140 / longest).toFixed(1)}vw, 92px)`;
+  return `min(${Math.min(14, 112 / longest).toFixed(1)}vw, 84px)`;
 }
 // the owner may type a category in capitals; titles read as words, not signage
 const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\p{L}/gu, (m) => m.toUpperCase()) : s);
@@ -66,13 +67,13 @@ const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replac
 export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Category; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
     <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
-      {/* the category's name, set large in the same upright serif as "La Playa" on the shore */}
+      {/* the category's name in the logo's lettering and cream, like "La Playa Blanca" on the shore */}
       <div className="px-5">
         <p className="flex items-center gap-2.5 text-[14px] font-semibold text-[var(--ink-soft)]">
-          <span className="rounded-full border border-[var(--line)] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[.16em] text-[var(--ink)]">{cat.temp || 'Fresh'}</span>
+          <span className="rounded-full bg-[#007385] px-2.5 py-0.5 font-brand text-[11px] font-bold uppercase tracking-[.16em] text-[#F9F6E3] [text-shadow:none]">{cat.temp || 'Fresh'}</span>
           {cat.items.length} items, {priceRange(cat.items)}
         </p>
-        <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="font-serif font-semibold leading-[.98] tracking-[-.02em]"
+        <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="font-brand font-extrabold uppercase leading-[.95] tracking-[.02em] text-[#F9F6E3]"
           style={{ fontSize: titleSize(cat.name) }}>
           {titleCase(cat.name)}
         </h2></div>

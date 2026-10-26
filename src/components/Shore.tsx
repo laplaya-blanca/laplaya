@@ -9,7 +9,7 @@ type Open = { open: true; until: string } | { open: false; opens: string } | nul
 
 // First screen: a photograph of the shore, graded to the hour it is in Qaraaoun right now
 // (cool morning, untouched golden hour, rose sunset, blue night with a moon and stars).
-// One tap (or a normal scroll) takes you straight into the menu underneath — no preloader, no scroll-jacking.
+// One tap (or a normal scroll) takes you straight into the menu underneath. On a first visit the logo intro opens onto it.
 export function Shore({ light, open, hours, count, onEnter }: { light: Light; open: Open; hours: string; count: number; onEnter: () => void }) {
   const night = light.dark;
   const shot = night ? 'night' : 'lake'; // a real night photo after dark, the golden-hour shore otherwise
@@ -55,8 +55,8 @@ export function Shore({ light, open, hours, count, onEnter }: { light: Light; op
       {/* title, in the open sky */}
       <div className={'relative z-10 px-6 pt-[9svh] ' + (night ? 'text-[#F6EFDF]' : 'text-[#103A47]')}>
         <p style={{ animationDelay: '0.05s' }} className="rise text-[13px] font-bold uppercase tracking-[.22em] opacity-80">Qaraaoun · West Bekaa</p>
-        <h1 style={{ animationDelay: '0.12s' }} className="rise mt-3 font-serif font-semibold leading-[.9] tracking-[-.02em] text-[clamp(58px,17vw,112px)]">
-          La Playa<br /><span className="font-normal">Blanca</span>
+        <h1 style={{ animationDelay: '0.12s', color: night ? '#F9F6E3' : '#007385' }} className="rise mt-3 font-brand font-extrabold uppercase leading-[.92] tracking-[.02em] text-[clamp(50px,14.5vw,104px)]">
+          La Playa<br />Blanca
         </h1>
         <p style={{ animationDelay: '0.22s', color: night ? '#E2C27A' : '#0F4B5C' }} className="rise mt-3 font-serif text-[clamp(24px,6.6vw,34px)] font-medium leading-tight tracking-[-.01em]">
           Nos vemos en la playa

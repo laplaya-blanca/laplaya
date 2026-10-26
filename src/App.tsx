@@ -9,6 +9,7 @@ import { Art, CategoryBar, Scene, type View } from './components/Menu';
 import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, Ticket, TideWave } from './components/Sheets';
 import { Events, Footer } from './components/Shoreline';
 import { Water } from './components/Water';
+import { Intro, shouldIntro } from './components/Intro';
 
 type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'search' };
 
@@ -32,6 +33,7 @@ export function App() {
   const [tide, setTide] = useState(false);
   const [active, setActive] = useState('');
   const [inMenu, setInMenu] = useState(false);
+  const [intro, setIntro] = useState(shouldIntro);
   const [bump, setBump] = useState(0);
   const [view, setViewState] = useState<View>(() => { try { return (localStorage.getItem('lpb-view') as View) || 'rail'; } catch { return 'rail'; } });
   const { cart, lines, count, total, unpriced, dispatch } = useCart();
@@ -119,6 +121,7 @@ export function App() {
 
   return (
     <>
+      {intro && <Intro onDone={() => setIntro(false)} />}
       <Shore light={light} open={os} hours={site?.hours.headline || 'Daily, in season'} count={all.length} onEnter={enter} />
       <CategoryBar cats={cats} active={active} onPick={goTo} view={view} setView={setView} visible={inMenu && cats.length > 0} />
 
