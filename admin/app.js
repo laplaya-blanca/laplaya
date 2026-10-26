@@ -25,7 +25,7 @@ function keyify(key, d) {
   if (key === 'gallery') (d.photos || (d.photos = [])).forEach((p) => { p._k = nk(); });
   return d;
 }
-const money = (p) => (p === null || p === undefined || p === '' ? 'Order now' : '$' + (Number.isInteger(+p) ? +p : (+p).toFixed(2)));
+const money = (p) => (p === null || p === undefined || p === '' ? 'Ask at the counter' : '$' + (Number.isInteger(+p) ? +p : (+p).toFixed(2)));
 const toPrice = (v) => (v === '' || isNaN(parseFloat(v)) ? null : Math.round(parseFloat(v) * 100) / 100);
 const move = (arr, i, dir) => { const j = i + dir; if (j < 0 || j >= arr.length) return; const t = arr[i]; arr[i] = arr[j]; arr[j] = t; };
 const findItem = (d, k) => { for (const c of d.categories) { const i = c.items.findIndex((x) => x._k === k); if (i >= 0) return { cat: c, i, item: c.items[i] }; } return null; };
@@ -171,8 +171,8 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>
     </div>
     <${Field} label="Name"><input ref=${nameRef} value=${item.name} onInput=${(e) => set((it) => { it.name = e.target.value; })}/></${Field}>
-    <${Field} label="Price ($)" hint="Leave empty to show “Order now” (priced at the counter).">
-      <input type="number" inputmode="decimal" min="0" step="0.25" value=${item.price ?? ''} placeholder="Order now"
+    <${Field} label="Price ($)" hint="Leave empty to show “Ask at the counter”.">
+      <input type="number" inputmode="decimal" min="0" step="0.25" value=${item.price ?? ''} placeholder="Ask at the counter"
         onInput=${(e) => set((it) => { it.price = toPrice(e.target.value); })}/>
     </${Field}>
     <${Field} label="Description" hint=${'Empty = uses the category text: “' + (cat.description || '—') + '”'}>
@@ -323,7 +323,7 @@ function HoursView({ data, edit }) {
     d.hours = Object.assign({}, d.hours, { weekly: wk });
   });
   return html`<div>
-    <header class="view-head"><div><h1 tabindex="-1">Hours & contact</h1><p class="muted">What the “Visit us” section and the order button use.</p></div></header>
+    <header class="view-head"><div><h1 tabindex="-1">Hours & contact</h1><p class="muted">Shown at the top of the menu and in the footer.</p></div></header>
     <section class="card">
       <div class="card-head"><div><h2>Hours on the site</h2><span class="muted">Two short lines plus a small note</span></div></div>
       <div class="two">
@@ -333,7 +333,7 @@ function HoursView({ data, edit }) {
       <${Field} label="Small note"><input value=${h.note || ''} onInput=${(e) => setH('note', e.target.value)}/></${Field}>
     </section>
     <section class="card">
-      <div class="card-head"><div><h2>Opening times</h2><span class="muted">For the “Open now” badge coming with the redesign</span></div></div>
+      <div class="card-head"><div><h2>Opening times</h2><span class="muted">Sets the “Open now · till …” badge at the top of the menu</span></div></div>
       <div class="week">${week.map((w) => html`<div class=${'day' + (w.closed ? ' closed' : '')} key=${w.day}>
         <strong>${w.day}</strong>
         <input type="time" aria-label=${w.day + ' opens'} value=${w.open} disabled=${w.closed} onInput=${(e) => setDay(w.day, { open: e.target.value })}/>

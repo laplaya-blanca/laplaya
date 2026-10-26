@@ -58,22 +58,22 @@ export function CategoryBar({ cats, active, onPick, view, setView, visible }: { 
 // as big as the longest word allows on a phone (uppercase Fraunces Black runs ~0.72em a letter)
 function titleSize(name: string) {
   const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 3);
-  return `min(${Math.min(26, 128 / longest).toFixed(1)}vw, 168px)`;
+  return `min(${Math.min(16, 140 / longest).toFixed(1)}vw, 92px)`;
 }
+// the owner may type a category in capitals; titles read as words, not signage
+const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\p{L}/gu, (m) => m.toUpperCase()) : s);
 
 export const Scene = memo(function Scene({ cat, index, view, onOpen, onAdd }: { cat: Category; index: number; view: View; onOpen: (i: Item) => void; onAdd: Add }) {
-  const hero = sceneImage(cat, 1000);
   return (
     <section id={'cat-' + cat.key} data-cat={cat.key} aria-labelledby={'h-' + cat.key} className="scene scroll-mt-20 pt-10">
-      {/* the category's name, set huge, with its photograph showing through the letters */}
+      {/* the category's name, set large in the light italic of "Blanca" on the shore */}
       <div className="px-5">
         <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--ink-soft)]">
           {String(index + 1).padStart(2, '0')} · {cat.temp || 'Fresh'} · {cat.items.length} to choose · {priceRange(cat.items)}
         </p>
-        <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="photo-type font-serif font-black uppercase leading-[.86] tracking-[-.02em]"
-          style={{ fontSize: titleSize(cat.name), backgroundImage: `linear-gradient(rgba(14,52,64,.42), rgba(14,52,64,.42)), url("${hero || img('/assets/hero-lake-wide.jpg', 1000)}")`,
-            backgroundPosition: hero ? 'center 55%' : Math.round(15 + seeded(cat.name)() * 70) + '% 62%' }}>
-          {cat.name}
+        <div className="reveal mt-1.5"><h2 id={'h-' + cat.key} className="font-serif font-normal italic leading-[.98] tracking-[-.015em]"
+          style={{ fontSize: titleSize(cat.name) }}>
+          {titleCase(cat.name)}
         </h2></div>
         <p className="mt-3 max-w-[34ch] text-[16px] leading-snug text-[var(--ink-soft)]">{cat.description}</p>
       </div>
@@ -100,39 +100,75 @@ export function ShoreScene({ seed, w }: { seed: string; w: number }) {
 // the owner's own photo when there is one. Until then a general card rather than a stand-in product shot
 // (a picture of one shake on every shake reads as a promise): the shore at a slightly different framing,
 // washed in the item's flavour colour, with its name written across the water.
-// Is this photo shot on white? Look at its outer edge once, at 16×16, and remember the answer per photo.
-const onWhite = new Map<string, boolean>();
-function shotOnWhite(im: HTMLImageElement) {
+// Is this photo shot on white, where is the dish in it, and what is its outline? Read once per photo and remembered.
+// The outline: flood in from the edges through white and pale-grey shadow; whatever the flood can't reach is the
+// dish (a plate rim, a board's edge or the food stops it). Kept as a small white silhouette, used to lay a white
+// "card" under the dish so the table never shows through the food.
+type Shot = { white: false } | { white: true; box: [number, number, number, number]; ar: number; mask: string };
+const shots = new Map<string, Shot>();
+function readShot(im: HTMLImageElement): Shot {
   try {
-    const c = document.createElement('canvas'); c.width = c.height = 16;
+    const N = 160, c = document.createElement('canvas'); c.width = c.height = N;
     const x = c.getContext('2d', { willReadFrequently: true })!;
-    x.drawImage(im, 0, 0, 16, 16);
-    const d = x.getImageData(0, 0, 16, 16).data;
+    x.drawImage(im, 0, 0, N, N);
+    const d = x.getImageData(0, 0, N, N).data;
+    const lo = (i: number) => Math.min(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
+    const hi = (i: number) => Math.max(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
     let edge = 0, white = 0;
-    for (let y = 0; y < 16; y++) for (let i = 0; i < 16; i++) {
-      if (y !== 0 && y !== 15 && i !== 0 && i !== 15) continue;
-      const o = (y * 16 + i) * 4; edge++;
-      if (Math.min(d[o], d[o + 1], d[o + 2]) > 226) white++;
+    for (let y = 0; y < N; y++) for (let i = 0; i < N; i++) {
+      if (y && y < N - 1 && i && i < N - 1) continue;
+      edge++; if (lo(y * N + i) > 226) white++;
     }
-    return white / edge > 0.8;
-  } catch { return false; }
+    if (white / edge < 0.8) return { white: false };
+
+    const open = (i: number) => lo(i) > 212 && hi(i) - lo(i) < 22; // white, or a soft grey shadow on white
+    const out = new Uint8Array(N * N), stack: number[] = [];
+    for (let i = 0; i < N; i++) for (const j of [i, (N - 1) * N + i, i * N, i * N + N - 1]) if (!out[j] && open(j)) { out[j] = 1; stack.push(j); }
+    while (stack.length) {
+      const j = stack.pop()!, y = (j / N) | 0, i = j % N;
+      for (const k of [i > 0 ? j - 1 : -1, i < N - 1 ? j + 1 : -1, y > 0 ? j - N : -1, y < N - 1 ? j + N : -1])
+        if (k >= 0 && !out[k] && open(k)) { out[k] = 1; stack.push(k); }
+    }
+    let x0 = N, x1 = -1, y0 = N, y1 = -1;
+    const m = x.createImageData(N, N);
+    for (let j = 0; j < N * N; j++) {
+      if (out[j]) continue;
+      const y = (j / N) | 0, i = j % N;
+      x0 = Math.min(x0, i); x1 = Math.max(x1, i); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      m.data[j * 4] = m.data[j * 4 + 1] = m.data[j * 4 + 2] = m.data[j * 4 + 3] = 255;
+    }
+    if (x1 < x0 || (x1 - x0) * (y1 - y0) < N * N * 0.02) return { white: false };
+    x.putImageData(m, 0, 0);
+    return { white: true, box: [x0 / N, y0 / N, (x1 + 1) / N, (y1 + 1) / N], ar: im.naturalHeight / im.naturalWidth, mask: c.toDataURL('image/png') };
+  } catch { return { white: false }; }
 }
 
-// The owner's studio shots are on white. Multiplied over a soft photo of the shore, the white turns into sky, lake
-// and sand while the plate and its own shadow stay, so it sits on the beach. Anything not shot on white is shown as is,
-// and this works for whatever he uploads next without touching the files.
+// The owner's studio shots are on white. Each one is set on the same beach table: the dish is scaled so it fills the
+// same share of the frame at the same height whether he shot it close or far, and multiplied over the table so the
+// white turns into the table and the beach while the dish and its own shadow stay. Photos not shot on white are
+// shown as they are. Works for whatever he uploads next, without touching the files.
 function Photo({ item, w, className }: { item: Item; w: number; className: string }) {
-  const [beach, setBeach] = useState(() => onWhite.get(item.photo) || false);
-  const check = (e: SyntheticEvent<HTMLImageElement>) => {
-    if (!onWhite.has(item.photo)) onWhite.set(item.photo, shotOnWhite(e.currentTarget));
-    setBeach(onWhite.get(item.photo)!);
+  const [shot, setShot] = useState<Shot | undefined>(() => shots.get(item.photo));
+  const read = (e: SyntheticEvent<HTMLImageElement>) => {
+    if (!shots.has(item.photo)) shots.set(item.photo, readShot(e.currentTarget));
+    setShot(shots.get(item.photo));
   };
+  const src = img(item.photo, w);
+  if (!shot?.white) return (
+    <span className={className + ' relative block overflow-hidden bg-[#F4ECDF]'}>
+      <img src={src} alt={item.name} loading="lazy" onLoad={read} className={'size-full object-cover' + (shot ? '' : ' opacity-0')} />
+    </span>
+  );
+  const [x0, y0, x1, y1] = shot.box, { ar } = shot;
+  // L is the photo's rendered width: the dish may take 80% of the width or 56% of the height, whichever is smaller
+  const L = `min(${(80 / (x1 - x0)).toFixed(2)}cqw, ${(56 / ((y1 - y0) * ar)).toFixed(2)}cqh)`;
+  const place = { width: L, height: `calc(${L} * ${ar.toFixed(4)})`, left: `calc(50cqw - ${L} * ${((x0 + x1) / 2).toFixed(4)})`, top: `calc(70cqh - ${L} * ${(((y0 + y1) / 2) * ar).toFixed(4)})` };
   return (
-    <span className={className + ' relative isolate block overflow-hidden bg-[#F4ECDF]'}>
-      {beach && <img src={img('/assets/hero-lake-wide.jpg', 480)} alt="" aria-hidden loading="lazy"
-        className="absolute inset-0 size-full object-cover blur-[2.5px]" style={{ objectPosition: '74% 50%', transform: 'scale(1.9)', transformOrigin: '74% 80%' }} />}
-      <img src={img(item.photo, w)} alt={item.name} loading="lazy" onLoad={check}
-        className={'relative size-full object-cover' + (beach ? ' mix-blend-multiply' : '')} />
+    <span className={className + ' relative isolate block overflow-hidden bg-[#EFE6D8] [container-type:size]'}>
+      <img src={img('/assets/plate-table.jpg', Math.min(Math.max(w, 300), 1200))} alt="" aria-hidden loading="lazy" className="absolute inset-0 size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+      <span aria-hidden className="absolute bg-white" style={{ ...place, maskImage: `url(${shot.mask})`, WebkitMaskImage: `url(${shot.mask})`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }} />
+      <img src={src} alt={item.name} loading="lazy" onLoad={read} className="absolute max-w-none mix-blend-multiply [mask:linear-gradient(90deg,transparent,#000_5%,#000_95%,transparent),linear-gradient(transparent,#000_5%,#000_95%,transparent)] [mask-composite:intersect]"
+        style={place} />
     </span>
   );
 }
@@ -172,10 +208,10 @@ function Price({ item, className = '' }: { item: Item; className?: string }) {
 
 const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
-    <article role="listitem" className={'paper w-[min(72vw,290px)] overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)] ' + (item.soldOut ? 'opacity-70' : '')}>
+    <article role="listitem" className={'paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
       <button onClick={() => onOpen(item)} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
         <div className="relative aspect-[5/6] overflow-hidden">
-          <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'grayscale' : '')} />
+          <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'opacity-55 grayscale' : '')} />
           {item.signature && !item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--paper)]/92 px-3 py-1 text-[12px] font-extrabold text-[var(--ink)]">House favourite</span>}
           {item.soldOut && <span className="absolute left-3 top-3 rounded-full bg-[var(--ink)] px-3 py-1 text-[12px] font-extrabold text-[var(--paper)]">Sold out today</span>}
         </div>
@@ -184,7 +220,7 @@ const Card = memo(function Card({ item, onOpen, onAdd }: { item: Item; onOpen: (
           <p className="mt-1 line-clamp-2 min-h-[42px] text-[14px] leading-[1.45] text-[var(--ink-soft)]">{item.desc}</p>
         </div>
       </button>
-      <div className="flex items-center justify-between px-4 pb-4 pt-2.5">
+      <div className="mt-auto flex items-center justify-between px-4 pb-4 pt-2.5">
         <Price item={item} className="text-[21px]" />
         <AddButton item={item} onAdd={onAdd} />
       </div>
