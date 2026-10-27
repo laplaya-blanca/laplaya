@@ -44,26 +44,6 @@ function DockBtn({ label, onClick, children }: { label: string; onClick: () => v
 // card photo flies between the two places (one fixed element, so the plate re-frames itself as the box changes shape)
 // while the sheet slides up underneath. Opened from search or the order there is no card, and the sheet just slides.
 const LIFT = { type: 'spring', stiffness: 380, damping: 38 } as const;
-
-// where the photo leaves the water: two rings spread across the surface under it and drops thrown up off its edge
-// fall back. A dozen small fixed elements moved by transform and opacity only, gone in under a second.
-function splash(r: DOMRect) {
-  const made: HTMLElement[] = [];
-  const add = (css: string) => { const d = document.createElement('div'); d.setAttribute('aria-hidden', 'true'); d.style.cssText = 'position:fixed;z-index:69;pointer-events:none;' + css; document.body.appendChild(d); made.push(d); return d; };
-  const cx = r.left + r.width / 2, y = Math.min(r.bottom - r.height * 0.12, innerHeight - 24), w = r.width * 0.95;
-  [0, 140].forEach((delay) => add(`left:${cx - w / 2}px;top:${y - w * 0.11}px;width:${w}px;height:${w * 0.22}px;border-radius:50%;border:2px solid rgba(249,246,227,.75);box-shadow:0 0 12px rgba(249,246,227,.25)`)
-    .animate([{ transform: 'scale(.35)', opacity: 0.95 }, { transform: 'scale(1.3)', opacity: 0 }], { duration: 760, delay, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' }));
-  for (let i = 0; i < 12; i++) {
-    const s = 4 + (i % 3) * 2, x = cx + (i / 11 - 0.5) * w * 0.9, up = 50 + ((i * 37) % 70), side = (i / 11 - 0.5) * 70;
-    add(`left:${x - s / 2}px;top:${y - s / 2}px;width:${s}px;height:${s * 1.25}px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:rgba(232,246,248,.92);box-shadow:0 0 6px rgba(255,255,255,.5)`)
-      .animate([
-        { transform: 'translate(0,0) scale(.6)', opacity: 0 },
-        { transform: `translate(${side * 0.6}px,${-up}px) scale(1)`, opacity: 1, offset: 0.45, easing: 'cubic-bezier(.3,0,.7,1)' },
-        { transform: `translate(${side}px,${-up * 0.2 + 24}px) scale(.7)`, opacity: 0 }
-      ], { duration: 720 + (i % 4) * 60, delay: (i % 5) * 18, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'both' });
-  }
-  setTimeout(() => made.forEach((d) => d.remove()), 1200);
-}
 function useLift(target: React.RefObject<HTMLDivElement | null>) {
   const still = useReducedMotion();
   const card = useRef<HTMLElement | null>(null);
@@ -85,9 +65,7 @@ function useLift(target: React.RefObject<HTMLDivElement | null>) {
     const to = box.getBoundingClientRect();
     const end = new DOMRect(to.left, to.top - shift, to.width, to.height);
     el.style.visibility = 'hidden'; box.style.visibility = 'hidden';
-    const from = el.getBoundingClientRect();
-    fly(from, end, el, () => { box.style.visibility = ''; });
-    splash(from);
+    fly(el.getBoundingClientRect(), end, el, () => { box.style.visibility = ''; });
     // however the sheet goes away (another sheet replacing it too), the card never stays empty
     return () => { setTimeout(() => { el.style.visibility = ''; }, 900); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
