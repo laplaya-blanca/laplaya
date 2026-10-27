@@ -71,7 +71,7 @@ export function TreasureMap({ href }: { href: string }) {
         {/* The moving parts sit on layers of their own over the still map. Animated inside the map's svg they made the
             browser repaint the whole parchment (clip-path, blended grain) every frame, which stuttered the scroll past
             the catering form. The ship and the ring are animated on plain spans (the GPU won't take an animation on an
-            svg element), and the dots, which can only move by repainting, step along a few times a second. */}
+            svg element), and the dots, which can only move by repainting, repaint just this layer. */}
         <svg viewBox="0 0 320 210" aria-hidden className="absolute inset-0 size-full [will-change:transform]">
           {/* the course: dots marching from the ship to the X */}
           <path className="course" d="M154 54 C142 78 170 92 160 116 C152 136 176 146 204 150" fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" strokeDasharray="0.1 7" />
