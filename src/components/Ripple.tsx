@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 // Touch the lake: the hero photo redrawn in WebGL, with rings spreading wherever a finger lands on the water.
 // One full-screen pass, up to 10 rings, drawn only while a ring is alive and the hero is on screen, so it costs
 // nothing at rest. No WebGL, or reduced motion → this renders nothing and the plain <img> underneath stays.
+// When the hero's video is playing, the canvas steps aside at rest so the video shows, and while rings are alive it
+// draws them on the video's current frame instead of the still photo.
 
 type Shot = { src: string; water: number }; // water: where the lake starts, as a fraction of the photo's height
 
@@ -37,7 +39,7 @@ void main() {
 }`;
 
 // rain: 0..1, how hard it is raining on the lake; drops ring the water on their own, small and many
-export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; wide: Shot; rain?: number; className?: string }) {
+export function Ripple({ tall, wide, rain = 0, video, className = '' }: { tall: Shot; wide: Shot; rain?: number; video?: RefObject<HTMLVideoElement>; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const rainRef = useRef(rain);
   rainRef.current = rain;
@@ -66,6 +68,9 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
     const rings = new Float32Array(MAX * 4).fill(-99), born = new Float64Array(MAX).fill(-99);
     let next = 0, raf = 0, ready = false, visible = true, imgAspect = 1, alive = 0, dead = false, hint = 0;
     const t0 = performance.now();
+    const vid = video?.current;
+    const live = () => !!vid && !vid.paused && vid.readyState >= 2;
+    const show = (on: boolean) => { canvas.style.opacity = on ? '1' : '0'; };
     const now = () => (performance.now() - t0) / 1000;
 
     const size = () => {
@@ -82,9 +87,11 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
       if (!ready || dead) return;
       const t = now();
       for (let i = 0; i < MAX; i++) rings[i * 4 + 2] = t - born[i];
+      if (live()) try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, vid!); } catch { /* keeps the last frame */ }
       gl.uniform4fv(uRings, rings);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       if (t < alive && visible) raf = requestAnimationFrame(draw);
+      else if (live()) show(false); // the rings have died away: let the video itself show
     };
     const kick = () => { if (!raf && !dead) raf = requestAnimationFrame(draw); };
 
@@ -92,7 +99,7 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
       if (dead) return;
       const t = now();
       rings.set([x, y, 0, strength], next * 4); born[next] = t; next = (next + 1) % MAX;
-      alive = t + LIFE; kick();
+      alive = t + LIFE; if (live()) show(true); kick();
     };
 
     const photo = new Image();
@@ -109,7 +116,7 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
       imgAspect = photo.naturalWidth / photo.naturalHeight;
       size(); ready = true;
       } catch { return; } // texture upload failed: leave the canvas hidden, the photo shows instead
-      canvas.style.opacity = '1';
+      show(!live());
       // one ring on arrival, so people discover the water moves
       hint = window.setTimeout(() => drop(0.5, 0.86, 0.9), 500);
       kick();
@@ -147,6 +154,11 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
     host.addEventListener('pointerdown', down, { passive: true });
     host.addEventListener('pointermove', move, { passive: true });
 
+    // the video starting or stopping: step aside for it, or cover for it with the photo
+    const playing = () => { if (ready && now() >= alive) show(false); };
+    const stopped = () => { if (ready && !dead) show(true); };
+    vid?.addEventListener('playing', playing); vid?.addEventListener('pause', stopped);
+
     // the phone may take the GPU back (tab in background, memory pressure): hide rather than show black
     const lost = (e: Event) => { e.preventDefault(); dead = true; canvas.style.opacity = '0'; };
     canvas.addEventListener('webglcontextlost', lost);
@@ -160,6 +172,7 @@ export function Ripple({ tall, wide, rain = 0, className = '' }: { tall: Shot; w
       dead = true; photo.onload = null; clearTimeout(hint); clearInterval(shower);
       cancelAnimationFrame(raf); ro.disconnect(); io.disconnect();
       canvas.removeEventListener('webglcontextlost', lost);
+      vid?.removeEventListener('playing', playing); vid?.removeEventListener('pause', stopped);
       host.removeEventListener('pointerdown', down); host.removeEventListener('pointermove', move);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
