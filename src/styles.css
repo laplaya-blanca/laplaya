@@ -235,8 +235,8 @@ html[data-intro] .rise { animation-play-state: paused; }
 .sail { transform-box: fill-box; transform-origin: 50% 80%; }
 .afloat .sail { animation: sail 3.6s ease-in-out infinite; }
 @keyframes course { to { stroke-dashoffset: -14.2; } }
-/* stepped: each step is a repaint, so ten a second rather than one per frame */
-.afloat .course { animation: course 1.4s steps(14) infinite; }
+/* every frame is a repaint, but only of the dots' own small layer, never the parchment under it */
+.afloat .course { animation: course 1.1s linear infinite; }
 @keyframes ping { 0% { scale: .4; opacity: .9; } 100% { scale: 1.6; opacity: 0; } }
 .ping { transform-box: fill-box; transform-origin: center; opacity: 0; }
 .afloat .ping { animation: ping 2.2s ease-out infinite; }
