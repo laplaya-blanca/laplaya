@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { Light } from '../lib/time';
 import { wet, type Weather } from '../lib/weather';
 import { SkyOver } from './Weather';
@@ -8,7 +9,29 @@ import { useAfloat } from './Menu';
 // where the lake begins in each photo, as a fraction of its height
 const WATER = { lake: { tall: 0.57, wide: 0.6 }, night: { tall: 0.49, wide: 0.62 } } as const;
 
-type Open = { open: true; until: string } | { open: false; opens: string } | null;
+// The photo, alive: an 8-second loop of the same shot (scripts/hero-video.mjs) in which only the water, the light on it and
+// the umbrellas' fringes move, so it takes over from the photo without a jump. It fades in once it is actually playing,
+// and plays only while the hero is on screen. No video for reduced motion or a data saver; where a phone won't autoplay
+// (Low Power Mode) it simply never starts and the photo stays.
+function Moving({ shot, video }: { shot: 'lake' | 'night'; video: RefObject<HTMLVideoElement> }) {
+  const [skip] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches
+    || !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+  const [form] = useState(() => (matchMedia('(min-width: 768px)').matches ? 'wide' : 'tall'));
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const v = video.current; if (!v) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); });
+    io.observe(v);
+    return () => io.disconnect();
+  }, [video, skip]);
+  if (skip) return null;
+  return (
+    <video ref={video} src={'/assets/hero-' + shot + '-' + form + '.mp4'} aria-hidden muted loop playsInline autoPlay preload="auto" disablePictureInPicture
+      onPlaying={() => setOn(true)} className="absolute inset-0 size-full object-cover transition-opacity duration-700" style={{ opacity: on ? 1 : 0 }} />
+  );
+}
+
+type Open ={ open: true; until: string } | { open: false; opens: string } | null;
 
 // First screen: a photograph of the shore, graded to the hour it is in Qaraaoun right now
 // (cool morning, untouched golden hour, rose sunset, blue night with a moon and stars).
@@ -19,6 +42,7 @@ export function Shore({ light, weather, open, hours, count, cats, onPick }: { li
   const night = light.dark;
   const ref = useAfloat<HTMLElement>();
   const shot = night ? 'night' : 'lake'; // a real night photo after dark, the golden-hour shore otherwise
+  const video = useRef<HTMLVideoElement>(null);
   return (
     <header ref={ref} className="sink relative min-h-[calc(100svh-var(--peek))] overflow-hidden bg-[var(--sea-3)] touch-pan-y">
       <div className="sink-in absolute inset-0 flex flex-col">
@@ -26,8 +50,9 @@ export function Shore({ light, weather, open, hours, count, cats, onPick }: { li
         <source media="(min-width: 768px)" srcSet={img('/assets/hero-' + shot + '-wide.jpg', 2048)} />
         <img src={img('/assets/hero-' + shot + '-tall.jpg', 1080)} alt="" {...{ fetchpriority: 'high' }} decoding="async" className="absolute inset-0 size-full object-cover" />
       </picture>
+      <Moving key={'video-' + shot} shot={shot} video={video} />
       {/* touch the lake: rings spread across the water in the photo */}
-      <Ripple key={shot} className="absolute inset-0 size-full"
+      <Ripple key={shot} video={video} className="absolute inset-0 size-full"
         tall={{ src: img('/assets/hero-' + shot + '-tall.jpg', 1080), water: WATER[shot].tall }}
         wide={{ src: img('/assets/hero-' + shot + '-wide.jpg', 2048), water: WATER[shot].wide }}
         rain={wet(weather.sky) ? { drizzle: 0.35, rain: 0.7, storm: 1 }[weather.sky as 'drizzle'] : 0} />

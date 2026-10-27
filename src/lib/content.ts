@@ -133,8 +133,9 @@ export async function loadContent(): Promise<Content> {
   };
 }
 
-// Netlify Image CDN resizes big phone photos per screen; local preview uses the raw file.
-const CDN = !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+// Netlify Image CDN resizes big phone photos per screen; local preview, and a preview of it shared through a Cloudflare
+// tunnel, uses the raw file.
+const CDN = !/^(localhost|127\.0\.0\.1|\[::1\]|[\w-]+\.trycloudflare\.com)$/.test(location.hostname);
 export const img = (src: string, w: number) => (!src ? '' : CDN ? '/.netlify/images?url=' + encodeURIComponent(src) + '&w=' + w + '&q=75' : src);
 
 export const money = (p: number | null) => (p == null ? '' : '$' + (Number.isInteger(p) ? p : p.toFixed(2)));
