@@ -60,6 +60,8 @@ type RawMenu = { categories?: { name?: string; description?: string; icon?: stri
 
 // assets/plated.json: owner photo → the same dish already set on its beach table. Only our own files in assets/plated/,
 // and only for the photo they were made from, so a fresh upload shows on its own until it has been re-plated too.
+// A dish with no photo yet may have a stand-in under dish:<category>/<name> (scripts/plate-unshot.mjs), which any
+// upload of the owner's own replaces.
 type RawPlated = Record<string, { day?: unknown; night?: unknown }>;
 const safePlated = (p: unknown) => (typeof p === 'string' && /^\/assets\/plated\/[\w.\-]+$/.test(p) ? p : undefined);
 
@@ -89,7 +91,7 @@ function buildMenu(raw: RawMenu, plated: RawPlated = {}): Category[] {
         desc: (typeof row.description === 'string' && row.description) || c.description || '',
         tags: own.filter((t) => t !== 'Signature'),
         photo: safePhoto(row.photo),
-        plated: { day: safePlated(plated[safePhoto(row.photo)]?.day), night: safePlated(plated[safePhoto(row.photo)]?.night) },
+        plated: (({ day, night } = {}) => ({ day: safePlated(day), night: safePlated(night) }))(plated[safePhoto(row.photo) || 'dish:' + slug(c.name!) + '/' + slug(name)]),
         soldOut: row.available === false,
         signature: own.includes('Signature'),
         kind
