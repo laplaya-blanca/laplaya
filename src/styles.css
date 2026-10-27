@@ -96,6 +96,15 @@ html[data-intro] .rise { animation-play-state: paused; }
 @keyframes glow { 0%, 100% { opacity: 0; } 35%, 55% { opacity: .95; } }
 .afloat .firefly { animation: wander var(--d) ease-in-out infinite, glow var(--b) ease-in-out infinite;
   animation-delay: calc(var(--i) * -1.7s), calc(var(--i) * -.9s); }
+/* gulls glide across the sky (left to right, drifting up and down a little), the flock loosely together; every few
+   seconds a few wingbeats, otherwise a glide */
+.gull { opacity: 0; }
+@keyframes glide { 0% { transform: translate3d(-8vw, 0, 0); opacity: 0; } 6%, 92% { opacity: 1; } 50% { transform: translate3d(50vw, -2.5vh, 0); } 100% { transform: translate3d(108vw, 1vh, 0); opacity: 0; } }
+@keyframes flap { 0%, 30%, 100% { transform: scaleY(1); } 6%, 18% { transform: scaleY(-.55); } 12%, 24% { transform: scaleY(1); } }
+.afloat .gull { animation: glide var(--d) linear infinite; animation-delay: var(--delay); }
+.afloat .wings { animation: flap calc(3s + var(--i) * .7s) ease-in-out infinite; transform-origin: 50% 65%; }
+/* on a phone the sky is behind the title: smaller and fainter, farther off */
+@media (max-width: 767px) { .gull { scale: .75; } .afloat .gull .wings { opacity: .75; } }
 @keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .skeleton { background: linear-gradient(90deg, var(--paper-2) 0%, var(--paper) 50%, var(--paper-2) 100%) 0 0 / 200% 100%; animation: skeleton 1.4s linear infinite; }
 
