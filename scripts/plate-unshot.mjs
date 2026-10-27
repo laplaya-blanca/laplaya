@@ -49,6 +49,10 @@ const SERVED = {
   boba: 'a clear plastic boba cup with a sealed domed lid and a wide straw, tapioca pearls or jellies at the bottom',
   scoop: `scoops of creamy ice cream on ${PLATE}`,
 };
+// where a name alone would mislead the model, what the dish really is
+const NOTES = {
+  'ice-cream/croissant': 'It is an ice cream flavour, not a pastry: scoops of creamy croissant-flavoured ice cream, buttery and lightly caramelised in colour, with a few flaky croissant crumbs on top.',
+};
 const servedAs = (cat, icon) => (cat === 'bubble waffle' ? `a golden Hong Kong bubble waffle rolled into a cone, standing in a paper sleeve on ${PLATE}`
   : cat === 'smoothies' ? SERVED.smoothie : SERVED[icon] || SERVED.glass);
 
@@ -108,7 +112,7 @@ const headersFor = () => api ? { 'content-type': 'application/json', 'x-goog-api
 
 const prompt = (d, isNight) => `The image is an empty beach-bar table by a lake.
 
-Make one photorealistic food photograph: "${d.name}" from the ${d.cat} menu of a beach dessert and drinks bar (the menu says: "${d.about}"), served as ${servedAs(d.cat.toLowerCase(), d.icon)}, set on this table. Make it look like what a customer would really be served for that name: generous, fresh, appetising, with the toppings, sauces or fruit the name suggests, but not overdone.
+Make one photorealistic food photograph: "${d.name}" from the ${d.cat} menu of a beach dessert and drinks bar (the menu says: "${d.about}"), served as ${servedAs(d.cat.toLowerCase(), d.icon)}, set on this table. ${NOTES[d.key] ? NOTES[d.key] + ' ' : ''}Make it look like what a customer would really be served for that name: generous, fresh, appetising, with the toppings, sauces or fruit the name suggests, but not overdone.
 
 Keep the image as the scene, exactly as it is: the same table, background, water and sky. Seen from a seated eye level, looking down at the table at about 25 degrees, matching the image's perspective so the dish sits flat on the tabletop. Centre the dish on the table, filling about half of the frame's width, slightly below the middle of the picture. ${isNight ? "Light it warmly from the hanging lantern above, matching the image's night light." : 'Light it with the same daylight as the image, from the same direction.'} Give it a soft, natural contact shadow on the wood.
 
