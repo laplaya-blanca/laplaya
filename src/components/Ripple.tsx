@@ -66,7 +66,7 @@ export function Ripple({ tall, wide, rain = 0, video, className = '' }: { tall: 
     gl.uniform1f(uWater, shot.water);
 
     const rings = new Float32Array(MAX * 4).fill(-99), born = new Float64Array(MAX).fill(-99);
-    let next = 0, raf = 0, ready = false, visible = true, imgAspect = 1, alive = 0, dead = false, hint = 0;
+    let next = 0, raf = 0, ready = false, visible = true, imgAspect = 1, alive = 0, dead = false;
     const t0 = performance.now();
     const vid = video?.current;
     const live = () => !!vid && !vid.paused && vid.readyState >= 2;
@@ -117,8 +117,6 @@ export function Ripple({ tall, wide, rain = 0, video, className = '' }: { tall: 
       size(); ready = true;
       } catch { return; } // texture upload failed: leave the canvas hidden, the photo shows instead
       show(!live());
-      // one ring on arrival, so people discover the water moves
-      hint = window.setTimeout(() => drop(0.5, 0.86, 0.9), 500);
       kick();
     };
     photo.src = shot.src;
@@ -169,7 +167,7 @@ export function Ripple({ tall, wide, rain = 0, video, className = '' }: { tall: 
     io.observe(canvas);
 
     return () => {
-      dead = true; photo.onload = null; clearTimeout(hint); clearInterval(shower);
+      dead = true; photo.onload = null; clearInterval(shower);
       cancelAnimationFrame(raf); ro.disconnect(); io.disconnect();
       canvas.removeEventListener('webglcontextlost', lost);
       vid?.removeEventListener('playing', playing); vid?.removeEventListener('pause', stopped);
