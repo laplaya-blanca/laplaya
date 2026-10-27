@@ -27,8 +27,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MODEL = 'gemini-3-pro-image';
 const PROJECT = process.env.LAPLAYA_GCP_PROJECT || 'gen-lang-client-0746888173'; // "Choco Crepe"
 const ENDPOINT = `https://aiplatform.googleapis.com/v1/projects/${PROJECT}/locations/global/publishers/google/models/${MODEL}:generateContent`;
-let token = '';
-try { token = execFileSync('gcloud', ['auth', 'application-default', 'print-access-token'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { /* reported below */ }
+// a sign-in token lasts an hour and a full run takes longer, so a new one is fetched whenever Google turns the old one away
+const signIn = () => { try { return execFileSync('gcloud', ['auth', 'application-default', 'print-access-token'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+let token = signIn();
 if (!token) { console.error('Not signed in to Google. Run: gcloud auth application-default login'); process.exit(1); }
 
 // the same four day tables and night table as src/components/Menu.tsx, chosen the same way per dish
@@ -88,7 +89,7 @@ Make one photorealistic photograph: the food from image 1 served on ${PLATE}, se
 
 The food must stay exactly as it is in image 1: the same number of pieces stacked the same way, the same toppings in the same places, the same sauces and drizzle pattern, the same colours and the same portion size. Do not add, remove, tidy or improve anything on the food. Only the plate changes, to the one described.
 
-Use image 2 as the scene and keep it as it is: the same table, background, water and sky. Seen from a seated eye level, looking down at the table at about 25 degrees, matching image 2's perspective so the plate sits flat on the tabletop. Centre the plate on the table, filling about two thirds of the frame's width, slightly below the middle of the picture. ${isNight ? "Light the food warmly from the hanging lantern above, matching image 2's night light." : "Light the food with the same daylight as image 2, from the same direction."} Give the plate a soft, natural contact shadow on the wood.
+Use image 2 as the scene and keep it as it is: the same table, background, water and sky. Seen from a seated eye level, looking down at the table at about 25 degrees, matching image 2's perspective so the plate sits flat on the tabletop. Centre the plate on the table, the food filling about half of the frame's width (the same size as every other dish on the menu), slightly below the middle of the picture. ${isNight ? "Light the food warmly from the hanging lantern above, matching image 2's night light." : "Light the food with the same daylight as image 2, from the same direction."} Give the plate a soft, natural contact shadow on the wood.
 
 No cutlery, no extra props, no hands, no text, no logos. Portrait 3:4 food photograph, natural colours, shallow depth of field.`;
 
@@ -102,19 +103,26 @@ for (const d of todo) {
   // already done: delete the file in replated/ to make it again
   if (existsSync(join(ROOT, 'replated', `${slug(d.name)}-${table}.jpg`))) { console.log(`${d.name}: replated/${slug(d.name)}-${table}.jpg already there, skipped`); continue; }
   process.stdout.write(`${d.name} (${d.cat}) on table ${table}… `);
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token, 'x-goog-user-project': PROJECT },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [
-        { text: prompt(d, isNight) },
-        { text: 'Image 1:' }, { inlineData: { mimeType: mime(d.photo), data: b64(d.photo) } },
-        { text: 'Image 2:' }, { inlineData: { mimeType: 'image/jpeg', data: b64(TABLES[table]) } },
-      ] }],
-      generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: size } },
-    }),
-  });
-  const body = await res.json().catch(() => ({}));
+  // the project allows only a few pictures a minute: when it says so, wait a minute and ask again
+  let res, body;
+  for (let tries = 0; ; tries++) {
+    res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token, 'x-goog-user-project': PROJECT },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [
+          { text: prompt(d, isNight) },
+          { text: 'Image 1:' }, { inlineData: { mimeType: mime(d.photo), data: b64(d.photo) } },
+          { text: 'Image 2:' }, { inlineData: { mimeType: 'image/jpeg', data: b64(TABLES[table]) } },
+        ] }],
+        generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: size } },
+      }),
+    });
+    body = await res.json().catch(() => ({}));
+    if (res.status === 401 && tries < 8) { token = signIn(); continue; }
+    if (res.status !== 429 || tries >= 8) break;
+    await new Promise((r) => setTimeout(r, 65_000));
+  }
   if (!res.ok) { console.log('failed: ' + (body.error?.message || res.status)); continue; }
   const part = body.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
   if (!part) { console.log('no image came back (' + (body.candidates?.[0]?.finishReason || 'unknown reason') + ')'); continue; }

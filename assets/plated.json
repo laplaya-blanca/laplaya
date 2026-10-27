@@ -38,5 +38,501 @@
   "/uploads/fruits-mvpctpcjv039.jpg": {
     "day": "/assets/plated/fruits-mvpctpcjv039.jpg",
     "night": "/assets/plated/fruits-mvpctpcjv039-night.jpg"
+  },
+  "dish:crepe/nutella": {
+    "day": "/assets/plated/crepe--nutella.jpg",
+    "night": "/assets/plated/crepe--nutella-night.jpg"
+  },
+  "dish:crepe/oreo": {
+    "day": "/assets/plated/crepe--oreo.jpg",
+    "night": "/assets/plated/crepe--oreo-night.jpg"
+  },
+  "dish:crepe/kinder": {
+    "day": "/assets/plated/crepe--kinder.jpg",
+    "night": "/assets/plated/crepe--kinder-night.jpg"
+  },
+  "dish:crepe/snickers": {
+    "day": "/assets/plated/crepe--snickers.jpg",
+    "night": "/assets/plated/crepe--snickers-night.jpg"
+  },
+  "dish:crepe/brownie": {
+    "day": "/assets/plated/crepe--brownie.jpg",
+    "night": "/assets/plated/crepe--brownie-night.jpg"
+  },
+  "dish:crepe/fruits": {
+    "day": "/assets/plated/crepe--fruits.jpg",
+    "night": "/assets/plated/crepe--fruits-night.jpg"
+  },
+  "dish:crepe/fettuccine": {
+    "day": "/assets/plated/crepe--fettuccine.jpg",
+    "night": "/assets/plated/crepe--fettuccine-night.jpg"
+  },
+  "dish:crepe/playa-blanca": {
+    "day": "/assets/plated/crepe--playa-blanca.jpg",
+    "night": "/assets/plated/crepe--playa-blanca-night.jpg"
+  },
+  "dish:crepe/arequipe": {
+    "day": "/assets/plated/crepe--arequipe.jpg",
+    "night": "/assets/plated/crepe--arequipe-night.jpg"
+  },
+  "dish:crepe/crispy": {
+    "day": "/assets/plated/crepe--crispy.jpg",
+    "night": "/assets/plated/crepe--crispy-night.jpg"
+  },
+  "dish:crepe/barbie": {
+    "day": "/assets/plated/crepe--barbie.jpg",
+    "night": "/assets/plated/crepe--barbie-night.jpg"
+  },
+  "dish:crepe/flio": {
+    "day": "/assets/plated/crepe--flio.jpg",
+    "night": "/assets/plated/crepe--flio-night.jpg"
+  },
+  "dish:crepe/lotus": {
+    "day": "/assets/plated/crepe--lotus.jpg",
+    "night": "/assets/plated/crepe--lotus-night.jpg"
+  },
+  "dish:crepe/sushi": {
+    "day": "/assets/plated/crepe--sushi.jpg",
+    "night": "/assets/plated/crepe--sushi-night.jpg"
+  },
+  "dish:crepe/marshmallow": {
+    "day": "/assets/plated/crepe--marshmallow.jpg",
+    "night": "/assets/plated/crepe--marshmallow-night.jpg"
+  },
+  "dish:crepe/sushi-brownie": {
+    "day": "/assets/plated/crepe--sushi-brownie.jpg",
+    "night": "/assets/plated/crepe--sushi-brownie-night.jpg"
+  },
+  "dish:waffle/nutella": {
+    "day": "/assets/plated/waffle--nutella.jpg",
+    "night": "/assets/plated/waffle--nutella-night.jpg"
+  },
+  "dish:waffle/oreo": {
+    "day": "/assets/plated/waffle--oreo.jpg",
+    "night": "/assets/plated/waffle--oreo-night.jpg"
+  },
+  "dish:waffle/kinder": {
+    "day": "/assets/plated/waffle--kinder.jpg",
+    "night": "/assets/plated/waffle--kinder-night.jpg"
+  },
+  "dish:waffle/snickers": {
+    "day": "/assets/plated/waffle--snickers.jpg",
+    "night": "/assets/plated/waffle--snickers-night.jpg"
+  },
+  "dish:waffle/brownie": {
+    "day": "/assets/plated/waffle--brownie.jpg",
+    "night": "/assets/plated/waffle--brownie-night.jpg"
+  },
+  "dish:waffle/fruits": {
+    "day": "/assets/plated/waffle--fruits.jpg",
+    "night": "/assets/plated/waffle--fruits-night.jpg"
+  },
+  "dish:waffle/playa-blanca": {
+    "day": "/assets/plated/waffle--playa-blanca.jpg",
+    "night": "/assets/plated/waffle--playa-blanca-night.jpg"
+  },
+  "dish:waffle/arequipe": {
+    "day": "/assets/plated/waffle--arequipe.jpg",
+    "night": "/assets/plated/waffle--arequipe-night.jpg"
+  },
+  "dish:waffle/crispy": {
+    "day": "/assets/plated/waffle--crispy.jpg",
+    "night": "/assets/plated/waffle--crispy-night.jpg"
+  },
+  "dish:waffle/lotus": {
+    "day": "/assets/plated/waffle--lotus.jpg",
+    "night": "/assets/plated/waffle--lotus-night.jpg"
+  },
+  "dish:waffle/cheese-cake": {
+    "day": "/assets/plated/waffle--cheese-cake.jpg",
+    "night": "/assets/plated/waffle--cheese-cake-night.jpg"
+  },
+  "dish:bubble-waffle/fruits": {
+    "day": "/assets/plated/bubble-waffle--fruits.jpg",
+    "night": "/assets/plated/bubble-waffle--fruits-night.jpg"
+  },
+  "dish:bubble-waffle/kinder": {
+    "day": "/assets/plated/bubble-waffle--kinder.jpg",
+    "night": "/assets/plated/bubble-waffle--kinder-night.jpg"
+  },
+  "dish:bubble-waffle/lotus": {
+    "day": "/assets/plated/bubble-waffle--lotus.jpg",
+    "night": "/assets/plated/bubble-waffle--lotus-night.jpg"
+  },
+  "dish:bubble-waffle/arequipe": {
+    "day": "/assets/plated/bubble-waffle--arequipe.jpg",
+    "night": "/assets/plated/bubble-waffle--arequipe-night.jpg"
+  },
+  "dish:bubble-waffle/nutella": {
+    "day": "/assets/plated/bubble-waffle--nutella.jpg",
+    "night": "/assets/plated/bubble-waffle--nutella-night.jpg"
+  },
+  "dish:n-cup/oreo-cheesecake": {
+    "day": "/assets/plated/n-cup--oreo-cheesecake.jpg",
+    "night": "/assets/plated/n-cup--oreo-cheesecake-night.jpg"
+  },
+  "dish:n-cup/strawberry-cheesecake": {
+    "day": "/assets/plated/n-cup--strawberry-cheesecake.jpg",
+    "night": "/assets/plated/n-cup--strawberry-cheesecake-night.jpg"
+  },
+  "dish:n-cup/brownie": {
+    "day": "/assets/plated/n-cup--brownie.jpg",
+    "night": "/assets/plated/n-cup--brownie-night.jpg"
+  },
+  "dish:n-cup/lotus-cheesecake": {
+    "day": "/assets/plated/n-cup--lotus-cheesecake.jpg",
+    "night": "/assets/plated/n-cup--lotus-cheesecake-night.jpg"
+  },
+  "dish:n-cup/crunchy-n-cup": {
+    "day": "/assets/plated/n-cup--crunchy-n-cup.jpg",
+    "night": "/assets/plated/n-cup--crunchy-n-cup-night.jpg"
+  },
+  "dish:n-cup/dubai-n-cup": {
+    "day": "/assets/plated/n-cup--dubai-n-cup.jpg",
+    "night": "/assets/plated/n-cup--dubai-n-cup-night.jpg"
+  },
+  "dish:smoothies/strawberry": {
+    "day": "/assets/plated/smoothies--strawberry.jpg",
+    "night": "/assets/plated/smoothies--strawberry-night.jpg"
+  },
+  "dish:smoothies/mango": {
+    "day": "/assets/plated/smoothies--mango.jpg",
+    "night": "/assets/plated/smoothies--mango-night.jpg"
+  },
+  "dish:smoothies/caramel": {
+    "day": "/assets/plated/smoothies--caramel.jpg",
+    "night": "/assets/plated/smoothies--caramel-night.jpg"
+  },
+  "dish:smoothies/nutella-with-strawberry": {
+    "day": "/assets/plated/smoothies--nutella-with-strawberry.jpg",
+    "night": "/assets/plated/smoothies--nutella-with-strawberry-night.jpg"
+  },
+  "dish:smoothies/blueberry": {
+    "day": "/assets/plated/smoothies--blueberry.jpg",
+    "night": "/assets/plated/smoothies--blueberry-night.jpg"
+  },
+  "dish:smoothies/banana": {
+    "day": "/assets/plated/smoothies--banana.jpg",
+    "night": "/assets/plated/smoothies--banana-night.jpg"
+  },
+  "dish:fresh-juice/orange": {
+    "day": "/assets/plated/fresh-juice--orange.jpg",
+    "night": "/assets/plated/fresh-juice--orange-night.jpg"
+  },
+  "dish:fresh-juice/carrot": {
+    "day": "/assets/plated/fresh-juice--carrot.jpg",
+    "night": "/assets/plated/fresh-juice--carrot-night.jpg"
+  },
+  "dish:fresh-juice/apple": {
+    "day": "/assets/plated/fresh-juice--apple.jpg",
+    "night": "/assets/plated/fresh-juice--apple-night.jpg"
+  },
+  "dish:fresh-juice/strawberry": {
+    "day": "/assets/plated/fresh-juice--strawberry.jpg",
+    "night": "/assets/plated/fresh-juice--strawberry-night.jpg"
+  },
+  "dish:fresh-juice/lemonada": {
+    "day": "/assets/plated/fresh-juice--lemonada.jpg",
+    "night": "/assets/plated/fresh-juice--lemonada-night.jpg"
+  },
+  "dish:fresh-juice/cocktail-pieces-fresh": {
+    "day": "/assets/plated/fresh-juice--cocktail-pieces-fresh.jpg",
+    "night": "/assets/plated/fresh-juice--cocktail-pieces-fresh-night.jpg"
+  },
+  "dish:fresh-juice/cocktail-juice-fresh": {
+    "day": "/assets/plated/fresh-juice--cocktail-juice-fresh.jpg",
+    "night": "/assets/plated/fresh-juice--cocktail-juice-fresh-night.jpg"
+  },
+  "dish:fresh-juice/cocktail-pieces-avocado": {
+    "day": "/assets/plated/fresh-juice--cocktail-pieces-avocado.jpg",
+    "night": "/assets/plated/fresh-juice--cocktail-pieces-avocado-night.jpg"
+  },
+  "dish:fresh-juice/orange-strawberry": {
+    "day": "/assets/plated/fresh-juice--orange-strawberry.jpg",
+    "night": "/assets/plated/fresh-juice--orange-strawberry-night.jpg"
+  },
+  "dish:fresh-juice/banana-with-milk": {
+    "day": "/assets/plated/fresh-juice--banana-with-milk.jpg",
+    "night": "/assets/plated/fresh-juice--banana-with-milk-night.jpg"
+  },
+  "dish:fresh-juice/blue-hawaii": {
+    "day": "/assets/plated/fresh-juice--blue-hawaii.jpg",
+    "night": "/assets/plated/fresh-juice--blue-hawaii-night.jpg"
+  },
+  "dish:fresh-juice/avocado": {
+    "day": "/assets/plated/fresh-juice--avocado.jpg",
+    "night": "/assets/plated/fresh-juice--avocado-night.jpg"
+  },
+  "dish:fresh-juice/polo-fresh": {
+    "day": "/assets/plated/fresh-juice--polo-fresh.jpg",
+    "night": "/assets/plated/fresh-juice--polo-fresh-night.jpg"
+  },
+  "dish:shakes/lotus": {
+    "day": "/assets/plated/shakes--lotus.jpg",
+    "night": "/assets/plated/shakes--lotus-night.jpg"
+  },
+  "dish:shakes/nutella": {
+    "day": "/assets/plated/shakes--nutella.jpg",
+    "night": "/assets/plated/shakes--nutella-night.jpg"
+  },
+  "dish:shakes/red-velvet": {
+    "day": "/assets/plated/shakes--red-velvet.jpg",
+    "night": "/assets/plated/shakes--red-velvet-night.jpg"
+  },
+  "dish:shakes/kinder": {
+    "day": "/assets/plated/shakes--kinder.jpg",
+    "night": "/assets/plated/shakes--kinder-night.jpg"
+  },
+  "dish:shakes/snickers": {
+    "day": "/assets/plated/shakes--snickers.jpg",
+    "night": "/assets/plated/shakes--snickers-night.jpg"
+  },
+  "dish:shakes/marshmallow": {
+    "day": "/assets/plated/shakes--marshmallow.jpg",
+    "night": "/assets/plated/shakes--marshmallow-night.jpg"
+  },
+  "dish:shakes/bubble-gum": {
+    "day": "/assets/plated/shakes--bubble-gum.jpg",
+    "night": "/assets/plated/shakes--bubble-gum-night.jpg"
+  },
+  "dish:shakes/arequipe": {
+    "day": "/assets/plated/shakes--arequipe.jpg",
+    "night": "/assets/plated/shakes--arequipe-night.jpg"
+  },
+  "dish:shakes/caramel": {
+    "day": "/assets/plated/shakes--caramel.jpg",
+    "night": "/assets/plated/shakes--caramel-night.jpg"
+  },
+  "dish:shakes/cookies": {
+    "day": "/assets/plated/shakes--cookies.jpg",
+    "night": "/assets/plated/shakes--cookies-night.jpg"
+  },
+  "dish:shakes/mocha": {
+    "day": "/assets/plated/shakes--mocha.jpg",
+    "night": "/assets/plated/shakes--mocha-night.jpg"
+  },
+  "dish:shakes/cerlac": {
+    "day": "/assets/plated/shakes--cerlac.jpg",
+    "night": "/assets/plated/shakes--cerlac-night.jpg"
+  },
+  "dish:shakes/trix": {
+    "day": "/assets/plated/shakes--trix.jpg",
+    "night": "/assets/plated/shakes--trix-night.jpg"
+  },
+  "dish:shakes/playa-blanca": {
+    "day": "/assets/plated/shakes--playa-blanca.jpg",
+    "night": "/assets/plated/shakes--playa-blanca-night.jpg"
+  },
+  "dish:shakes/churro": {
+    "day": "/assets/plated/shakes--churro.jpg",
+    "night": "/assets/plated/shakes--churro-night.jpg"
+  },
+  "dish:matcha/vanilla-matcha": {
+    "day": "/assets/plated/matcha--vanilla-matcha.jpg",
+    "night": "/assets/plated/matcha--vanilla-matcha-night.jpg"
+  },
+  "dish:matcha/strawberry-matcha": {
+    "day": "/assets/plated/matcha--strawberry-matcha.jpg",
+    "night": "/assets/plated/matcha--strawberry-matcha-night.jpg"
+  },
+  "dish:matcha/drama-queen-matcha": {
+    "day": "/assets/plated/matcha--drama-queen-matcha.jpg",
+    "night": "/assets/plated/matcha--drama-queen-matcha-night.jpg"
+  },
+  "dish:matcha/passion-lemon-matcha": {
+    "day": "/assets/plated/matcha--passion-lemon-matcha.jpg",
+    "night": "/assets/plated/matcha--passion-lemon-matcha-night.jpg"
+  },
+  "dish:matcha/coconut-cloud-matcha": {
+    "day": "/assets/plated/matcha--coconut-cloud-matcha.jpg",
+    "night": "/assets/plated/matcha--coconut-cloud-matcha-night.jpg"
+  },
+  "dish:matcha/matcha-latte": {
+    "day": "/assets/plated/matcha--matcha-latte.jpg",
+    "night": "/assets/plated/matcha--matcha-latte-night.jpg"
+  },
+  "dish:matcha/blueberry-matcha": {
+    "day": "/assets/plated/matcha--blueberry-matcha.jpg",
+    "night": "/assets/plated/matcha--blueberry-matcha-night.jpg"
+  },
+  "dish:matcha/matcha-coffee": {
+    "day": "/assets/plated/matcha--matcha-coffee.jpg",
+    "night": "/assets/plated/matcha--matcha-coffee-night.jpg"
+  },
+  "dish:matcha/white-pistachio-matcha": {
+    "day": "/assets/plated/matcha--white-pistachio-matcha.jpg",
+    "night": "/assets/plated/matcha--white-pistachio-matcha-night.jpg"
+  },
+  "dish:hot-drinks/espresso": {
+    "day": "/assets/plated/hot-drinks--espresso.jpg",
+    "night": "/assets/plated/hot-drinks--espresso-night.jpg"
+  },
+  "dish:hot-drinks/americano": {
+    "day": "/assets/plated/hot-drinks--americano.jpg",
+    "night": "/assets/plated/hot-drinks--americano-night.jpg"
+  },
+  "dish:hot-drinks/latte": {
+    "day": "/assets/plated/hot-drinks--latte.jpg",
+    "night": "/assets/plated/hot-drinks--latte-night.jpg"
+  },
+  "dish:hot-drinks/mocha": {
+    "day": "/assets/plated/hot-drinks--mocha.jpg",
+    "night": "/assets/plated/hot-drinks--mocha-night.jpg"
+  },
+  "dish:hot-drinks/white-mocha": {
+    "day": "/assets/plated/hot-drinks--white-mocha.jpg",
+    "night": "/assets/plated/hot-drinks--white-mocha-night.jpg"
+  },
+  "dish:hot-drinks/dark-mocha": {
+    "day": "/assets/plated/hot-drinks--dark-mocha.jpg",
+    "night": "/assets/plated/hot-drinks--dark-mocha-night.jpg"
+  },
+  "dish:hot-drinks/caramel-macchiato": {
+    "day": "/assets/plated/hot-drinks--caramel-macchiato.jpg",
+    "night": "/assets/plated/hot-drinks--caramel-macchiato-night.jpg"
+  },
+  "dish:hot-drinks/white-macchiato": {
+    "day": "/assets/plated/hot-drinks--white-macchiato.jpg",
+    "night": "/assets/plated/hot-drinks--white-macchiato-night.jpg"
+  },
+  "dish:hot-drinks/hot-lotus": {
+    "day": "/assets/plated/hot-drinks--hot-lotus.jpg",
+    "night": "/assets/plated/hot-drinks--hot-lotus-night.jpg"
+  },
+  "dish:hot-drinks/hot-white-chocolate": {
+    "day": "/assets/plated/hot-drinks--hot-white-chocolate.jpg",
+    "night": "/assets/plated/hot-drinks--hot-white-chocolate-night.jpg"
+  },
+  "dish:hot-drinks/hot-milk-chocolate": {
+    "day": "/assets/plated/hot-drinks--hot-milk-chocolate.jpg",
+    "night": "/assets/plated/hot-drinks--hot-milk-chocolate-night.jpg"
+  },
+  "dish:hot-drinks/hot-cerelac": {
+    "day": "/assets/plated/hot-drinks--hot-cerelac.jpg",
+    "night": "/assets/plated/hot-drinks--hot-cerelac-night.jpg"
+  },
+  "dish:hot-drinks/hot-caramel": {
+    "day": "/assets/plated/hot-drinks--hot-caramel.jpg",
+    "night": "/assets/plated/hot-drinks--hot-caramel-night.jpg"
+  },
+  "dish:hot-drinks/cappuccino": {
+    "day": "/assets/plated/hot-drinks--cappuccino.jpg",
+    "night": "/assets/plated/hot-drinks--cappuccino-night.jpg"
+  },
+  "dish:hot-drinks/pumpkin-spice-latte": {
+    "day": "/assets/plated/hot-drinks--pumpkin-spice-latte.jpg",
+    "night": "/assets/plated/hot-drinks--pumpkin-spice-latte-night.jpg"
+  },
+  "dish:boba/peach-strawberry": {
+    "day": "/assets/plated/boba--peach-strawberry.jpg",
+    "night": "/assets/plated/boba--peach-strawberry-night.jpg"
+  },
+  "dish:boba/peach-mango": {
+    "day": "/assets/plated/boba--peach-mango.jpg",
+    "night": "/assets/plated/boba--peach-mango-night.jpg"
+  },
+  "dish:boba/peach-passion-fruit": {
+    "day": "/assets/plated/boba--peach-passion-fruit.jpg",
+    "night": "/assets/plated/boba--peach-passion-fruit-night.jpg"
+  },
+  "dish:boba/peach-lychee": {
+    "day": "/assets/plated/boba--peach-lychee.jpg",
+    "night": "/assets/plated/boba--peach-lychee-night.jpg"
+  },
+  "dish:boba/peach-lemon": {
+    "day": "/assets/plated/boba--peach-lemon.jpg",
+    "night": "/assets/plated/boba--peach-lemon-night.jpg"
+  },
+  "dish:boba/tropical": {
+    "day": "/assets/plated/boba--tropical.jpg",
+    "night": "/assets/plated/boba--tropical-night.jpg"
+  },
+  "dish:boba/peach": {
+    "day": "/assets/plated/boba--peach.jpg",
+    "night": "/assets/plated/boba--peach-night.jpg"
+  },
+  "dish:boba/lemon": {
+    "day": "/assets/plated/boba--lemon.jpg",
+    "night": "/assets/plated/boba--lemon-night.jpg"
+  },
+  "dish:boba/blue-milk": {
+    "day": "/assets/plated/boba--blue-milk.jpg",
+    "night": "/assets/plated/boba--blue-milk-night.jpg"
+  },
+  "dish:boba/pink-milk": {
+    "day": "/assets/plated/boba--pink-milk.jpg",
+    "night": "/assets/plated/boba--pink-milk-night.jpg"
+  },
+  "dish:boba/matcha": {
+    "day": "/assets/plated/boba--matcha.jpg",
+    "night": "/assets/plated/boba--matcha-night.jpg"
+  },
+  "dish:boba/peach-milk": {
+    "day": "/assets/plated/boba--peach-milk.jpg",
+    "night": "/assets/plated/boba--peach-milk-night.jpg"
+  },
+  "dish:boba/mango-milk": {
+    "day": "/assets/plated/boba--mango-milk.jpg",
+    "night": "/assets/plated/boba--mango-milk-night.jpg"
+  },
+  "dish:boba/vanilla": {
+    "day": "/assets/plated/boba--vanilla.jpg",
+    "night": "/assets/plated/boba--vanilla-night.jpg"
+  },
+  "dish:boba/coconut": {
+    "day": "/assets/plated/boba--coconut.jpg",
+    "night": "/assets/plated/boba--coconut-night.jpg"
+  },
+  "dish:boba/tapioca-pearls": {
+    "day": "/assets/plated/boba--tapioca-pearls.jpg",
+    "night": "/assets/plated/boba--tapioca-pearls-night.jpg"
+  },
+  "dish:boba/strawberry-bobas": {
+    "day": "/assets/plated/boba--strawberry-bobas.jpg",
+    "night": "/assets/plated/boba--strawberry-bobas-night.jpg"
+  },
+  "dish:boba/tropical-bobas": {
+    "day": "/assets/plated/boba--tropical-bobas.jpg",
+    "night": "/assets/plated/boba--tropical-bobas-night.jpg"
+  },
+  "dish:boba/lychee-bobas": {
+    "day": "/assets/plated/boba--lychee-bobas.jpg",
+    "night": "/assets/plated/boba--lychee-bobas-night.jpg"
+  },
+  "dish:boba/mango-bobas": {
+    "day": "/assets/plated/boba--mango-bobas.jpg",
+    "night": "/assets/plated/boba--mango-bobas-night.jpg"
+  },
+  "dish:boba/blueberry-bobas": {
+    "day": "/assets/plated/boba--blueberry-bobas.jpg",
+    "night": "/assets/plated/boba--blueberry-bobas-night.jpg"
+  },
+  "dish:boba/passion-fruit-bobas": {
+    "day": "/assets/plated/boba--passion-fruit-bobas.jpg",
+    "night": "/assets/plated/boba--passion-fruit-bobas-night.jpg"
+  },
+  "dish:boba/peach-bobas": {
+    "day": "/assets/plated/boba--peach-bobas.jpg",
+    "night": "/assets/plated/boba--peach-bobas-night.jpg"
+  },
+  "dish:boba/cheese-cake-topping": {
+    "day": "/assets/plated/boba--cheese-cake-topping.jpg",
+    "night": "/assets/plated/boba--cheese-cake-topping-night.jpg"
+  },
+  "dish:boba/cotton-candy-topping": {
+    "day": "/assets/plated/boba--cotton-candy-topping.jpg",
+    "night": "/assets/plated/boba--cotton-candy-topping-night.jpg"
+  },
+  "dish:boba/biscuit-topping": {
+    "day": "/assets/plated/boba--biscuit-topping.jpg",
+    "night": "/assets/plated/boba--biscuit-topping-night.jpg"
+  },
+  "dish:ice-cream/croissant": {
+    "day": "/assets/plated/ice-cream--croissant.jpg",
+    "night": "/assets/plated/ice-cream--croissant-night.jpg"
+  },
+  "dish:ice-cream/blanca-ice-cream": {
+    "day": "/assets/plated/ice-cream--blanca-ice-cream.jpg",
+    "night": "/assets/plated/ice-cream--blanca-ice-cream-night.jpg"
   }
 }

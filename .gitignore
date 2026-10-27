@@ -23,3 +23,6 @@ replated/
 
 # Vite dependency cache
 .vite/
+
+# your own keys, never committed (LAPLAYA_GEMINI_STUDIO_KEY=… for scripts/plate-unshot.mjs --api)
+.env.local

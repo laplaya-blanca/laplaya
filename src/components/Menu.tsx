@@ -247,8 +247,26 @@ function Photo({ item, w, className }: { item: Item; w: number; className: strin
   );
 }
 
+// a dish not photographed yet: its stand-in on its table (scripts/plate-unshot.mjs), the day one after dark if there is no
+// night one; without either, or if it won't load, the drawn card
+function StandIn({ item, w, className }: { item: Item; w: number; className: string }) {
+  const night = useNight();
+  const [broken, setBroken] = useState(false);
+  const src = (night && item.plated.night) || item.plated.day || item.plated.night;
+  if (!src || broken) return <Drawn item={item} w={w} className={className} />;
+  return (
+    <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>
+      <img src={img(src, w)} alt={item.name} loading="lazy" decoding="async" onError={() => setBroken(true)} className="size-full object-cover" style={{ objectPosition: 'center 75%' }} />
+    </span>
+  );
+}
+
 function Art({ item, w, className }: { item: Item; w: number; className: string }) {
   if (item.photo) return <Photo key={item.photo} item={item} w={w} className={className} />;
+  return <StandIn item={item} w={w} className={className} />;
+}
+
+function Drawn({ item, w, className }: { item: Item; w: number; className: string }) {
   const rnd = seeded(item.name + item.cat);
   const tint = flavourColours(item.name, item.kind)[0];
   const small = w < 300;
