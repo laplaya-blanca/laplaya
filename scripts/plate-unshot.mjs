@@ -12,8 +12,11 @@
 //   node scripts/plate-unshot.mjs --all [--night]               every dish without a photo
 //   node scripts/plate-unshot.mjs --all --use [--night]         put the finished pictures on the menu (no new generations)
 //   options: --size 1K|2K (default 2K)
+//            --api   go through the Gemini API with your AI Studio key instead of Vertex AI, which has its own quota, so
+//                    a run with --api beside one without makes about twice as many pictures a minute. The key goes in
+//                    LAPLAYA_GEMINI_STUDIO_KEY, in your shell or in .env.local (ignored by git)
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -52,7 +55,7 @@ const servedAs = (cat, icon) => (cat === 'bubble waffle' ? `a golden Hong Kong b
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf('--' + name); return i < 0 ? undefined : args.splice(i, 2)[1]; };
 const has = (name) => { const i = args.indexOf('--' + name); if (i >= 0) args.splice(i, 1); return i >= 0; };
-const night = has('night'), all = has('all'), use = has('use');
+const night = has('night'), all = has('all'), use = has('use'), api = has('api');
 const size = flag('size') || '2K';
 const wanted = args.map((a) => a.toLowerCase());
 
@@ -89,9 +92,19 @@ if (use) {
   process.exit(0);
 }
 
-let token = '';
-try { token = execFileSync('gcloud', ['auth', 'application-default', 'print-access-token'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { /* reported below */ }
-if (!token) { console.error('Not signed in to Google. Run: gcloud auth application-default login'); process.exit(1); }
+// a sign-in token lasts an hour and a full run takes longer, so a new one is fetched whenever Google turns the old one away
+const signIn = () => { try { return execFileSync('gcloud', ['auth', 'application-default', 'print-access-token'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+let token = '', key = '';
+if (api) {
+  key = process.env.LAPLAYA_GEMINI_STUDIO_KEY || (existsSync(join(ROOT, '.env.local')) && readFileSync(join(ROOT, '.env.local'), 'utf8').match(/^LAPLAYA_GEMINI_STUDIO_KEY=(.+)$/m)?.[1].trim()) || '';
+  if (!key) { console.error('No AI Studio key. Put LAPLAYA_GEMINI_STUDIO_KEY=… in .env.local'); process.exit(1); }
+} else {
+  token = signIn();
+  if (!token) { console.error('Not signed in to Google. Run: gcloud auth application-default login'); process.exit(1); }
+}
+const url = api ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent' : ENDPOINT;
+const headersFor = () => api ? { 'content-type': 'application/json', 'x-goog-api-key': key }
+  : { 'content-type': 'application/json', authorization: 'Bearer ' + token, 'x-goog-user-project': PROJECT };
 
 const prompt = (d, isNight) => `The image is an empty beach-bar table by a lake.
 
@@ -106,16 +119,27 @@ async function make(d) {
   const table = tableOf(d), isNight = table === 'night';
   const out = join('replated/unshot', `${d.file}-${table}.jpg`);
   // already done: delete the file to make it again
-  if (existsSync(join(ROOT, out))) { console.log(`${d.key}: ${out} already there, skipped`); return; }
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token, 'x-goog-user-project': PROJECT },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt(d, isNight) }, { inlineData: { mimeType: 'image/jpeg', data: readFileSync(join(ROOT, TABLES[table])).toString('base64') } }] }],
-      generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: size } },
-    }),
-  });
-  const body = await res.json().catch(() => ({}));
+  if (existsSync(join(ROOT, out)) || existsSync(join(ROOT, out + '.busy'))) { console.log(`${d.key}: ${out} already there or being made, skipped`); return; }
+  writeFileSync(join(ROOT, out + '.busy'), ''); // so a second run beside this one takes another dish
+  try { await draw(d, table, isNight, out); } finally { rmSync(join(ROOT, out + '.busy'), { force: true }); }
+}
+async function draw(d, table, isNight, out) {
+  // the project allows only a few pictures a minute: when it says so, wait a minute and ask again
+  let res, body;
+  for (let tries = 0; ; tries++) {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: headersFor(),
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt(d, isNight) }, { inlineData: { mimeType: 'image/jpeg', data: readFileSync(join(ROOT, TABLES[table])).toString('base64') } }] }],
+        generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: size } },
+      }),
+    });
+    body = await res.json().catch(() => ({}));
+    if (res.status === 401 && !api && tries < 8) { token = signIn(); continue; }
+    if (res.status !== 429 || tries >= 8) break;
+    await new Promise((r) => setTimeout(r, 65_000));
+  }
   if (!res.ok) { console.log(`${d.key}: failed: ` + (body.error?.message || res.status)); return; }
   const part = body.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
   if (!part) { console.log(`${d.key}: no image came back (` + (body.candidates?.[0]?.finishReason || 'unknown reason') + ')'); return; }
@@ -124,6 +148,6 @@ async function make(d) {
   execFileSync('python3', [join(ROOT, 'scripts/replate_blend.py'), join(ROOT, TABLES[table]), join(ROOT, raw), join(ROOT, out)], { stdio: 'ignore' });
   console.log(`${d.key}: saved ${out} on table ${table}`);
 }
-// six at a time: one picture takes the better part of a minute
+// two at a time: one picture takes the better part of a minute, and the quota is per minute
 const queue = [...todo];
-await Promise.all(Array.from({ length: 6 }, async () => { while (queue.length) await make(queue.shift()); }));
+await Promise.all(Array.from({ length: 2 }, async () => { while (queue.length) await make(queue.shift()); }));
