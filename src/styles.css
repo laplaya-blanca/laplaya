@@ -260,6 +260,11 @@ html[data-intro] .rise { animation-play-state: paused; }
   .afloat .bubble, .afloat .drift { animation-delay: 0s; }
 }
 
+/* While a laptop scrolls the page (html.scrolling, set in main.tsx) the looping motion holds still and picks up where it
+   was the moment the page stops. Dozens of cards and letters ticking every frame on top of the scroll is what made a
+   slower laptop hitch. The scroll-driven ones (sink, reveal, tide) keep following the scroll */
+html.scrolling *:not(.sink, .sink-in, .reveal, .tide), html.scrolling *::before, html.scrolling *::after { animation-play-state: paused !important; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition-duration: 0s !important; }
