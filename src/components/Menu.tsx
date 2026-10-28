@@ -315,7 +315,8 @@ function Breath({ air }: { air: Air }) {
 const Card = memo(function Card({ item, i, air, onOpen, onAdd }: { item: Item; i: number; air: Air; onOpen: (i: Item) => void; onAdd: Add }) {
   return (
     // the still slot is what the rail snaps to; only the card inside it moves (a moving snap target makes the rail creep)
-    <div className="slot"><article role="listitem" style={{ ['--i' as string]: i }} className={'float paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
+    // every card in a rail is as tall as the tallest (a name on two lines), so a row is even
+    <div className="slot flex"><article role="listitem" style={{ ['--i' as string]: i }} className={'float paper flex w-[min(72vw,290px)] flex-col overflow-hidden rounded-[26px] bg-[var(--paper)] shadow-[0_6px_16px_rgba(6,20,29,.10)]'}>
       <button onClick={(e) => { liftFrom(e.currentTarget.querySelector('[data-art]')); onOpen(item); }} className="block w-full text-left" aria-label={item.name + (item.price != null ? ', ' + money(item.price) : '') + (item.soldOut ? ', sold out today' : '') + '. Details'}>
         <div data-art className="relative aspect-[5/6] overflow-hidden">
           <Art item={item} w={600} className={'size-full ' + (item.soldOut ? 'opacity-55 grayscale' : '')} />

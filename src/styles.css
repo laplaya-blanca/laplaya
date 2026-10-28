@@ -159,7 +159,9 @@ html[data-intro] .rise { animation-play-state: paused; }
    the left, driven by the swipe itself. The scale composes with the bob's translate and rotate. Each card sits in a
    still .slot, which is what the rail snaps to */
 @supports (animation-timeline: view()) {
-  @keyframes current { from { scale: .9; opacity: .75; } 35%, 65% { scale: 1; opacity: 1; } to { scale: .92; opacity: .8; } }
+  /* full size whenever the whole card is in the rail, so a row of cards on a wide screen is all one size; only a card
+     cut by the rail's edge is coming in or going out */
+  @keyframes current { entry 0% { scale: .9; opacity: .75; } entry 100%, exit 0% { scale: 1; opacity: 1; } exit 100% { scale: .92; opacity: .8; } }
   .afloat .rail .float { animation-name: bob, current; animation-duration: 6.4s, auto; animation-timing-function: ease-in-out, linear;
     animation-iteration-count: infinite, 1; animation-fill-mode: none, both; animation-timeline: auto, view(inline);
     animation-delay: calc(var(--i, 0) * -.8s), 0s; }
