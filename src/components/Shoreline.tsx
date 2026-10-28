@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { Site } from '../lib/content';
 import { Ripple, useAfloat } from './Menu';
 import { Hello, Signature, TreasureMap } from './Ashore';
+import { Moving } from './Shore';
 
 // Web3Forms inbox key (same form the previous site used); submissions are emailed to the owner.
 const WEB3FORMS_KEY = '19a9ec05-db69-4d4a-8f08-ef419353d7ab';
@@ -37,7 +38,9 @@ export function Events({ site }: { site: Site | null }) {
   return (
     <section id="events" aria-labelledby="events-h" className="on-water mt-16">
       <div className="relative h-[52svh] min-h-[340px] overflow-hidden">
-        <img src="/assets/events-aisle.jpg" alt="A wedding aisle set up on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
+        <img src="/assets/events-aisle.jpg" alt="A bride and groom under the flower arch at the end of a wedding aisle on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
+        {/* the veil, the curtains and the sea in the breeze (scripts/hero-video.mjs) */}
+        <Moving wide="/assets/events-aisle.mp4" tall="/assets/events-aisle-small.mp4" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
         <div className="edge absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Events & catering</p>

@@ -8,8 +8,8 @@
 //     -c:v libx264 -preset slow -crf 27 -profile:v high -movflags +faststart assets/hero-lake-wide.mp4
 //   (the tall ones at scale=720:1280)
 //
-//   node scripts/hero-video.mjs                 all four (day and night, wide for desktop and tall for phones)
-//   node scripts/hero-video.mjs lake-wide       one of them: lake-wide lake-tall night-wide night-tall
+//   node scripts/hero-video.mjs                 all of them (the hero by day and night, wide for desktop and tall for phones, and events)
+//   node scripts/hero-video.mjs lake-wide       one of them: lake-wide lake-tall night-wide night-tall events-wide bottle-wide
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -34,6 +34,13 @@ const SHOTS = {
   'lake-tall': { photo: 'assets/hero-lake-tall.jpg', ratio: '9:16', night: false },
   'night-wide': { photo: 'assets/hero-night-wide.jpg', ratio: '16:9', night: true },
   'night-tall': { photo: 'assets/hero-night-tall.jpg', ratio: '9:16', night: true },
+  // the events photo (scripts/aisle-couple.mjs): the couple stays where they stand, only the breeze and the sea move
+  'events-wide': { photo: 'assets/events-aisle.jpg', ratio: '16:9', people: true,
+    prompt: `This photograph of a beach wedding at golden hour comes gently to life. The bride and groom stand still under the arch, hand in hand, seen from behind; they do not turn around or walk. A light warm sea breeze lifts and ripples the bride's long veil and the hem of her gown, and stirs the sheer curtains on the arch and the ribbons on the chairs. The palm fronds sway slowly; the sea's small waves roll in and sparkle in the low sun. Calm, romantic, slow, natural motion. ${STILL}`.replace('no people, ', '') },
+  // the footer's message in a bottle (scripts/bottle-map.mjs): it plays once and ends on our map lying open on the sand,
+  // the frame the page's own map takes over from
+  'bottle-wide': { photo: 'replated/bottle/bottle.jpg', last: 'replated/bottle/map.jpg', ratio: '16:9',
+    prompt: `Seen from straight above, an old glass message bottle lies on white sand in warm golden light. The cork pops out of its neck by itself and the rolled-up parchment slides out of the bottle onto the sand; the bottle rolls gently away out of the frame. The twine falls loose and the parchment unrolls and flattens out by itself, opening into a hand-drawn treasure map that settles flat in the middle of the sand. Smooth, gentle, magical, satisfying motion. The camera is completely still: a locked-off overhead shot, no pan, no zoom, no rotation. No hands, no people, no text other than what is drawn on the map.` },
 };
 const prompt = (night) => night
   ? `This photograph of a lake shore at night comes gently to life. The lake's surface moves softly, the moonlight's reflection shimmering and breaking up on small ripples; tiny waves lap the white sand at the water's edge. The lights along the far shore twinkle faintly. If there are palm leaves or a thatched umbrella, their fringes stir slightly in a light night breeze. Calm, quiet, slow, peaceful. ${STILL}`
@@ -51,9 +58,9 @@ await Promise.all(todo.map(async (k) => {
     const op = await call(BASE + ':predictLongRunning', {
       // the photo is the first frame and the last: the clip has to come back to exactly where it began, which keeps the
       // camera from drifting (told only in words, Veo still pans) and makes the loop seamless
-      instances: [{ prompt: prompt(s.night), image: still(s.photo), lastFrame: still(s.photo) }],
-      parameters: { aspectRatio: s.ratio, durationSeconds: 8, generateAudio: false, sampleCount: 1, resolution: '1080p', personGeneration: 'dont_allow',
-        negativePrompt: 'camera movement, pan, tilt, zoom, dolly, tracking shot, handheld, parallax, reframing, new objects, people, boats, birds, text' },
+      instances: [{ prompt: s.prompt || prompt(s.night), image: still(s.photo), lastFrame: still(s.last || s.photo) }],
+      parameters: { aspectRatio: s.ratio, durationSeconds: 8, generateAudio: false, sampleCount: 1, resolution: '1080p', personGeneration: s.people ? 'allow_adult' : 'dont_allow',
+        negativePrompt: 'camera movement, pan, tilt, zoom, dolly, tracking shot, handheld, parallax, reframing, new objects, ' + (s.people ? 'turning around, walking, faces, extra people' : 'people, hands') + ', boats, birds, text' },
     });
     console.log(`${k}: started`);
     // a clip takes a minute or two; ask every 15 seconds until it is ready

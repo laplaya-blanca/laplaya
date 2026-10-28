@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { Site } from '../lib/content';
 
 // The footer's richer pieces: a treasure map to the shop, contact tiles with their own marks, and the maker's
@@ -31,16 +32,56 @@ export const Chest = ({ size = 34 }: { size?: number }) => (
   </svg>
 );
 
+// The map arrives as a message in a bottle (scripts/bottle-map.mjs, then scripts/hero-video.mjs): a clip that starts on a
+// corked bottle on the sand and ends on this very map lying open there, cut to the map's own box so its last frame sits
+// where the map does. Within a screen of the map the clip loads and its first frame, the bottle, takes the map's place;
+// once the map is well in view it plays, once, and the map fades back in over its last frame, ready to be pressed. The
+// sand around the paper fades into the water. If it can't play (reduced motion, a data saver, Low Power Mode) the map
+// is simply there.
+// a soft-edged rectangle: the sand thins out into the water along every side
+const EDGE = ['linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent)', 'linear-gradient(180deg, transparent, #000 9%, #000 91%, transparent)'].join(', ');
+const SANDY = { maskImage: EDGE, WebkitMaskImage: EDGE, maskComposite: 'intersect', WebkitMaskComposite: 'source-in' } as const;
+function useBottle() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [skip] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches
+    || !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+  const [stage, setStage] = useState<'far' | 'near' | 'ready' | 'playing' | 'done'>(skip ? 'done' : 'far');
+  useEffect(() => {
+    const v = ref.current; if (!v || stage === 'done' || stage === 'playing') return;
+    const near = new IntersectionObserver(([e]) => e.isIntersecting && setStage((s) => (s === 'far' ? 'near' : s)), { rootMargin: '100% 0px' });
+    const seen = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      seen.disconnect();
+      v.play().then(() => setStage('playing'), () => setStage('done'));
+    }, { threshold: 0.6 });
+    if (stage === 'far') near.observe(v);
+    if (stage === 'ready') seen.observe(v);
+    return () => { near.disconnect(); seen.disconnect(); };
+  }, [stage]);
+  const shown = stage === 'ready' || stage === 'playing';
+  return {
+    hides: shown,
+    video: skip ? null : (
+      <video ref={ref} src={stage === 'far' ? undefined : '/assets/bottle-map.mp4'} aria-hidden muted playsInline preload="auto" disablePictureInPicture
+        onLoadedData={() => setStage((s) => (s === 'near' ? 'ready' : s))} onEnded={() => setStage('done')} onError={() => setStage('done')}
+        className="pointer-events-none absolute inset-0 size-full object-cover transition-opacity duration-700"
+        style={{ opacity: shown ? 1 : 0, ...SANDY }} />
+    )
+  };
+}
+
 // a box on the map, in the map's own 320×210 units
 const onMap = (x: number, y: number, w: number, h: number) => ({ left: (x / 320) * 100 + '%', top: (y / 210) * 100 + '%', width: (w / 320) * 100 + '%', height: (h / 210) * 100 + '%' });
 
 // Find us, as a treasure map: Lake Qaraoun drawn in ink on old paper, a little ship sailing at the top, a dotted
 // course down the water to an X on the east shore where the chest is buried. The whole map opens Google Maps.
 export function TreasureMap({ href }: { href: string }) {
+  const bottle = useBottle();
   return (
     <a href={href} target="_blank" rel="noopener" className="treasure drift block" style={{ ['--i' as string]: 0 }}>
       <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us · X marks the spot</p>
-      <div className="parchment mt-3">
+      <div className="relative mt-3">
+      <div className="parchment transition-opacity duration-700" style={{ opacity: bottle.hides ? 0 : 1 }}>
         <div className="relative">
         <svg viewBox="0 0 320 210" className="block w-full" aria-hidden>
           <defs>
@@ -91,6 +132,8 @@ export function TreasureMap({ href }: { href: string }) {
           </div>
           <span className="grid h-10 shrink-0 place-items-center rounded-full bg-[#3E2A14] px-4 text-[14px] font-extrabold text-[#F4E9CF]">Open map<span className="sr-only"> (opens in a new tab)</span></span>
         </div>
+      </div>
+      {bottle.video}
       </div>
     </a>
   );
