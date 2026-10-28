@@ -13,7 +13,7 @@ const WATER = { lake: { tall: 0.57, wide: 0.6 }, night: { tall: 0.49, wide: 0.62
 // the breeze move, so it takes over from the photo without a jump. It fades in once it is actually playing, and plays only
 // while it is on screen. No video for reduced motion or a data saver; where a phone won't autoplay (Low Power Mode) it
 // simply never starts and the photo stays. It loads only once it is within a screen of the window, so a video further
-// down the page costs nothing until the visitor gets near it. The hero and the events photo both use it, each with a cut
+// down the page costs nothing until the visitor gets near it. The hero, the events photo and the footer's beach use it, each with a cut
 // for laptops and one for phones.
 export function Moving({ wide, tall, video }: { wide: string; tall: string; video?: RefObject<HTMLVideoElement> }) {
   const own = useRef<HTMLVideoElement>(null);
@@ -23,17 +23,24 @@ export function Moving({ wide, tall, video }: { wide: string; tall: string; vide
   const [src] = useState(() => (matchMedia('(min-width: 768px)').matches ? wide : tall));
   const [near, setNear] = useState(false);
   const [on, setOn] = useState(false);
+  const seen = useRef(false);
   useEffect(() => {
     const v = ref.current; if (!v) return;
-    const io = new IntersectionObserver(([e]) => {
+    // fetch once it is a screen away; only once the visitor has scrolled, since before the menu arrives the whole page
+    // is short and everything sits near the top
+    const soon = new IntersectionObserver(([e]) => { if (e.isIntersecting && scrollY > 0) { setNear(true); soon.disconnect(); } }, { rootMargin: '100% 0px' });
+    // play only while it is actually on screen
+    const look = new IntersectionObserver(([e]) => {
+      seen.current = e.isIntersecting;
       if (e.isIntersecting) { setNear(true); v.play().catch(() => {}); } else v.pause();
-    }, { rootMargin: '100% 0px' });
-    io.observe(v);
-    return () => io.disconnect();
+    });
+    soon.observe(v); look.observe(v);
+    return () => { soon.disconnect(); look.disconnect(); };
   }, [ref, skip]);
   if (skip) return null;
   return (
-    <video ref={ref} src={near ? src : undefined} aria-hidden muted loop playsInline autoPlay preload="auto" disablePictureInPicture
+    <video ref={ref} src={near ? src : undefined} aria-hidden muted loop playsInline preload="auto" disablePictureInPicture
+      onLoadedData={(e) => seen.current && e.currentTarget.play().catch(() => {})}
       onPlaying={() => setOn(true)} className="absolute inset-0 size-full object-cover transition-opacity duration-700" style={{ opacity: on ? 1 : 0 }} />
   );
 }

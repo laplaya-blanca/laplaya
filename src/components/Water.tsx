@@ -78,7 +78,8 @@ void main(){
 const EDGE = { rootMargin: '0px 0px -1px 0px' };
 
 // everything set on the water, and an observer that says whether any of it is on screen right now
-const onWater = () => [...document.querySelectorAll<HTMLElement>('#menu, #events, footer')];
+// the footer lies on its own sand, so the water only needs to move behind the menu and Events & Catering
+const onWater = () => [...document.querySelectorAll<HTMLElement>('#menu, #events')];
 function watch(els: HTMLElement[], tell: (on: boolean) => void) {
   const on = new Set<Element>();
   const io = new IntersectionObserver((es) => { es.forEach((e) => (e.isIntersecting ? on.add(e.target) : on.delete(e.target))); tell(on.size > 0); }, EDGE);
@@ -195,7 +196,7 @@ export function Water({ dark, ready = false, className = '' }: { dark: boolean; 
     return () => { tellFilm.current = () => {}; soon.disconnect(); v.removeEventListener('playing', rolls); v.removeEventListener('canplaythrough', rolls); document.removeEventListener('visibilitychange', play); v.pause(); };
   }, []);
 
-  // only while the menu, Events & Catering or the footer (all set on the water) is on screen: the hero covers it anyway
+  // only while the menu or Events & Catering (both set on the water) is on screen: the hero and the footer cover it otherwise
   useEffect(() => {
     const parts = onWater();
     const tell = (on: boolean) => { onScreen.current = on; tellCanvas.current(); tellFilm.current(); };

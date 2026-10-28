@@ -182,33 +182,23 @@ html[data-intro] .rise { animation-play-state: paused; }
 .pick { appearance: none; background-repeat: no-repeat; background-position: right 16px center; background-size: 12px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23F9F6E3' stroke-width='2'/%3E%3C/svg%3E"); }
 
-/* 5. the footer comes ashore. Two swells ride on top of it, drifting out of step (each svg is two waves wide, so
-   sliding it one wave loops seamlessly); as the footer comes into view the tide rises into place */
-.tide { position: absolute; left: 0; right: 0; bottom: 100%; height: 64px; overflow: hidden; pointer-events: none; }
-.swell { position: absolute; bottom: -1px; left: 0; width: 200%; height: 100%; }
-.swell.back { fill: color-mix(in srgb, var(--sea-1) 38%, transparent); height: 92%; }
-.swell.front { fill: var(--sea-2); }
-.swell .foam { fill: none; stroke: rgba(249,246,227,.55); stroke-width: 2.2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-@keyframes drift { to { transform: translate3d(-50%, 0, 0); } }
-.afloat .swell.front { animation: drift 11s linear infinite; }
-.afloat .swell.back { animation: drift 17s linear infinite reverse; }
-@supports (animation-timeline: view()) {
-  @keyframes tide-in { from { translate: 0 70%; } to { translate: 0 0; } }
-  .tide { animation: tide-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
-}
-/* light on the water in a glittering path: warm sun by day, silver moon after dark. A soft column of light, and
-   flecks on it that flare and fade on their own, softened so they read as glints rather than lines */
-/* starts below the tide's troughs and is clipped there, so no glint ever lands on the waves */
-.glitter { position: absolute; top: 18px; right: 10%; width: 110px; height: 195px; overflow: hidden; pointer-events: none;
-  --light: 255, 230, 186; background: radial-gradient(35% 50% at 50% 45%, rgba(var(--light), .16), transparent 70%); }
-:root[data-dark] .glitter { --light: 214, 228, 240; }
-/* on a wide screen a narrow path of light reads as stray dashes beside the layout, so it stays a phone's detail */
-@media (min-width: 768px) { .glitter { display: none; } }
-.glitter > span { position: absolute; left: 50%; top: calc(var(--g) * 23px + 10px); width: calc(var(--w) * 1px); height: 2.5px; border-radius: 3px;
-  translate: calc(-50% + var(--x) * 1px) 0; background: rgba(var(--light), .95); box-shadow: 0 0 8px 1px rgba(var(--light), .55);
-  filter: blur(.6px); opacity: .18; }
-@keyframes twinkle { 0%, 100% { opacity: .1; scale: .5 1; } 45% { opacity: .9; scale: 1 1; } 60% { opacity: .5; } }
-.afloat .glitter > span { animation: twinkle 2.9s ease-in-out infinite; animation-delay: calc(var(--g) * -.53s); }
+/* 5. the footer comes ashore: the beach seen from above (Shoreline.tsx). The filmed shore along its top, where the
+   menu's water laps onto the sand and fades into the page's own water above it; under it the dry sand carries on as
+   long as the footer does. By day the words on the sand are inked in the lake's teal; after dark the beach dims to
+   moonlight and they are light again. */
+.shore { --ink: #123F4D; --label: #14586B; --rule: rgba(18,63,77,.2); }
+:root[data-dark] .shore { --ink: #F3ECDD; --label: var(--glint); --rule: rgba(243,236,221,.15); }
+.beach { background: #EFE6D8 url(/assets/sand-tile.jpg) 0 0 / 100% auto repeat-y; }
+:root[data-dark] .beach { filter: brightness(.66) saturate(.55); }
+:root[data-dark] .beach::after { content: ''; position: absolute; inset: 0; background: rgba(8, 22, 44, .5); }
+.beach > .shot { position: relative; aspect-ratio: 9 / 16;
+  mask-image: linear-gradient(180deg, transparent, #000 9%, #000 86%, transparent); }
+@media (min-width: 768px) { .beach > .shot { aspect-ratio: 16 / 9; } }
+/* the title sits on the water; everything after it starts where the sand is dry */
+.shore .beach-title { min-height: calc(100vw * 16 / 9 * .32); }
+@media (min-width: 768px) { .shore .beach-title { min-height: calc(100vw * 9 / 16 * .45); } }
+/* the hello tiles are sea glass lying on the sand */
+.shore .hello { --glass-tint: color-mix(in srgb, var(--sea-3) 80%, transparent); }
 /* the footer's notes rock very gently, a beat apart, like the cards above */
 @keyframes rock { 0%, 100% { translate: 0 -1.5px; } 50% { translate: 0 2px; } }
 .afloat .drift { animation: rock 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -1.6s); }
@@ -262,8 +252,8 @@ html[data-intro] .rise { animation-play-state: paused; }
 
 /* While a laptop scrolls the page (html.scrolling, set in main.tsx) the looping motion holds still and picks up where it
    was the moment the page stops. Dozens of cards and letters ticking every frame on top of the scroll is what made a
-   slower laptop hitch. The scroll-driven ones (sink, reveal, tide) keep following the scroll */
-html.scrolling *:not(.sink, .sink-in, .reveal, .tide), html.scrolling *::before, html.scrolling *::after { animation-play-state: paused !important; }
+   slower laptop hitch. The scroll-driven ones (sink, reveal) keep following the scroll */
+html.scrolling *:not(.sink, .sink-in, .reveal), html.scrolling *::before, html.scrolling *::after { animation-play-state: paused !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

@@ -9,7 +9,7 @@
 //   (the tall ones at scale=720:1280)
 //
 //   node scripts/hero-video.mjs                 all of them (the hero by day and night, wide for desktop and tall for phones, and events)
-//   node scripts/hero-video.mjs lake-wide       one of them: lake-wide lake-tall night-wide night-tall events-wide bottle-wide
+//   node scripts/hero-video.mjs lake-wide       one of them: lake-wide lake-tall night-wide night-tall events-wide sand-wide sand-tall bottle-wide
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -37,6 +37,10 @@ const SHOTS = {
   // the events photo (scripts/aisle-couple.mjs): the couple stays where they stand, only the breeze and the sea move
   'events-wide': { photo: 'assets/events-aisle.jpg', ratio: '16:9', people: true,
     prompt: `This photograph of a beach wedding at golden hour comes gently to life. The bride and groom stand still under the arch, hand in hand, seen from behind; they do not turn around or walk. A light warm sea breeze lifts and ripples the bride's long veil and the hem of her gown, and stirs the sheer curtains on the arch and the ribbons on the chairs. The palm fronds sway slowly; the sea's small waves roll in and sparkle in the low sun. Calm, romantic, slow, natural motion. ${STILL}`.replace('no people, ', '') },
+  // the footer's beach from above (scripts/beach-sand.mjs): the water laps up the sand and draws back, the wind moves
+  // the dry sand's grains; it loops, so the wash ends where it began
+  ...Object.fromEntries(['wide', 'tall'].map((f) => ['sand-' + f, { photo: 'replated/sand/' + f + '.jpg', ratio: f === 'wide' ? '16:9' : '9:16',
+    prompt: `This overhead photograph of a calm lake beach comes gently to life. The deep teal water at the top moves softly, small ripples running across it; a gentle wave washes up onto the sand in a thin lacy sheet of white foam, glistens on the wet sand, and slowly draws back to where it began. Across the dry sand below, a light breeze drifts a faint veil of fine grains along the wind ripples. Calm, slow, soothing, natural motion. ${STILL}` }])),
   // the footer's message in a bottle (scripts/bottle-map.mjs): it plays once and ends on our map lying open on the sand,
   // the frame the page's own map takes over from
   'bottle-wide': { photo: 'replated/bottle/bottle.jpg', last: 'replated/bottle/map.jpg', ratio: '16:9',

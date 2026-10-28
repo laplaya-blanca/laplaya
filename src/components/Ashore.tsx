@@ -32,38 +32,54 @@ export const Chest = ({ size = 34 }: { size?: number }) => (
   </svg>
 );
 
-// The map arrives as a message in a bottle (scripts/bottle-map.mjs, then scripts/hero-video.mjs): a clip that starts on a
-// corked bottle on the sand and ends on this very map lying open there, cut to the map's own box so its last frame sits
-// where the map does. Within a screen of the map the clip loads and its first frame, the bottle, takes the map's place;
-// once the map is well in view it plays, once, and the map fades back in over its last frame, ready to be pressed. The
-// sand around the paper fades into the water. If it can't play (reduced motion, a data saver, Low Power Mode) the map
-// is simply there.
-// a soft-edged rectangle: the sand thins out into the water along every side
+// The map arrives as a message in a bottle (scripts/bottle-map.mjs, then scripts/hero-video.mjs): a five-second clip
+// that starts on a corked bottle on the sand and ends on this very map lying open there, cut to the map's own box so its
+// last frame sits where the map does. It loads from about Events & Catering on and plays the moment the map comes into
+// view; the map then fades back in over its last frame, ready to be read and pressed, and after a while it washes up in
+// its bottle again, for as long as the map is on screen, and afresh each time it comes back into view. The sand around
+// the paper fades into the beach. Where it can't play (reduced motion, a data saver, Low Power Mode) the map is simply
+// there.
+const REST = 8000;
+// a soft-edged rectangle: the sand thins out along every side
 const EDGE = ['linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent)', 'linear-gradient(180deg, transparent, #000 9%, #000 91%, transparent)'].join(', ');
 const SANDY = { maskImage: EDGE, WebkitMaskImage: EDGE, maskComposite: 'intersect', WebkitMaskComposite: 'source-in' } as const;
 function useBottle() {
   const ref = useRef<HTMLVideoElement>(null);
   const [skip] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches
     || !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
-  const [stage, setStage] = useState<'far' | 'near' | 'ready' | 'playing' | 'done'>(skip ? 'done' : 'far');
+  const [near, setNear] = useState(false);
+  const [shown, setShown] = useState(false);
+  const live = useRef({ seen: false, loaded: false, failed: false, rest: 0 });
+  const start = useRef(() => {});
   useEffect(() => {
-    const v = ref.current; if (!v || stage === 'done' || stage === 'playing') return;
-    const near = new IntersectionObserver(([e]) => e.isIntersecting && setStage((s) => (s === 'far' ? 'near' : s)), { rootMargin: '100% 0px' });
-    const seen = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      seen.disconnect();
-      v.play().then(() => setStage('playing'), () => setStage('done'));
-    }, { threshold: 0.6 });
-    if (stage === 'far') near.observe(v);
-    if (stage === 'ready') seen.observe(v);
-    return () => { near.disconnect(); seen.disconnect(); };
-  }, [stage]);
-  const shown = stage === 'ready' || stage === 'playing';
+    const v = ref.current; if (!v || skip) return;
+    const l = live.current;
+    start.current = () => {
+      clearTimeout(l.rest);
+      if (!l.seen || !l.loaded || l.failed) return;
+      // the bottle fades in over the map first, then the cork pops
+      v.currentTime = 0;
+      setShown(true);
+      l.rest = window.setTimeout(() => v.play().catch(() => { l.failed = true; setShown(false); }), 600);
+    };
+    // fetched a few screens ahead (only after a scroll: before the menu arrives the page is short and the footer sits
+    // near the top)
+    const soon = new IntersectionObserver(([e]) => { if (e.isIntersecting && scrollY > 0) { setNear(true); soon.disconnect(); } }, { rootMargin: '300% 0px' });
+    const look = new IntersectionObserver(([e]) => {
+      l.seen = e.isIntersecting;
+      if (e.isIntersecting) { setNear(true); start.current(); } else { clearTimeout(l.rest); v.pause(); setShown(false); }
+    }, { threshold: 0.15 });
+    soon.observe(v); look.observe(v);
+    return () => { soon.disconnect(); look.disconnect(); clearTimeout(l.rest); };
+  }, [skip]);
+  const l = live.current;
   return {
     hides: shown,
     video: skip ? null : (
-      <video ref={ref} src={stage === 'far' ? undefined : '/assets/bottle-map.mp4'} aria-hidden muted playsInline preload="auto" disablePictureInPicture
-        onLoadedData={() => setStage((s) => (s === 'near' ? 'ready' : s))} onEnded={() => setStage('done')} onError={() => setStage('done')}
+      <video ref={ref} src={near ? '/assets/bottle-map.mp4' : undefined} aria-hidden muted playsInline preload="auto" disablePictureInPicture
+        onLoadedData={() => { l.loaded = true; start.current(); }}
+        onEnded={() => { setShown(false); clearTimeout(l.rest); l.rest = window.setTimeout(() => start.current(), REST); }}
+        onError={() => { l.failed = true; setShown(false); }}
         className="pointer-events-none absolute inset-0 size-full object-cover transition-opacity duration-700"
         style={{ opacity: shown ? 1 : 0, ...SANDY }} />
     )
@@ -79,7 +95,7 @@ export function TreasureMap({ href }: { href: string }) {
   const bottle = useBottle();
   return (
     <a href={href} target="_blank" rel="noopener" className="treasure drift block" style={{ ['--i' as string]: 0 }}>
-      <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Find us · X marks the spot</p>
+      <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--label)]">Find us · X marks the spot</p>
       <div className="relative mt-3">
       <div className="parchment transition-opacity duration-700" style={{ opacity: bottle.hides ? 0 : 1 }}>
         <div className="relative">
@@ -168,7 +184,7 @@ export function Hello({ c }: { c: Site['contact'] }) {
   if (!shown.length) return null;
   return (
     <div>
-      <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Say hello</p>
+      <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--label)]">Say hello</p>
       <div className="mt-3 grid grid-cols-3 gap-2.5">
         {shown.map((t, i) => (
           <div key={t.name} className="slot">
@@ -189,7 +205,7 @@ export function Hello({ c }: { c: Site['contact'] }) {
 export function Signature() {
   return (
     <a href="https://instagram.com/iamohammadyassin" target="_blank" rel="noopener" className="signature group mt-2 flex flex-col items-center lg:mt-0 lg:flex-row lg:gap-4">
-      <span className="font-serif text-[24px] font-semibold tracking-[-.01em] text-[#F3ECDD] transition-colors group-active:text-[var(--glint)]">Mohammad Yassin</span>
+      <span className="font-serif text-[24px] font-semibold tracking-[-.01em] text-[var(--ink)] transition-colors group-active:text-[var(--label)]">Mohammad Yassin</span>
       <span className="ig-ring mt-3 inline-flex lg:mt-0 rounded-full p-[1.5px]">
         <span className="flex h-9 items-center gap-2 rounded-full bg-[#0B1E26] px-3.5 text-[13px] font-bold text-[#F3ECDD]">
           <InstagramMark size={16} />@iamohammadyassin
