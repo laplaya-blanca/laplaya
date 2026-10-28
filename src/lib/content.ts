@@ -136,6 +136,9 @@ export async function loadContent(): Promise<Content> {
 // Netlify Image CDN resizes big phone photos per screen; local preview, and a preview of it shared through a Cloudflare
 // tunnel, uses the raw file.
 const CDN = !/^(localhost|127\.0\.0\.1|\[::1\]|[\w-]+\.trycloudflare\.com)$/.test(location.hostname);
-export const img = (src: string, w: number) => (!src ? '' : CDN ? '/.netlify/images?url=' + encodeURIComponent(src) + '&w=' + w + '&q=75' : src);
+// Each width asked for is enough for a 2× screen; a sharper phone (3× and the like) asks for that much more, so its
+// photos aren't stretched. Laptops and 2× phones get the same files as before.
+const SHARP = Math.max(1, Math.min(devicePixelRatio || 1, 3) / 2);
+export const img = (src: string, w: number) => (!src ? '' : CDN ? '/.netlify/images?url=' + encodeURIComponent(src) + '&w=' + Math.round(w * SHARP) + '&q=75' : src);
 
 export const money = (p: number | null) => (p == null ? '' : '$' + (Number.isInteger(p) ? p : p.toFixed(2)));
