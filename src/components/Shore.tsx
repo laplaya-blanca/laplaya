@@ -10,23 +10,37 @@ import { useAfloat } from './Menu';
 const WATER = { lake: { tall: 0.57, wide: 0.6 }, night: { tall: 0.49, wide: 0.62 } } as const;
 
 // The photo, alive: an 8-second loop of the same shot (scripts/hero-video.mjs) in which only the water, the light on it and
-// the umbrellas' fringes move, so it takes over from the photo without a jump. It fades in once it is actually playing,
-// and plays only while the hero is on screen. No video for reduced motion or a data saver; where a phone won't autoplay
-// (Low Power Mode) it simply never starts and the photo stays.
-function Moving({ shot, video }: { shot: 'lake' | 'night'; video: RefObject<HTMLVideoElement> }) {
+// the breeze move, so it takes over from the photo without a jump. It fades in once it is actually playing, and plays only
+// while it is on screen. No video for reduced motion or a data saver; where a phone won't autoplay (Low Power Mode) it
+// simply never starts and the photo stays. It loads only once it is within a screen of the window, so a video further
+// down the page costs nothing until the visitor gets near it. The hero, the events photo and the footer's beach use it, each with a cut
+// for laptops and one for phones.
+export function Moving({ wide, tall, video }: { wide: string; tall: string; video?: RefObject<HTMLVideoElement> }) {
+  const own = useRef<HTMLVideoElement>(null);
+  const ref = video || own;
   const [skip] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches
     || !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
-  const [form] = useState(() => (matchMedia('(min-width: 768px)').matches ? 'wide' : 'tall'));
+  const [src] = useState(() => (matchMedia('(min-width: 768px)').matches ? wide : tall));
+  const [near, setNear] = useState(false);
   const [on, setOn] = useState(false);
+  const seen = useRef(false);
   useEffect(() => {
-    const v = video.current; if (!v) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); });
-    io.observe(v);
-    return () => io.disconnect();
-  }, [video, skip]);
+    const v = ref.current; if (!v) return;
+    // fetch once it is a screen away; only once the visitor has scrolled, since before the menu arrives the whole page
+    // is short and everything sits near the top
+    const soon = new IntersectionObserver(([e]) => { if (e.isIntersecting && scrollY > 0) { setNear(true); soon.disconnect(); } }, { rootMargin: '100% 0px' });
+    // play only while it is actually on screen
+    const look = new IntersectionObserver(([e]) => {
+      seen.current = e.isIntersecting;
+      if (e.isIntersecting) { setNear(true); v.play().catch(() => {}); } else v.pause();
+    });
+    soon.observe(v); look.observe(v);
+    return () => { soon.disconnect(); look.disconnect(); };
+  }, [ref, skip]);
   if (skip) return null;
   return (
-    <video ref={video} src={'/assets/hero-' + shot + '-' + form + '.mp4'} aria-hidden muted loop playsInline autoPlay preload="auto" disablePictureInPicture
+    <video ref={ref} src={near ? src : undefined} aria-hidden muted loop playsInline preload="auto" disablePictureInPicture
+      onLoadedData={(e) => seen.current && e.currentTarget.play().catch(() => {})}
       onPlaying={() => setOn(true)} className="absolute inset-0 size-full object-cover transition-opacity duration-700" style={{ opacity: on ? 1 : 0 }} />
   );
 }
@@ -50,7 +64,7 @@ export function Shore({ light, weather, open, hours, count, cats, onPick }: { li
         <source media="(min-width: 768px)" srcSet={img('/assets/hero-' + shot + '-wide.jpg', 2048)} />
         <img src={img('/assets/hero-' + shot + '-tall.jpg', 1080)} alt="" {...{ fetchpriority: 'high' }} decoding="async" className="absolute inset-0 size-full object-cover" />
       </picture>
-      <Moving key={'video-' + shot} shot={shot} video={video} />
+      <Moving key={'video-' + shot} wide={'/assets/hero-' + shot + '-wide.mp4'} tall={'/assets/hero-' + shot + '-tall.mp4'} video={video} />
       {/* touch the lake: rings spread across the water in the photo */}
       <Ripple key={shot} video={video} className="absolute inset-0 size-full"
         tall={{ src: img('/assets/hero-' + shot + '-tall.jpg', 1080), water: WATER[shot].tall }}

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { Site } from '../lib/content';
 import { Ripple, useAfloat } from './Menu';
 import { Hello, Signature, TreasureMap } from './Ashore';
+import { Moving } from './Shore';
 
 // Web3Forms inbox key (same form the previous site used); submissions are emailed to the owner.
 const WEB3FORMS_KEY = '19a9ec05-db69-4d4a-8f08-ef419353d7ab';
@@ -37,7 +38,9 @@ export function Events({ site }: { site: Site | null }) {
   return (
     <section id="events" aria-labelledby="events-h" className="on-water mt-16">
       <div className="relative h-[52svh] min-h-[340px] overflow-hidden">
-        <img src="/assets/events-aisle.jpg" alt="A wedding aisle set up on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
+        <img src="/assets/events-aisle.jpg" alt="A bride and groom under the flower arch at the end of a wedding aisle on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
+        {/* the veil, the curtains and the sea in the breeze (scripts/hero-video.mjs) */}
+        <Moving wide="/assets/events-aisle.mp4" tall="/assets/events-aisle-small.mp4" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
         <div className="edge absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Events & catering</p>
@@ -101,44 +104,45 @@ export function Events({ site }: { site: Site | null }) {
 }
 
 // flecks of light down the glitter path: sideways offset and width (px), wider and looser toward the viewer
-const GLITTER = [[2, 10], [-4, 16], [5, 12], [-2, 24], [7, 18], [-8, 30], [3, 22], [-5, 38], [9, 26], [-3, 46], [6, 34], [-9, 52]];
 
 export function Footer({ site }: { site: Site | null }) {
   const c = site?.contact, h = site?.hours;
   const filled = h?.weekly?.some((w) => w.closed || (w.open && w.close));
   const shore = useAfloat<HTMLElement>();
   const maps = 'https://www.google.com/maps/search/?api=1&query=La+Playa+Blanca+Qaraoun';
-  // The page comes ashore: the tide rolls in over the moving water (two swells drifting out of step, foam on the
-  // front one) and the deep water beneath carries the sign-off. Light lies on it in a glittering path, the sun's by
-  // day and the moon's after dark. Everything moves only while the footer is on screen.
+  // The page comes ashore: the beach seen from above, the menu's water lapping onto the sand along the top
+  // (scripts/beach-sand.mjs, brought to life by scripts/hero-video.mjs) and the sand carrying the rest. The title stays
+  // on the water; the map, the hours and hello lie on the dry sand. Everything moves only while the footer is on screen.
   return (
-    <footer ref={shore} className="shore edge relative mt-28 px-6 pb-[calc(var(--dock-h)+48px)] pt-16"
-      style={{ background: 'linear-gradient(180deg, var(--sea-2) 0, var(--sea-3) 180px, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)' }}>
-      <div aria-hidden className="tide">
-        <svg className="swell back" viewBox="0 0 1200 80" preserveAspectRatio="none"><path d="M0 46 C150 16 300 16 450 46 S750 76 900 46 S1050 16 1200 46 V80 H0Z" /></svg>
-        <svg className="swell front" viewBox="0 0 1200 80" preserveAspectRatio="none">
-          <path d="M0 52 C100 30 200 30 300 52 S500 74 600 52 S800 30 900 52 S1100 74 1200 52 V80 H0Z" />
-          <path className="foam" d="M0 52 C100 30 200 30 300 52 S500 74 600 52 S800 30 900 52 S1100 74 1200 52" />
-        </svg>
+    <footer ref={shore} className="shore edge relative mt-16 px-6 pb-[calc(var(--dock-h)+48px)] pt-16">
+      <div aria-hidden className="beach pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="shot">
+          <picture>
+            <source media="(min-width: 768px)" srcSet="/assets/sand-wide.jpg" />
+            <img src="/assets/sand-tall.jpg" alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
+          </picture>
+          <Moving wide="/assets/sand-wide.mp4" tall="/assets/sand-tall.mp4" />
+        </div>
       </div>
-      <div aria-hidden className="glitter">{GLITTER.map(([x, w], i) => <span key={i} style={{ ['--g' as string]: i, ['--x' as string]: x, ['--w' as string]: w }} />)}</div>
       {/* On a phone everything stacks. Up to a laptop it stays one column no wider than a phone's, so the map never
           blows up. From a laptop on it spreads across the window: the map, then hours and hello beside it; on a wide
           window hours and hello take a column each. Its edges are the page's edges (.edge). */}
       <div className="relative">
-        <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
-        <p className="relative mt-3 text-[16px] text-[#F9F6E3]">See you at the beach.</p>
-        <div className="relative mt-10 grid max-w-[520px] gap-8 text-[#F3ECDD] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-x-16 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.8fr)_minmax(0,1fr)] xl:gap-x-12 2xl:gap-x-16">
+        <div className="beach-title [text-shadow:0_2px_16px_rgba(3,20,26,.5)]">
+          <p className="relative font-brand text-[clamp(38px,11.5vw,60px)] font-extrabold uppercase leading-[.92] tracking-[.015em] text-[#F9F6E3]"><Ripple text="Nos vemos en la playa" /></p>
+          <p className="relative mt-3 text-[16px] font-semibold text-[#F9F6E3]">See you at the beach.</p>
+        </div>
+        <div className="relative mt-4 grid max-w-[520px] gap-8 text-[var(--ink)] lg:max-w-none lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-x-16 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.8fr)_minmax(0,1fr)] xl:gap-x-12 2xl:gap-x-16">
           <TreasureMap href={maps} />
           <div className="grid gap-8 lg:gap-10 xl:contents">
             <div className="drift" style={{ ['--i' as string]: 1 }}>
-              <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Hours</p>
+              <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--label)]">Hours</p>
               {filled ? (
                 <ul className="mt-2 text-[16px]">
                   {h!.weekly.map((w) => <li key={w.day} className="flex justify-between py-0.5"><span>{w.day}</span><span className="tabular-nums">{w.closed ? 'Closed' : w.open + ' – ' + w.close}</span></li>)}
                 </ul>
               ) : (
-                <p className="mt-2 font-brand text-[24px] font-extrabold uppercase leading-none tracking-[.02em] text-[#F9F6E3]">{h?.headline || 'Daily, in season'}<span className="mt-1.5 block font-sans text-[16px] font-normal normal-case tracking-normal">{h?.subline}</span></p>
+                <p className="mt-2 font-brand text-[24px] font-extrabold uppercase leading-none tracking-[.02em] text-[var(--ink)]">{h?.headline || 'Daily, in season'}<span className="mt-1.5 block font-sans text-[16px] font-normal normal-case tracking-normal">{h?.subline}</span></p>
               )}
               {h?.note && <p className="mt-2 text-[14px] opacity-80">{h.note}</p>}
             </div>
@@ -147,14 +151,14 @@ export function Footer({ site }: { site: Site | null }) {
         </div>
         {/* sign-off: the house, then the maker's signature. Stacked and set apart by a hairline on a phone; one line
             across the foot of the page, under a rule, on a wide screen */}
-        <div className="relative mt-14 flex flex-col items-center text-center text-[#F3ECDD] lg:mt-20 lg:flex-row lg:items-center lg:justify-between lg:border-t lg:border-[#F3ECDD]/15 lg:pt-8 lg:text-left">
+        <div className="relative mt-14 flex flex-col items-center text-center text-[var(--ink)] lg:mt-20 lg:flex-row lg:items-center lg:justify-between lg:border-t lg:border-[var(--rule)] lg:pt-8 lg:text-left">
           <div className="flex flex-col items-center lg:flex-row lg:gap-4">
             <img src="/assets/logo.jpg" alt="" className="size-12 rounded-[14px] object-cover opacity-90" loading="lazy" />
-            <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[#F3ECDD]/90 lg:mt-0">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
+            <p className="mt-3 text-[12px] font-bold uppercase tracking-[.22em] text-[var(--ink)] lg:mt-0">© {new Date().getFullYear()} La Playa Blanca · Qaraaoun</p>
           </div>
-          <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--glint)]/60 to-transparent lg:hidden" />
+          <div aria-hidden className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--label)]/60 to-transparent lg:hidden" />
           <div className="flex flex-col items-center lg:flex-row lg:gap-5">
-            <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--glint)]/80 lg:mt-0">Crafted by</p>
+            <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[.3em] text-[var(--label)] lg:mt-0">Crafted by</p>
             <Signature />
           </div>
         </div>
