@@ -188,14 +188,21 @@ html[data-intro] .rise { animation-play-state: paused; }
    moonlight and they are light again. */
 .shore { --ink: #123F4D; --label: #14586B; --rule: rgba(18,63,77,.2); }
 :root[data-dark] .shore { --ink: #F3ECDD; --label: var(--glint); --rule: rgba(243,236,221,.15); }
-.beach { background: #EFE6D8 url(/assets/sand-tile.jpg) 0 0 / 100% auto repeat-y; }
+/* its own layer under the footer's words, whatever stacks inside it */
+.beach { isolation: isolate; }
+/* the dry sand carries on under the film's foot (where the film fades out) to the bottom of the page */
+.beach > .rest { position: absolute; inset-inline: 0; bottom: 0; top: calc(var(--down) + 100vw * 16 / 9 * .9);
+  background: #EFE6D8 url(/assets/sand-tile.jpg) 0 0 / 100% auto repeat-y; }
+@media (min-width: 768px) { .beach > .rest { top: calc(100vw * 9 / 16 * .9); } }
 :root[data-dark] .beach { filter: brightness(.66) saturate(.55); }
-:root[data-dark] .beach::after { content: ''; position: absolute; inset: 0; background: rgba(8, 22, 44, .5); }
-.beach > .shot { position: relative; aspect-ratio: 9 / 16;
-  mask-image: linear-gradient(180deg, transparent, #000 9%, #000 86%, transparent); }
+:root[data-dark] .beach > *::after { content: ''; position: absolute; inset: 0; background: rgba(8, 22, 44, .5); }
+.beach { --down: 72px; }
+@media (min-width: 768px) { .beach { --down: 0px; } }
+.beach > .shot { position: relative; z-index: 1; aspect-ratio: 9 / 16; margin-top: var(--down);
+  mask-image: linear-gradient(180deg, transparent, #000 26%, #000 86%, transparent); }
 @media (min-width: 768px) { .beach > .shot { aspect-ratio: 16 / 9; } }
 /* the title sits on the water; everything after it starts where the sand is dry */
-.shore .beach-title { min-height: calc(100vw * 16 / 9 * .32); }
+.shore .beach-title { min-height: calc(72px + 100vw * 16 / 9 * .32); }
 @media (min-width: 768px) { .shore .beach-title { min-height: calc(100vw * 9 / 16 * .45); } }
 /* the hello tiles are sea glass lying on the sand */
 .shore .hello { --glass-tint: color-mix(in srgb, var(--sea-3) 80%, transparent); }

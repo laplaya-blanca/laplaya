@@ -44,7 +44,7 @@ const SHOTS = {
   // the footer's message in a bottle (scripts/bottle-map.mjs): it plays once and ends on our map lying open on the sand,
   // the frame the page's own map takes over from
   'bottle-wide': { photo: 'replated/bottle/bottle.jpg', last: 'replated/bottle/map.jpg', ratio: '16:9',
-    prompt: `Seen from straight above, an old glass message bottle lies on white sand in warm golden light. The cork pops out of its neck by itself and the rolled-up parchment slides out of the bottle onto the sand; the bottle rolls gently away out of the frame. The twine falls loose and the parchment unrolls and flattens out by itself, opening into a hand-drawn treasure map that settles flat in the middle of the sand. Smooth, gentle, magical, satisfying motion. The camera is completely still: a locked-off overhead shot, no pan, no zoom, no rotation. No hands, no people, no text other than what is drawn on the map.` },
+    prompt: `Seen from straight above, an old glass message bottle lies on white sand in warm golden light, its neck pointing to the right. The cork pops out of the neck by itself and drops onto the sand. Then the rolled-up parchment inside slides out of the bottle through its open neck, the narrow end where the cork was, emerging to the right; the base of the bottle stays closed and nothing comes out of it. Once the paper is fully out, the empty bottle rolls gently away out of the frame to the left. The twine falls loose and the parchment unrolls and flattens out by itself, opening into a hand-drawn treasure map that settles flat in the middle of the sand. Smooth, gentle, magical, physically correct motion. The camera is completely still: a locked-off overhead shot, no pan, no zoom, no rotation. No hands, no people, no text other than what is drawn on the map.` },
 };
 const prompt = (night) => night
   ? `This photograph of a lake shore at night comes gently to life. The lake's surface moves softly, the moonlight's reflection shimmering and breaking up on small ripples; tiny waves lap the white sand at the water's edge. The lights along the far shore twinkle faintly. If there are palm leaves or a thatched umbrella, their fringes stir slightly in a light night breeze. Calm, quiet, slow, peaceful. ${STILL}`
@@ -64,7 +64,7 @@ await Promise.all(todo.map(async (k) => {
       // camera from drifting (told only in words, Veo still pans) and makes the loop seamless
       instances: [{ prompt: s.prompt || prompt(s.night), image: still(s.photo), lastFrame: still(s.last || s.photo) }],
       parameters: { aspectRatio: s.ratio, durationSeconds: 8, generateAudio: false, sampleCount: 1, resolution: '1080p', personGeneration: s.people ? 'allow_adult' : 'dont_allow',
-        negativePrompt: 'camera movement, pan, tilt, zoom, dolly, tracking shot, handheld, parallax, reframing, new objects, ' + (s.people ? 'turning around, walking, faces, extra people' : 'people, hands') + ', boats, birds, text' },
+        negativePrompt: 'camera movement, pan, tilt, zoom, dolly, tracking shot, handheld, parallax, reframing, new objects, ' + (s.people ? 'turning around, walking, faces, extra people' : s.last ? 'people, hands, paper coming out of the base of the bottle, paper passing through glass' : 'people, hands') + ', boats, birds, text' },
     });
     console.log(`${k}: started`);
     // a clip takes a minute or two; ask every 15 seconds until it is ready

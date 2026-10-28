@@ -13,6 +13,8 @@ const OFFERS = [
   ['Corporate & catering', 'Live crepe and waffle stations and boba bars, anywhere in the Bekaa.']
 ];
 
+const MELT = 'linear-gradient(180deg, transparent, #000 24%, #000 62%, transparent)';
+
 export function Events({ site }: { site: Site | null }) {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [err, setErr] = useState('');
@@ -36,12 +38,15 @@ export function Events({ site }: { site: Site | null }) {
   const label = 'text-[13px] font-extrabold uppercase tracking-[.14em] text-[#F9F6E3]/85';
   const glass = useAfloat<HTMLDivElement>();
   return (
-    <section id="events" aria-labelledby="events-h" className="on-water mt-16">
-      <div className="relative h-[52svh] min-h-[340px] overflow-hidden">
-        <img src="/assets/events-aisle.jpg" alt="A bride and groom under the flower arch at the end of a wedding aisle on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
-        {/* the veil, the curtains and the sea in the breeze (scripts/hero-video.mjs) */}
-        <Moving wide="/assets/events-aisle.mp4" tall="/assets/events-aisle-small.mp4" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,.1), rgba(6,20,29,.75))' }} />
+    <section id="events" aria-labelledby="events-h" className="on-water mt-4">
+      <div className="relative h-[64svh] min-h-[420px]">
+        {/* the photo rises out of the menu's water and sinks back into it, no edge either side */}
+        <div className="absolute inset-0 overflow-hidden" style={{ maskImage: MELT, WebkitMaskImage: MELT }}>
+          <img src="/assets/events-aisle.jpg" alt="A bride and groom under the flower arch at the end of a wedding aisle on the white sand by the lake" loading="lazy" className="absolute inset-0 size-full object-cover" />
+          {/* the veil, the curtains and the sea in the breeze (scripts/hero-video.mjs) */}
+          <Moving wide="/assets/events-aisle.mp4" tall="/assets/events-aisle-small.mp4" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(6,20,29,0) 40%, rgba(6,20,29,.6))' }} />
+        </div>
         <div className="edge absolute inset-x-0 bottom-0 p-6 text-[#FBF6EA]">
           <p className="text-[12px] font-extrabold uppercase tracking-[.2em] text-[var(--glint)]">Events & catering</p>
           <h2 id="events-h" className="mt-2 font-brand text-[clamp(34px,10vw,52px)] font-extrabold uppercase leading-[.95] tracking-[.02em] text-[#F9F6E3]">Celebrate on the shore</h2>
@@ -116,6 +121,7 @@ export function Footer({ site }: { site: Site | null }) {
   return (
     <footer ref={shore} className="shore edge relative mt-16 px-6 pb-[calc(var(--dock-h)+48px)] pt-16">
       <div aria-hidden className="beach pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="rest" />
         <div className="shot">
           <picture>
             <source media="(min-width: 768px)" srcSet="/assets/sand-wide.jpg" />
