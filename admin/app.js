@@ -428,7 +428,7 @@ function TemplatesView() {
   return html`<div class="templates">
     <header class="view-head"><div><h1 tabindex="-1">Photo templates</h1><p class="muted">Put a new dish on the same beach table as the rest of the menu, so its photo matches.</p></div></header>
     <ol class="steps">
-      <li><strong>Download a table</strong> below. Day for the normal menu, night for the after-dark one.</li>
+      <li><strong>Download a table</strong> below. Day for the normal menu, night for the after-dark one. On an iPhone it goes to the Files app (Downloads), and Gemini can attach it from there. Or press and hold the picture and choose <strong>Save to Photos</strong>.</li>
       <li><strong>Take a photo of the dish</strong> with your phone, from above or at a slight angle, in good light.</li>
       <li><strong>Open <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a></strong> (ChatGPT works too). Attach the table first, then the dish photo, and paste the instructions below.</li>
       <li><strong>Save the picture</strong> it makes, then open the dish in <a href="#menu">Menu</a>: a day table goes in <strong>Day photo</strong>, the night table in <strong>Night photo</strong>. Not quite right? Ask it to try again.</li>
