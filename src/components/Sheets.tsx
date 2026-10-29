@@ -3,7 +3,7 @@ import { animate, motion, useReducedMotion } from 'motion/react';
 import type { Category, Item } from '../lib/content';
 import { money } from '../lib/content';
 import type { Line } from '../lib/cart';
-import { Art, Price, priceRange, sceneImage, ShoreScene, SHADE, takeLift, type Add } from './Menu';
+import { Art, Price, sceneImage, ShoreScene, SHADE, takeLift, type Add } from './Menu';
 import { CloseButton, Sheet } from './Sheet';
 
 // ---------- bottom dock: always under the thumb ----------
@@ -206,7 +206,7 @@ export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; o
               <span className="absolute inset-0" style={{ background: SHADE, opacity: 0.9 }} />
               <span className="absolute bottom-3 left-4 right-3 text-[#FBF6EA]">
                 <span className="block font-brand text-[22px] font-extrabold uppercase leading-[.95] tracking-[.02em]">{c.name}</span>
-                <span className="mt-1 block text-[13px] font-bold opacity-90">{c.items.length} · {priceRange(c.items)}</span>
+                <span className="mt-1 block text-[13px] font-bold opacity-90">{c.items.length} items</span>
               </span>
             </button>
           );
