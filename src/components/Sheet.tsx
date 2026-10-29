@@ -3,9 +3,9 @@ import { motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/
 
 // open sheets, newest last: only the top one reacts to Escape / Tab, and focus goes back where it came from
 const stack: object[] = [];
-const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,iframe,[tabindex]:not([tabindex="-1"])';
 
-// Bottom sheet for phones (item, cart, categories, search). Drag down or tap outside to close.
+// Bottom sheet for phones (item, cart, categories, games). Drag down or tap outside to close.
 export function Sheet({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const still = useReducedMotion();

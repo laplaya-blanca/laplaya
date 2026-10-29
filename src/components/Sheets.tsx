@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { animate, motion, useReducedMotion } from 'motion/react';
 import type { Category, Item } from '../lib/content';
 import { money } from '../lib/content';
@@ -7,7 +7,7 @@ import { Art, Price, priceRange, sceneImage, ShoreScene, SHADE, takeLift, type A
 import { CloseButton, Sheet } from './Sheet';
 
 // ---------- bottom dock: always under the thumb ----------
-export function Dock({ count, total, bump, onSearch, onTide, onCart, onCats, show }: { count: number; total: number; bump: number; onSearch: () => void; onTide: () => void; onCart: () => void; onCats: () => void; show: boolean }) {
+export function Dock({ count, total, bump, onPlay, onTide, onCart, onCats, show }: { count: number; total: number; bump: number; onPlay: () => void; onTide: () => void; onCart: () => void; onCats: () => void; show: boolean }) {
   const still = useReducedMotion();
   return (
     <div ref={(el) => { if (el) el.inert = !show; }}
@@ -16,8 +16,9 @@ export function Dock({ count, total, bump, onSearch, onTide, onCart, onCats, sho
       <div className="flex w-full max-w-[520px] items-center gap-1.5 glass3d rounded-[26px] p-1.5 text-[#F6EFDF] [--glass-tint:hsl(200_70%_8%/.74)]">
         <div className="flex flex-1 items-center justify-around">
         <DockBtn label="All categories" onClick={onCats}><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></DockBtn>
-        <DockBtn label="Search the menu" onClick={onSearch}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></DockBtn>
         <DockBtn label="Let the tide choose for me" onClick={onTide}><path d="M2 14c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3l1.4 3.6L17 8l-3.6 1.4L12 13l-1.4-3.6L7 8l3.6-1.4z" /></DockBtn>
+        {/* a die: games for the table while the order is on its way */}
+        <DockBtn label="Games while you wait" onClick={onPlay}><rect x="4" y="4" width="16" height="16" rx="4.5" /><g fill="currentColor" stroke="none"><circle cx="8.6" cy="8.6" r="1.45" /><circle cx="12" cy="12" r="1.45" /><circle cx="15.4" cy="15.4" r="1.45" /></g></DockBtn>
         </div>
         <motion.button key={bump} onClick={onCart} data-cart-target
           initial={still || !bump ? false : { scale: 0.9 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 520, damping: 14 }}
@@ -210,52 +211,6 @@ export function CategoriesSheet({ cats, onPick, onClose }: { cats: Category[]; o
             </button>
           );
         })}
-      </div>
-    </Sheet>
-  );
-}
-
-// ---------- search ----------
-export function SearchSheet({ items, onOpen, onClose }: { items: Item[]; onOpen: (i: Item) => void; onClose: () => void }) {
-  const [q, setQ] = useState('');
-  const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  const hits = useMemo(() => {
-    const t = norm(q.trim());
-    if (!t) return [];
-    return items.filter((i) => norm(i.name + ' ' + i.cat + ' ' + i.desc).includes(t)).slice(0, 40);
-  }, [q, items]);
-  return (
-    <Sheet label="Search the menu" onClose={onClose} tall>
-      <div className="flex items-center gap-2 px-4 pt-1">
-        <label className="flex h-13 flex-1 items-center gap-2 rounded-full bg-[var(--paper-2)] px-4">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-          <span className="sr-only">Search the menu</span>
-          <input data-autofocus value={q} onChange={(e) => setQ(e.target.value)} type="search" enterKeyHint="search" placeholder="Nutella, mango, boba…"
-            className="h-12 min-w-0 flex-1 bg-transparent text-[17px] outline-none placeholder:text-[var(--ink-soft)]" />
-        </label>
-        <CloseButton onClick={onClose} />
-      </div>
-      <div aria-live="polite" className="px-4 pt-2">
-        {q.trim() && !hits.length && (
-          <div className="px-2 pt-6">
-            <p className="font-serif text-[22px] font-semibold">Nothing by that name.</p>
-            <button onClick={() => setQ('')} className="mt-3 h-11 rounded-full bg-[var(--paper-2)] px-5 font-bold">Clear search</button>
-          </div>
-        )}
-        <ul className="divide-y divide-[var(--line)]">
-          {hits.map((i) => (
-            <li key={i.id}>
-              <button onClick={() => onOpen(i)} className="flex w-full items-center gap-3 py-3 text-left">
-                <span className="size-14 shrink-0 overflow-hidden rounded-xl"><Art item={i} w={140} className="size-full" /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-serif text-[18px] font-semibold">{i.name}</span>
-                  <span className="block text-[13px] text-[var(--ink-soft)]">{i.cat}{i.soldOut ? ' · sold out today' : ''}</span>
-                </span>
-                <Price item={i} className="text-[17px]" />
-              </button>
-            </li>
-          ))}
-        </ul>
       </div>
     </Sheet>
   );

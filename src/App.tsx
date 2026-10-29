@@ -7,13 +7,14 @@ import { orderText, useCart } from './lib/cart';
 import { flavourColours } from './lib/flavor';
 import { Shore } from './components/Shore';
 import { Art, CategoryBar, Scene, useAfloat, type View } from './components/Menu';
-import { CartSheet, CategoriesSheet, Dock, ItemSheet, SearchSheet, TideWave } from './components/Sheets';
+import { CartSheet, CategoriesSheet, Dock, ItemSheet, TideWave } from './components/Sheets';
+import { GameSheet } from './components/Game';
 import { Postcard } from './components/Postcard';
 import { Events, Footer } from './components/Shoreline';
 import { Water } from './components/Water';
 import { Intro, shouldIntro } from './components/Intro';
 
-type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'search' };
+type Open = null | { t: 'item'; item: Item } | { t: 'cart' } | { t: 'ticket' } | { t: 'cats' } | { t: 'game' };
 
 function useLight() {
   const [light, setLight] = useState<Light>(() => lightAt());
@@ -198,15 +199,15 @@ export function App() {
       <Footer site={site} />
 
       <Dock count={count} total={total} bump={bump} show={inMenu}
-        onCats={() => setOpen({ t: 'cats' })} onSearch={() => setOpen({ t: 'search' })} onTide={surprise} onCart={() => setOpen({ t: 'cart' })} />
+        onCats={() => setOpen({ t: 'cats' })} onTide={surprise} onPlay={() => setOpen({ t: 'game' })} onCart={() => setOpen({ t: 'cart' })} />
 
       <AnimatePresence>
         {open?.t === 'item' && <ItemSheet key={'i' + open.item.id} item={open.item} qty={cart[open.item.id]?.qty || 0} onAdd={add} onClose={() => setOpen(null)} />}
         {open?.t === 'cart' && <CartSheet key="cart" lines={lines} total={total} unpriced={unpriced} picks={picks} onOpen={(item) => setOpen({ t: 'item', item })}
           onQty={(id, d) => dispatch({ type: 'qty', id, d })} onClose={() => setOpen(null)} onWhatsApp={whatsapp} onTicket={() => setOpen({ t: 'ticket' })} />}
-        {open?.t === 'ticket' && <Postcard key="ticket" lines={lines} total={total} unpriced={unpriced} night={light.dark} onClose={() => setOpen(null)} />}
+        {open?.t === 'ticket' && <Postcard key="ticket" lines={lines} total={total} unpriced={unpriced} night={light.dark} onClose={() => setOpen(null)} onPlay={() => setOpen({ t: 'game' })} />}
         {open?.t === 'cats' && <CategoriesSheet key="cats" cats={cats} onPick={goTo} onClose={() => setOpen(null)} />}
-        {open?.t === 'search' && <SearchSheet key="search" items={all} onOpen={(item) => setOpen({ t: 'item', item })} onClose={() => setOpen(null)} />}
+        {open?.t === 'game' && <GameSheet key="game" night={light.dark} onClose={() => setOpen(null)} />}
       </AnimatePresence>
       {tide && <TideWave onDone={() => setTide(false)} />}
     </>
