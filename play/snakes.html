@@ -73,12 +73,19 @@ function paintBoard() {
     const { x, y } = cell(n), row = Math.floor((n - 1) / COLS), x0 = x - cw / 2, y0 = y - ch / 2;
     ctx.fillStyle = n === LAST ? '#f6cf7d' : (n + row) % 2 ? '#f8eed6' : '#d7eeeb';
     rrect(ctx, x0 + 1.5, y0 + 1.5, cw - 3, ch - 3, 7 * S); ctx.fill();
-    ctx.font = `800 ${Math.max(8.5, 10 * S)}px Manrope, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = 'rgba(20,88,107,.72)';
-    const tuck = x0 < 2 && y0 < 2 ? 7 : 0; // the board's rounded corner would clip the top-left square's number
-    ctx.fillText(n, x0 + 5 * S + tuck, y0 + 4 * S + tuck * 0.6);
   }
   for (const [s, e] of Object.entries(LADDERS)) ladder(cell(+s), cell(e));
   for (const sn of snakes) snake(sn);
+  // the numbers over them, on a little halo of paper, so a snake's tail or a ladder's foot never hides one; clear of
+  // the ring that marks whose turn it is
+  ctx.font = `800 ${Math.max(8.5, 10 * S)}px Manrope, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
+  for (let n = 1; n <= LAST; n++) {
+    const { x, y } = cell(n), x0 = x - cw / 2, y0 = y - ch / 2;
+    const tuck = x0 < 2 && y0 < 2 ? 7 : 0; // the board's rounded corner would clip the top-left square's number
+    const nx = x0 + Math.max(5 * S, 6.5) + tuck, ny = y0 + Math.max(4 * S, 5.5) + tuck * 0.6;
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,250,236,.85)'; ctx.strokeText(n, nx, ny);
+    ctx.fillStyle = 'rgba(20,88,107,.72)'; ctx.fillText(n, nx, ny);
+  }
   // the shells and the flag go on top of the snakes and ladders that cross their squares, so they always show
   for (const n of [...SHELLS, LAST]) {
     const { x, y } = cell(n);

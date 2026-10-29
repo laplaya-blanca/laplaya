@@ -18,12 +18,12 @@
   .disc.coral { background: radial-gradient(circle at 35% 30%, #FFB0BD, #E7607A 58%, #B23A54); }
   .pair { display: flex; gap: 10px; align-items: center; }
   .tally { display: flex; gap: 18px; justify-content: center; font-weight: 800; color: var(--deep); font-variant-numeric: tabular-nums; }
-  .tally span { display: inline-flex; align-items: center; gap: 7px; }
+  .tally span { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
   .tally i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
   .tally i.gold { background: #E8A44C; } .tally i.coral { background: #E7607A; }
   @container (max-height: 450px) { .disc { width: 44px; height: 44px; } }
   @container (max-height: 340px) { .disc { width: 34px; height: 34px; } .pair { gap: 7px; } }
-  @container (max-height: 280px) { .in > .disc, .pair { display: none; } }
+  @container (max-height: 280px) { .in > .disc, .pair { display: none; } .tally { gap: 12px; } }
 </style>
 <script src="kit.js"></script>
 </head>

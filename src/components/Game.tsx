@@ -8,7 +8,6 @@ import { CloseButton, Sheet } from './Sheet';
 export function GameSheet({ night, onClose }: { night: boolean; onClose: () => void }) {
   const [src] = useState(() => '/play/?in=site' + (night ? '&night' : ''));
   const frame = useRef<HTMLIFrameElement>(null);
-  const top = useRef<HTMLHeadingElement>(null);
   const head = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   close.current = onClose;
@@ -34,13 +33,13 @@ export function GameSheet({ night, onClose }: { night: boolean; onClose: () => v
       <div className="flex h-full flex-col [@media(max-height:500px)]:flex-row">
         {/* lined up with the list and the games below it, which sit in a 440px column with 14px either side */}
         <div ref={head} className="mx-auto flex w-full max-w-[468px] items-center justify-between px-3.5 pt-1 [@media(max-height:500px)]:order-last [@media(max-height:500px)]:mx-0 [@media(max-height:500px)]:w-auto [@media(max-height:500px)]:max-w-none [@media(max-height:500px)]:items-start [@media(max-height:500px)]:pl-1 [@media(max-height:500px)]:pr-3 [@media(max-height:500px)]:pt-0">
-          <h2 ref={top} className="font-brand text-[26px] font-extrabold uppercase leading-none tracking-[.02em] outline-none [@media(max-height:500px)]:sr-only" data-autofocus tabIndex={-1}>While you wait</h2>
+          <h2 className="font-brand text-[26px] font-extrabold uppercase leading-none tracking-[.02em] outline-none [@media(max-height:500px)]:sr-only" data-autofocus tabIndex={-1}>While you wait</h2>
           <CloseButton onClick={onClose} />
         </div>
         <iframe ref={frame} src={src} title="Games for the table" onLoad={light} className="mt-2 block min-h-0 w-full flex-1 border-0 bg-transparent [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:min-w-0" />
-        {/* Tab leaving the game comes back to the top of the sheet instead of the page behind it; Shift+Tab from
+        {/* Tab leaving the game comes back to the sheet's close button instead of the page behind it; Shift+Tab from
             the top (which the sheet wraps round to here) goes into the game */}
-        <span tabIndex={0} onFocus={(e) => (head.current?.contains(e.relatedTarget as Node | null) ? intoGame() : top.current?.focus())} />
+        <span tabIndex={0} onFocus={(e) => (head.current?.contains(e.relatedTarget as Node | null) ? intoGame() : head.current?.querySelector('button')?.focus())} />
       </div>
     </Sheet>
   );
