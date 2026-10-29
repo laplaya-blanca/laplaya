@@ -143,6 +143,16 @@ main { margin-left: 252px; padding: 34px clamp(18px, 4vw, 48px) 120px; max-width
 .gallery input { border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; font-size: 14px !important; }
 .gallery .row { justify-content: flex-end; padding: 4px; gap: 4px; }
 
+/* ---------- photo templates ---------- */
+.steps { margin: 0 0 22px; padding: 16px 18px 16px 38px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); display: grid; gap: 8px; }
+.steps a { color: var(--teal); font-weight: 700; }
+.tables img { aspect-ratio: 3 / 4; }
+.tables figcaption { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
+.tables figcaption > span { display: grid; white-space: nowrap; }
+.prompt-box { margin-top: 22px; padding: 16px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); }
+.prompt-box .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.prompt-box textarea { font-size: 14px; line-height: 1.5; resize: vertical; }
+
 /* ---------- panel / modal / save bar / toast ---------- */
 .panel-wrap, .modal-wrap { position: fixed; inset: 0; z-index: 50; }
 .scrim { position: absolute; inset: 0; background: rgba(9, 36, 44, .45); animation: fade .2s; }
@@ -182,7 +192,7 @@ main { margin-left: 252px; padding: 34px clamp(18px, 4vw, 48px) 120px; max-width
   .shell.has-bar main { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
   .view-head h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .view-head { margin-bottom: 14px; }
-  .tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); }
+  .tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); }
   .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border-radius: 12px; color: var(--muted); text-decoration: none; font-size: 11.5px; font-weight: 800; }
   .tabbar a.on { color: var(--teal); background: rgba(31, 122, 140, .08); }
   .savebar { left: 10px; right: 10px; bottom: calc(76px + env(safe-area-inset-bottom)); padding: 12px; }

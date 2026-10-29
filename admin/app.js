@@ -12,7 +12,8 @@ const VIEWS = [
   { id: 'menu', label: 'Menu', icon: 'menu' },
   { id: 'builder', label: 'Build your own', short: 'Build', icon: 'layers' },
   { id: 'hours', label: 'Hours & contact', short: 'Hours', icon: 'clock' },
-  { id: 'photos', label: 'Event photos', short: 'Photos', icon: 'image' }
+  { id: 'photos', label: 'Event photos', short: 'Photos', icon: 'image' },
+  { id: 'templates', label: 'Photo templates', short: 'Templates', icon: 'table' }
 ];
 
 // ---------- small helpers ----------
@@ -48,7 +49,10 @@ function Icon({ name, size = 20 }) {
     gear: html`<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>`,
     out: html`<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/>`,
     ext: html`<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>`,
-    check: html`<path d="m5 12 5 5 9-10"/>`
+    check: html`<path d="m5 12 5 5 9-10"/>`,
+    table: html`<path d="M3 9h18M5 9l-1 11M19 9l1 11M8 9v6h8V9M7 5h10l2 4H5z"/>`,
+    download: html`<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>`,
+    copy: html`<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>`
   };
   return html`<svg width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name]}</svg>`;
 }
@@ -382,6 +386,52 @@ function PhotosView({ data, edit, photo, onPhoto, ask }) {
   </div>`;
 }
 
+// ---------- photo templates ----------
+// The empty tables every dish on the menu is photographed on (assets/plate-table*.jpg, the same pictures
+// scripts/plate-unshot.mjs plates on), to download and give to an image AI with a photo of a new dish.
+const TABLES = [
+  { file: 'plate-table.jpg', name: 'Day table 1' },
+  { file: 'plate-table-b.jpg', name: 'Day table 2' },
+  { file: 'plate-table-c.jpg', name: 'Day table 3' },
+  { file: 'plate-table-d.jpg', name: 'Day table 4' },
+  { file: 'plate-table-night.jpg', name: 'Night table', note: 'For the after-dark menu' }
+];
+const PLATE_PROMPT = `The first image is an empty beach-bar table by a lake. The second image is a photo of one of our dishes.
+
+Make one photorealistic food photograph of the dish from the second image, served and set on the table from the first image. Keep the dish exactly as it is: the same food, toppings, sauces, plate or cup. Make it look fresh and appetising.
+
+Keep the first image as the scene, exactly as it is: the same table, background, water and sky, and the same light. Seen from a seated eye level, looking down at the table at about 25 degrees, matching the table's perspective so the dish sits flat on the tabletop. Centre the dish on the table, filling about half of the picture's width, slightly below the middle. Light the dish with the same light as the table photo, from the same direction, with a soft, natural shadow on the wood.
+
+No hands, no extra props, no text, no logos. Portrait 3:4 photo, natural colours, shallow depth of field.`;
+
+function TemplatesView() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(PLATE_PROMPT); }
+    catch (e) { const t = document.getElementById('plate-prompt'); t.select(); document.execCommand('copy'); }
+    setCopied(true); setTimeout(() => setCopied(false), 2500);
+  };
+  return html`<div class="templates">
+    <header class="view-head"><div><h1 tabindex="-1">Photo templates</h1><p class="muted">Put a new dish on the same beach table as the rest of the menu, so its photo matches.</p></div></header>
+    <ol class="steps">
+      <li><strong>Download a table</strong> below. Day for the normal menu, night for the after-dark one.</li>
+      <li><strong>Take a photo of the dish</strong> with your phone, from above or at a slight angle, in good light.</li>
+      <li><strong>Open <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a></strong> (ChatGPT works too). Attach the table first, then the dish photo, and paste the instructions below.</li>
+      <li><strong>Save the picture</strong> it makes, then add it as the dish’s photo in <a href="#menu">Menu</a>. Not quite right? Ask it to try again.</li>
+    </ol>
+    <div class="gallery tables">${TABLES.map((t) => html`<figure key=${t.file}>
+      <img src=${'/assets/' + t.file} alt=${t.name} loading="lazy"/>
+      <figcaption><span><strong>${t.name}</strong>${t.note && html`<span class="muted">${t.note}</span>`}</span>
+        <a class="btn" href=${'/assets/' + t.file} download=${'la-playa-' + t.file}><${Icon} name="download" size=${18}/>Download</a></figcaption>
+    </figure>`)}</div>
+    <section class="prompt-box">
+      <div class="prompt-head"><h2>Instructions for the AI</h2>
+        <button class="btn primary" onClick=${copy}><${Icon} name=${copied ? 'check' : 'copy'} size=${18}/>${copied ? 'Copied' : 'Copy'}</button></div>
+      <textarea id="plate-prompt" readonly rows="12" aria-label="Instructions for the AI">${PLATE_PROMPT}</textarea>
+    </section>
+  </div>`;
+}
+
 // ---------- shared chrome ----------
 function Panel({ title, onClose, children }) {
   const ref = useRef();
@@ -552,6 +602,7 @@ function App() {
     : current.id === 'menu' ? html`<${MenuView} data=${files.menu.data} edit=${edit('menu')} photo=${photo} onPhoto=${onPhoto} ask=${ask}/>`
     : current.id === 'builder' ? html`<${BuilderView} data=${files.builder.data} edit=${edit('builder')} ask=${ask}/>`
     : current.id === 'hours' ? html`<${HoursView} data=${files.site.data} edit=${edit('site')}/>`
+    : current.id === 'templates' ? html`<${TemplatesView}/>`
     : html`<${PhotosView} data=${files.gallery.data} edit=${edit('gallery')} photo=${photo} onPhoto=${onPhoto} ask=${ask}/>`;
 
   return html`<div class=${'shell' + (dirty ? ' has-bar' : '')}>
