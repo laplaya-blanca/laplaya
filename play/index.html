@@ -9,14 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="/assets/logo.jpg">
 <link rel="stylesheet" href="play.css">
 <style>
   /* the list of games: one card each, a little picture of the board, what it is, who it's for */
-  body { overflow-y: auto; height: auto; min-height: 100svh; }
+  body { overflow-y: auto; height: auto; min-height: 100vh; min-height: 100svh; }
   .intro { width: 100%; max-width: 440px; text-align: center; margin: 6px 0 16px; }
   .intro .eyebrow { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--soft); }
   .intro h1 { margin: 6px 0 4px; font-family: var(--display); font-size: clamp(30px, 8vw, 38px); line-height: 1.02; }
-  .intro p { margin: 0; color: var(--soft); font-size: 15px; }
+  .intro p { margin: 0; color: var(--soft); font-size: 15px; text-wrap: balance; }
   :root.embed .intro { margin: 6px 0 12px; text-align: left; }
   :root.embed .intro .eyebrow, :root.embed .intro h1 { display: none; }
   .games { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 440px; display: grid; gap: 12px; }
@@ -27,12 +28,14 @@
   .art { flex: none; width: 88px; height: 88px; border-radius: 16px; overflow: hidden; display: block; }
   .txt { flex: 1; min-width: 0; }
   .txt h2 { margin: 0; font-family: var(--display); font-size: 21px; line-height: 1.1; font-weight: 700; }
-  .txt p { margin: 3px 0 0; font-size: 14px; line-height: 1.35; color: var(--soft); }
-  .txt .meta { display: inline-block; margin-top: 7px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+  .txt p { margin: 3px 0 0; font-size: 14px; line-height: 1.35; color: var(--soft); text-wrap: pretty; }
+  .txt .meta { display: inline-block; white-space: nowrap; margin-top: 7px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
   :root.night .txt .meta { color: #E2C27A; }
   .chev { flex: none; width: 20px; height: 20px; color: var(--faint); }
   .home-link { margin-top: 22px; font-size: 14px; font-weight: 800; color: var(--soft); text-decoration: none; }
   :root.embed .home-link { display: none; }
+  /* narrower phones (most Androids are 360 wide): a smaller picture, so each name stays on one line */
+  @media (max-width: 374px) { .card { gap: 11px; padding: 8px 10px 8px 8px; } .art { width: 66px; height: 66px; border-radius: 13px; } .txt h2 { font-size: 18px; } .txt p { font-size: 13px; } .chev { display: none; } }
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
 <script src="kit.js"></script>

@@ -8,11 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="/assets/logo.jpg">
 <link rel="stylesheet" href="play.css">
 <script src="kit.js"></script>
 </head>
-<body>
-<div class="top"><a class="back" href="./" data-keep><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Games</a><h1>Snakes &amp; Ladders</h1><button class="snd" id="snd" type="button"></button></div>
+<body class="game">
+<div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Snakes &amp; Ladders</h1><button class="snd" id="snd" type="button"></button></div>
 <div class="wrap"><div class="stage" id="stage">
   <canvas id="cv" aria-label="Snakes and ladders board. Tap to roll the die."></canvas>
   <div class="overlay" id="ov"></div>
@@ -72,15 +73,29 @@ function paintBoard() {
     const { x, y } = cell(n), row = Math.floor((n - 1) / COLS), x0 = x - cw / 2, y0 = y - ch / 2;
     ctx.fillStyle = n === LAST ? '#f6cf7d' : (n + row) % 2 ? '#f8eed6' : '#d7eeeb';
     rrect(ctx, x0 + 1.5, y0 + 1.5, cw - 3, ch - 3, 7 * S); ctx.fill();
-    ctx.font = `800 ${10 * S}px Manrope, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = 'rgba(20,88,107,.5)'; ctx.fillText(n, x0 + 5 * S, y0 + 4 * S);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    if (SHELLS.includes(n)) { stamp(ctx, '🐚', cw * 0.36, x, y - 2 * S); ctx.font = `800 ${7.5 * S}px Manrope, sans-serif`; ctx.fillStyle = '#b06a12'; ctx.fillText('ROLL AGAIN', x, y0 + ch - 5 * S); }
-    if (n === 1) { ctx.font = `800 ${9 * S}px Manrope, sans-serif`; ctx.fillStyle = '#14586B'; ctx.fillText('START', x, y0 + ch - 5 * S); }
-    if (n === LAST) { stamp(ctx, '🏁', cw * 0.42, x, y - 3 * S); ctx.font = `800 ${9 * S}px Manrope, sans-serif`; ctx.fillStyle = '#7a4a05'; ctx.fillText('FINISH', x, y0 + ch - 5 * S); }
+    ctx.font = `800 ${Math.max(8.5, 10 * S)}px Manrope, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = 'rgba(20,88,107,.72)';
+    const tuck = x0 < 2 && y0 < 2 ? 7 : 0; // the board's rounded corner would clip the top-left square's number
+    ctx.fillText(n, x0 + 5 * S + tuck, y0 + 4 * S + tuck * 0.6);
   }
   for (const [s, e] of Object.entries(LADDERS)) ladder(cell(+s), cell(e));
   for (const sn of snakes) snake(sn);
+  // the shells and the flag go on top of the snakes and ladders that cross their squares, so they always show
+  for (const n of [...SHELLS, LAST]) {
+    const { x, y } = cell(n);
+    if (n === LAST) { stamp(ctx, '🏁', cw * 0.42, x, y - 3 * S); word(n, 'FINISH', Math.max(7.5, 9 * S), '#7a4a05'); }
+    else { stamp(ctx, '🐚', cw * 0.36, x, y - 2 * S); word(n, 'ROLL AGAIN', Math.max(7.5, 7.5 * S), '#a35f0c'); }
+  }
   ctx = main; return c;
+}
+// the words under a square's picture, on a little halo of paper so a snake or ladder underneath can't cross them out;
+// never too small to read, and left out where they wouldn't fit the square
+function word(n, txt, px, color) {
+  const { x, y } = cell(n);
+  ctx.font = `800 ${px}px Manrope, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  if (ctx.measureText(txt).width > cw - 6) return;
+  const by = y + ch / 2 - 5 * S;
+  ctx.lineJoin = 'round'; ctx.lineWidth = 3.2; ctx.strokeStyle = 'rgba(255,250,236,.92)'; ctx.strokeText(txt, x, by);
+  ctx.fillStyle = color; ctx.fillText(txt, x, by);
 }
 function ladder(a, b) {
   const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy * 8 * S, ny = ux * 8 * S;
@@ -108,7 +123,10 @@ function snake({ pts, colors }) {
 
 // ——— the game ———
 const G = { running: false, players: [], turn: 0, state: 'setup', face: 1, faceT: 0, rollT: 0, anim: null, botWait: 0, clock: 0, n: 0 };
-const who = (p) => (p.bot ? 'The crab' : `Player ${G.players.indexOf(p) + 1}`);
+const who = (p) => (p.bot ? 'The crab' : G.n === 1 ? 'You' : `Player ${G.players.indexOf(p) + 1}`);
+// the words that change when it's 'You': 'Your turn', 'You win!', 'You climb'
+const turnOf = (p) => (who(p) === 'You' ? 'Your turn' : `${who(p)}’s turn`);
+const does = (p, verb) => `${who(p)} ${who(p) === 'You' ? verb : verb + 's'}`;
 
 function setup(n) {
   G.n = n;
@@ -120,8 +138,8 @@ function start() {
   for (const p of G.players) { p.pos = 1; p.land = 0; }
   G.turn = 0; G.state = 'await'; G.face = 1 + ((Math.random() * 6) | 0); G.anim = null; G.botWait = 0.9; G.clock = 0;
   clearFx();
-  ov.hidden = true; G.running = true; tell(`${who(G.players[0])} to roll.`);
-  cv.focus({ preventScroll: true });
+  ov.hidden = true; G.running = true; tell(`${turnOf(G.players[0])}.`);
+  focusKeyed(cv);
   cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
 }
 function loop(now) {
@@ -170,13 +188,13 @@ function land(p) {
     const to = LADDERS[p.pos];
     say(c.x, c.y - ch * 0.5, `Ladder! Up to ${to}`, '#14586B', 19); chord([523, 659, 784, 1047], 0.07, { type: 'triangle' }); buzz(15);
     G.anim = { kind: 'climb', a: cell(p.pos), b: cell(to), to, t: 0, dur: calm ? 0.3 : 0.85, wait: 0.15 };
-    tell(`Ladder! ${who(p)} climbs to ${to}.`); return;
+    tell(`Ladder! ${does(p, 'climb')} to ${to}.`); return;
   }
   if (SNAKES[p.pos]) {
     const sn = snakes.find((s) => s.h === p.pos);
     say(c.x, c.y - ch * 0.5, `Snake! Down to ${sn.t}`, '#E7607A', 19); tone(760, 0.75, { type: 'triangle', to: 140, vol: 0.06, delay: 0.1 }); buzz(45); fx.shake = 0.22;
     G.anim = { kind: 'slide', pts: sn.pts, to: sn.t, t: 0, dur: calm ? 0.35 : 1.1, wait: 0.2 };
-    tell(`Snake! ${who(p)} slides down to ${sn.t}.`); return;
+    tell(`Snake! ${does(p, 'slide')} down to ${sn.t}.`); return;
   }
   after(p);
 }
@@ -184,19 +202,19 @@ function after(p) {
   if (p.pos === LAST) return win(p);
   const c = cell(p.pos);
   const again = SHELLS.includes(p.pos) ? 'Shell! Roll again' : G.face === 6 ? 'Six! Roll again' : '';
-  if (again) { say(c.x, c.y - ch * 0.5, again, '#c27a12', 19); chord([784, 988], 0.06, { vol: 0.05 }); tell(`${again}, ${who(p)}.`); }
-  else { G.turn = (G.turn + 1) % G.players.length; tell(`${who(G.players[G.turn])} to roll.`); }
+  if (again) { say(c.x, c.y - ch * 0.5, again, '#c27a12', 19); chord([784, 988], 0.06, { vol: 0.05 }); tell(who(p) === 'You' ? `${again}.` : `${again}, ${who(p)}.`); }
+  else { G.turn = (G.turn + 1) % G.players.length; tell(`${turnOf(G.players[G.turn])}.`); }
   G.state = 'await'; G.botWait = 0.85;
 }
 function win(p) {
-  G.state = 'won'; tell(`${who(p)} wins!`);
+  G.state = 'won'; tell(`${does(p, 'win')}!`);
   chord([523, 659, 784, 1047, 1319], 0.09); buzz(80);
   const colors = ['#E7607A', '#E8A44C', '#1F7A8C', '#86c23f', '#fff'];
   for (let i = 0; i < 6; i++) setTimeout(() => burst(rnd(W * 0.15, W * 0.85), rnd(H * 0.1, H * 0.55), colors[i % colors.length], 22, 280 * S, { g: 380, size: 3.2 }), i * 140);
   setTimeout(() => {
     G.running = false; cancelAnimationFrame(raf); draw();
     const order = [...G.players].sort((a, b) => b.pos - a.pos);
-    overlay(ov, `<div class="avatar">${p.e}</div><h2>${who(p)} wins!</h2>
+    overlay(ov, `<div class="avatar">${p.e}</div><h2>${does(p, 'win')}!</h2>
       <ol class="ranks">${order.map((q) => `<li class="${q === p ? 'win' : ''}"><span>${q.e}</span><span>${who(q)}</span><span>${q === p ? '🏁' : 'square ' + q.pos}</span></li>`).join('')}</ol>`,
       [{ label: 'Play again', go: start }, { label: 'Change players', alt: true, go: menu }]);
   }, 1700);
@@ -217,6 +235,8 @@ function draw() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
   ctx.save(); if (fx.shake > 0 && !calm) ctx.translate(rnd(-1, 1) * fx.shake * 14 * S, rnd(-1, 1) * fx.shake * 14 * S);
   if (boardImg) ctx.drawImage(boardImg, 0, 0, W, ROWS * ch);
+  // START, unless three or four tokens crowd the square at the start of a game and would only half cover it
+  if (G.players.filter((q) => q.pos === 1).length < 3) word(1, 'START', Math.max(7.5, 9 * S), '#14586B');
   const cur = G.players[G.turn], leadPos = Math.max(0, ...G.players.map((q) => q.pos)), leaders = G.players.filter((q) => q.pos === leadPos);
   // the one whose turn it is: a soft pulse on their square
   if (G.running && cur && G.state === 'await') {
@@ -249,7 +269,7 @@ function strip() {
   const tx = ax + r + 12 * S;
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   ctx.font = `700 ${ch * 0.33}px Fraunces, Georgia, serif`; ctx.fillStyle = '#14586B';
-  ctx.fillText(G.state === 'won' ? `${who(p)} wins!` : `${who(p)}’s turn`, tx, cy - ch * 0.03);
+  ctx.fillText(G.state === 'won' ? `${does(p, 'win')}!` : turnOf(p), tx, cy - ch * 0.03);
   const hint = G.state === 'await' ? (p.bot ? 'is thinking…' : 'Tap anywhere to roll') : G.state === 'rolling' ? 'Rolling…' : G.state === 'moving' ? `Rolled ${G.face}` : '';
   ctx.font = `700 ${ch * 0.235}px Manrope, sans-serif`; ctx.fillStyle = G.state === 'await' && !p.bot ? '#E7607A' : '#4b6870'; ctx.fillText(hint, tx, cy + ch * 0.27);
   const size = ch * 0.62, dx = W - 14 * S - size / 2;
@@ -261,7 +281,7 @@ function strip() {
 
 function menu() {
   G.running = false; cancelAnimationFrame(raf); G.players = []; G.state = 'setup'; draw();
-  overlay(ov, `<h2>Snakes &amp; Ladders</h2><p>Climb the ladders, slide down the sea snakes. Land on a shell 🐚 or roll a 6 to roll again. First to the flag wins; roll too far and you bounce back.</p><p class="q">Who’s playing?</p>`,
+  overlay(ov, `<h2>Snakes &amp; Ladders</h2><p class="rules">Climb the ladders, slide down the sea snakes. Land on a shell 🐚 or roll a 6 to roll again. First to the flag wins; roll too far and you bounce back.</p><p class="q">Who’s playing?</p>`,
     [{ label: 'Me vs the crab 🦀', go: () => setup(1) }, { label: '2 players', alt: true, go: () => setup(2) }, { label: '3 players', alt: true, go: () => setup(3) }, { label: '4 players', alt: true, go: () => setup(4) }]);
 }
 

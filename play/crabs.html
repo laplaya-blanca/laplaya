@@ -9,13 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="preload" href="/assets/sand-tall.jpg" as="image">
+<link rel="icon" href="/assets/logo.jpg">
 <link rel="stylesheet" href="play.css">
 <script src="kit.js"></script>
 </head>
-<body>
-<div class="top"><a class="back" href="./" data-keep><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Games</a><h1>Crab Pop</h1><button class="snd" id="snd" type="button"></button></div>
+<body class="game">
+<div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Crab Pop</h1><button class="snd" id="snd" type="button"></button></div>
 <div class="wrap"><div class="stage" id="stage">
-  <canvas id="cv" aria-label="The beach, with nine crab holes. Tap the crabs as they pop out."></canvas>
+  <canvas id="cv" aria-label="The beach, with nine crab holes. Tap the crabs as they pop out, or press 1 to 9 for the holes."></canvas>
   <div class="overlay" id="ov"></div>
 </div></div>
 <p class="foot">30 seconds each. Pass the phone, best score wins.</p>
@@ -39,8 +40,8 @@ function fit() {
   sizeStage(stage, AR);
   if (!V.W) return;
   ({ W, H, S, DPR } = V); U = W / 100; // U: a hundredth of the board's width
-  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); clearCaches(); tints.clear();
-  holes = SPOTS.map(([x, y], i) => ({ x: x * W, y: y * H, rx: 12.5 * U, ry: 4.6 * U, i, ...(holes[i] || { kind: null }) }));
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); clearCaches(); tints.clear(); halos.clear();
+  holes = SPOTS.map(([x, y], i) => ({ ...(holes[i] || { kind: null, popped: -9 }), x: x * W, y: y * H, rx: 12.5 * U, ry: 4.6 * U, i })); // a crab that's up stays up
   bg = paintBeach(); lips = paintLips();
   if (!G.running) draw();
 }
@@ -97,6 +98,28 @@ function gold(px) {
   g.fillStyle = sheen; g.fillRect(0, 0, c.width, c.height); tints.set(k, c); return c;
 }
 
+// the warm light behind a golden crab, drawn once per size
+const halos = new Map();
+function glow(px) {
+  if (halos.has(px)) return halos.get(px);
+  const d = Math.ceil(px * 1.5), c = document.createElement('canvas'); c.width = c.height = Math.ceil(d * DPR);
+  const g = c.getContext('2d'); g.scale(DPR, DPR);
+  const r = g.createRadialGradient(d / 2, d / 2, 1, d / 2, d / 2, d / 2); r.addColorStop(0, 'rgba(255,214,102,.55)'); r.addColorStop(1, 'rgba(255,214,102,0)');
+  g.fillStyle = r; g.fillRect(0, 0, d, d); halos.set(px, c); return c;
+}
+// a piece of the score board, drawn again only when what it shows changes (its soft shadow is a blur, too slow to
+// redraw every frame on a cheap phone)
+const panels = {};
+function panel(slot, key, w, h, paint) {
+  let p = panels[slot];
+  if (!p || p.key !== key || p.dpr !== DPR) {
+    const c = p?.c || document.createElement('canvas'); c.width = Math.ceil(w * DPR); c.height = Math.ceil(h * DPR);
+    const g = c.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, w, h); paint(g);
+    p = panels[slot] = { c, key, w, h, dpr: DPR };
+  }
+  return p;
+}
+
 // ——— the game ———
 const KINDS = { crab: { e: '🦀', pts: 1 }, gold: { e: '🦀', pts: 3 }, puffer: { e: '🐡', pts: -3 } };
 const RISE = 0.13, SINK = 0.15;
@@ -112,13 +135,13 @@ function setup(n) {
 function ready() {
   const p = G.players[G.cur];
   if (G.players.length === 1) return countdown();
-  stop(); draw();
+  stop(); G.state = 'ready'; draw(); // the board behind "you're up" is bare: no score or clock from the turn before
   overlay(ov, `<div class="avatar">${p.e}</div><h2>${who(G.cur)}, you’re up</h2><p>${G.cur ? 'Pass the phone. ' : ''}30 seconds: pop as many crabs as you can.</p>`, [{ label: 'Go!', go: countdown }]);
 }
 function countdown() {
   for (const h of holes) h.kind = null;
   clearFx(); G.score = 0; G.combo = 0; G.time = ROUND; G.count = 3; G.spawn = 0.6; G.lastTick = 0; G.lastHole = -1;
-  G.state = 'count'; ov.hidden = true; cv.focus({ preventScroll: true });
+  G.state = 'count'; ov.hidden = true; focusKeyed(cv);
   tell(`${who(G.cur)}: 3, 2, 1…`); tone(520, 0.12, { vol: 0.05 });
   G.running = true; cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
 }
@@ -181,11 +204,14 @@ function hit(x, y) {
     const cy = h.y - 9 * U * o, d = Math.hypot(x - h.x, (y - cy) * 0.85);
     if (d < 15 * U && d < bd) { bd = d; best = h; }
   }
-  if (!best) { // a tap on bare sand: a puff, and the combo is gone
+  if (!best) {
+    // a second tap on a crab that's just been popped isn't a miss, even once it has gone (a double tap)
+    if (holes.some((h) => G.clock - h.popped < 0.4 && Math.hypot(x - h.x, (y - (h.y - 4.5 * U)) * 0.85) < 15 * U)) return;
+    // a tap on bare sand: a puff, and the combo is gone
     burst(x, y, '#d9c4a0', 6, 60 * S, { g: 300, size: 2 }); if (G.combo >= 3) say(x, y - 4 * U, 'Combo lost', '#4b6870', 15); G.combo = 0; return;
   }
   const h = best, k = KINDS[h.kind], cy = h.y - 9 * U;
-  h.hit = 0.0001;
+  h.hit = 0.0001; h.popped = G.clock;
   if (h.kind === 'puffer') {
     G.score = Math.max(0, G.score + k.pts); G.combo = 0; G.shake = 0.25; buzz([40, 30, 40]);
     say(h.x, cy - 9 * U, 'Ouch! −3', '#E7607A', 22); tone(220, 0.35, { type: 'sawtooth', to: 90, vol: 0.05 });
@@ -205,6 +231,14 @@ function end() {
   G.state = 'done'; G.time = 0; for (const h of holes) h.kind = null;
   const p = G.players[G.cur]; p.score = G.score;
   chord([784, 659, 523], 0.1, { vol: 0.05 }); buzz(60); tell(`Time! ${who(G.cur)} popped ${G.score}.`);
+  // the last turn of a game with friends: confetti for a single winner, while the board is still moving
+  const last = G.players.length > 1 && G.cur === G.players.length - 1;
+  const order = last ? G.players.map((q, i) => ({ ...q, i })).sort((a, b) => b.score - a.score) : [], top = order.length ? order[0].score : 0, winners = order.filter((q) => q.score === top);
+  if (last && winners.length === 1) {
+    setTimeout(() => chord([523, 659, 784, 1047, 1319], 0.08), 350);
+    const colors = ['#E7607A', '#E8A44C', '#1F7A8C', '#86c23f', '#fff'];
+    for (let k = 0; k < 5; k++) setTimeout(() => burst(rnd(W * 0.15, W * 0.85), rnd(H * 0.1, H * 0.5), colors[k % 5], 22, 280 * S, { g: 380, size: 3.2 }), 300 + k * 140);
+  }
   setTimeout(() => {
     stop(); draw();
     if (G.players.length === 1) {
@@ -216,13 +250,11 @@ function end() {
       overlay(ov, `<div class="avatar">${p.e}</div><h2>Time! ${G.score} popped</h2><p>Next up: ${who(G.cur + 1)} ${next.e}. Pass the phone.</p>`,
         [{ label: `${who(G.cur + 1)}, go!`, go: () => { G.cur++; countdown(); } }]);
     } else {
-      const order = G.players.map((q, i) => ({ ...q, i })).sort((a, b) => b.score - a.score), top = order[0].score, winners = order.filter((q) => q.score === top);
-      if (winners.length === 1) { chord([523, 659, 784, 1047, 1319], 0.08); const colors = ['#E7607A', '#E8A44C', '#1F7A8C', '#86c23f', '#fff']; for (let k = 0; k < 5; k++) setTimeout(() => burst(rnd(W * 0.15, W * 0.85), rnd(H * 0.1, H * 0.5), colors[k % 5], 22, 280 * S, { g: 380, size: 3.2 }), k * 140); }
       overlay(ov, `<div class="avatar">${winners.length === 1 ? winners[0].e : '🤝'}</div><h2>${winners.length === 1 ? who(winners[0].i) + ' wins!' : 'It’s a tie!'}</h2>
         <ol class="ranks">${order.map((q) => `<li class="${q.score === top ? 'win' : ''}"><span>${q.e}</span><span>${who(q.i)}</span><span>${q.score}</span></li>`).join('')}</ol>`,
         [{ label: 'Play again', go: () => { G.cur = 0; for (const q of G.players) q.score = null; ready(); } }, { label: 'Change players', alt: true, go: menu }]);
     }
-  }, 900);
+  }, last && winners.length === 1 ? 1800 : 900);
 }
 
 // ——— drawing ———
@@ -236,12 +268,12 @@ function draw() {
     let sx = 1, sy = 1;
     if (h.hit && h.kind !== 'puffer') { sx = 1.18; sy = 0.72; }
     if (h.kind === 'puffer') { const s = h.hit ? 1.35 : 1 + Math.sin(G.clock * 5 + h.wob) * 0.05; sx = sy = s; }
+    const x = h.x, y = h.y + size * 0.42 - rise - size * 0.2;
+    // a golden crab's light spills over the sand (drawn before the clip, so it fades out softly)
+    if (h.kind === 'gold') { const halo = glow(Math.round(size)), hd = halo.width / DPR; ctx.globalAlpha = Math.min(1, o * 1.4); ctx.drawImage(halo, x - hd / 2, y - hd / 2, hd, hd); ctx.globalAlpha = 1; }
     ctx.save();
     ctx.beginPath(); ctx.rect(h.x - h.rx * 1.6, h.y - 40 * U, h.rx * 3.2, 40 * U + h.ry * 0.4); ctx.clip(); // nothing shows below the near rim
-    const x = h.x, y = h.y + size * 0.42 - rise - size * 0.2;
     if (h.kind === 'gold') {
-      const glow = ctx.createRadialGradient(x, y, 1, x, y, size * 0.75); glow.addColorStop(0, 'rgba(255,214,102,.55)'); glow.addColorStop(1, 'rgba(255,214,102,0)');
-      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, size * 0.75, 0, 7); ctx.fill();
       const t = gold(Math.round(size)), d = t.width / DPR;
       ctx.save(); ctx.translate(x, y); ctx.rotate(wob); ctx.scale(sx, sy); ctx.drawImage(t, -d / 2, -d / 2, d, d); ctx.restore();
     } else stamp(ctx, KINDS[h.kind].e, size, x, y, { rot: wob, sx, sy });
@@ -255,31 +287,38 @@ function draw() {
 }
 // over the sea: who's playing and their score on the left, the clock on the right
 function hud() {
-  if (G.state === 'setup' || !G.players.length) return;
-  const p = G.players[G.cur], x = 5 * U, y = 7 * U;
-  ctx.save(); ctx.shadowColor = 'rgba(3,20,26,.55)'; ctx.shadowBlur = 8 * S;
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + 4.5 * U, y + 4.5 * U, 4.5 * U, 0, 7); ctx.fill();
-  ctx.restore();
-  ctx.lineWidth = 2.5 * S; ctx.strokeStyle = p.c; ctx.beginPath(); ctx.arc(x + 4.5 * U, y + 4.5 * U, 4.5 * U, 0, 7); ctx.stroke();
-  stamp(ctx, p.e, 5.6 * U, x + 4.5 * U, y + 4.7 * U);
-  ctx.save(); ctx.shadowColor = 'rgba(3,20,26,.6)'; ctx.shadowBlur = 10 * S; ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.font = `800 ${3.3 * U}px Manrope, sans-serif`; ctx.fillText((G.players.length === 1 ? 'YOUR SCORE' : who(G.cur).toUpperCase()), x + 11.5 * U, y + 3.4 * U);
-  ctx.font = `700 ${8.4 * U}px Fraunces, Georgia, serif`; ctx.fillText(String(G.score), x + 11.2 * U, y + 11.2 * U);
-  const sw = ctx.measureText(String(G.score)).width;
-  ctx.restore();
-  if (mult() > 1 && G.state === 'play') {
-    const bx = x + 11.2 * U + sw + 3 * U, byy = y + 5.4 * U;
-    ctx.fillStyle = '#E8A44C'; rrect(ctx, bx, byy, 11 * U, 6 * U, 3 * U); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = `800 ${3.6 * U}px Manrope, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(`×${mult()}`, bx + 5.5 * U, byy + 3.1 * U);
-  }
+  if (G.state === 'setup' || G.state === 'ready' || !G.players.length) return;
+  const p = G.players[G.cur], x = 5 * U, y = 7 * U, playing = G.state === 'play';
+  const label = G.players.length === 1 ? 'YOUR SCORE' : who(G.cur).toUpperCase(), fl = Math.max(9, 3.3 * U), fs = Math.max(20, 8.4 * U), fm = Math.max(10, 3.6 * U);
+  const left = panel('score', [label, G.score, playing ? mult() : 1, W].join('|'), W * 0.62, y + 16 * U, (g) => {
+    g.save(); g.shadowColor = 'rgba(3,20,26,.55)'; g.shadowBlur = 8 * S;
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(x + 4.5 * U, y + 4.5 * U, 4.5 * U, 0, 7); g.fill();
+    g.restore();
+    g.lineWidth = 2.5 * S; g.strokeStyle = p.c; g.beginPath(); g.arc(x + 4.5 * U, y + 4.5 * U, 4.5 * U, 0, 7); g.stroke();
+    stamp(g, p.e, 5.6 * U, x + 4.5 * U, y + 4.7 * U);
+    g.save(); g.shadowColor = 'rgba(3,20,26,.6)'; g.shadowBlur = 10 * S; g.fillStyle = '#fff'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    g.font = `800 ${fl}px Manrope, sans-serif`; g.fillText(label, x + 11.5 * U, y + 1.2 * U + fl * 0.66);
+    g.font = `700 ${fs}px Fraunces, Georgia, serif`; g.fillText(String(G.score), x + 11.2 * U, y + 2.8 * U + fs);
+    const sw = g.measureText(String(G.score)).width;
+    g.restore();
+    if (playing && mult() > 1) {
+      const bx = x + 11.2 * U + sw + 3 * U, byy = y + 2.8 * U + fs * 0.32, bh = fm * 1.65, bw = fm * 3;
+      g.fillStyle = '#E8A44C'; rrect(g, bx, byy, bw, bh, bh / 2); g.fill();
+      g.fillStyle = '#fff'; g.font = `800 ${fm}px Manrope, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(`×${mult()}`, bx + bw / 2, byy + bh * 0.54);
+    }
+  });
+  ctx.drawImage(left.c, 0, 0, left.w, left.h);
   // the clock: a ring that empties, gold, then coral for the last five seconds
-  const cx = W - 10 * U, cy = y + 4.8 * U, r = 5.6 * U, left = clamp(G.time / ROUND, 0, 1), hurry = G.state === 'play' && G.time <= 5;
+  const cx = W - 10 * U, cy = y + 4.8 * U, r = 5.6 * U, share = clamp(G.time / ROUND, 0, 1), hurry = playing && G.time <= 5, sec = Math.max(0, Math.ceil(G.time));
   ctx.lineWidth = 1.5 * U; ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
-  ctx.strokeStyle = hurry ? '#ff8fa3' : '#ffd166'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + left * Math.PI * 2); ctx.stroke();
-  const beat = hurry && !calm ? 1 + Math.max(0, Math.sin(G.clock * Math.PI * 2)) * 0.12 : 1;
-  ctx.save(); ctx.translate(cx, cy); ctx.scale(beat, beat); ctx.shadowColor = 'rgba(3,20,26,.6)'; ctx.shadowBlur = 8 * S;
-  ctx.fillStyle = '#fff'; ctx.font = `800 ${4.6 * U}px Manrope, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(Math.max(0, Math.ceil(G.time))), 0, 0.3 * U);
-  ctx.restore();
+  ctx.strokeStyle = hurry ? '#ff8fa3' : '#ffd166'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + share * Math.PI * 2); ctx.stroke();
+  const fd = Math.max(12, 4.6 * U), box = fd * 2.2;
+  const digit = panel('clock', [sec, W].join('|'), box, box, (g) => {
+    g.shadowColor = 'rgba(3,20,26,.6)'; g.shadowBlur = 8 * S; g.fillStyle = '#fff'; g.font = `800 ${fd}px Manrope, sans-serif`;
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(sec), box / 2, box / 2 + 0.3 * U);
+  });
+  const beat = hurry && !calm ? 1 + Math.max(0, Math.sin(G.clock * Math.PI * 2)) * 0.12 : 1, bd = box * beat;
+  ctx.drawImage(digit.c, cx - bd / 2, cy - bd / 2, bd, bd);
   // 3, 2, 1 before the start
   if (G.state === 'count') {
     const n = Math.ceil(G.count), k = G.count - Math.floor(G.count), s = calm ? 1 : 1 + k * 0.35;
@@ -293,12 +332,17 @@ function hud() {
 
 function menu() {
   stop(); G.state = 'setup'; G.players = []; for (const h of holes) h.kind = null; clearFx(); draw();
-  overlay(ov, `<div class="avatar">🦀</div><h2>Crab Pop</h2><p>Tap the crabs before they dive back into the sand. Golden ones are worth 3. Leave the pufferfish alone! 🐡</p>${G.best ? `<p class="q">Best on this phone: ${G.best}</p>` : '<p class="q">Who’s playing?</p>'}`,
+  overlay(ov, `<div class="avatar">🦀</div><h2>Crab Pop</h2><p class="rules">Tap the crabs before they dive back into the sand. Golden ones are worth 3. Leave the pufferfish alone! 🐡</p>${G.best ? `<p class="q">Best on this phone: ${G.best}</p>` : '<p class="q">Who’s playing?</p>'}`,
     [{ label: 'Just me', go: () => setup(1) }, { label: '2 players', alt: true, go: () => setup(2) }, { label: '3 players', alt: true, go: () => setup(3) }, { label: '4 players', alt: true, go: () => setup(4) }]);
 }
 
-// ——— input: every finger counts, the moment it touches ———
+// ——— input: every finger counts, the moment it touches. On a keyboard, 1–9 are the holes, as on a phone's keypad. ———
+cv.tabIndex = 0;
 cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); hit(e.clientX - r.left, e.clientY - r.top); });
+cv.addEventListener('keydown', (e) => {
+  if (!/^[1-9]$/.test(e.key)) return;
+  e.preventDefault(); const h = holes[+e.key - 1]; hit(h.x, h.y - 9 * U * Math.max(0.5, out(h)));
+});
 
 fit(); menu();
 </script>

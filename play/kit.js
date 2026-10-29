@@ -7,8 +7,34 @@ document.documentElement.classList.toggle('embed', EMBED);
 document.documentElement.classList.toggle('night', NIGHT);
 // Escape inside a game closes the menu's sheet around it (the sheet can't hear keys pressed in here)
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && EMBED && parent !== window) parent.postMessage('lpb-game:close', location.origin); });
-// links between the games keep ?in and ?night
-addEventListener('DOMContentLoaded', () => document.querySelectorAll('a[data-keep]').forEach((a) => (a.href = a.getAttribute('href') + location.search)));
+// links between the games keep ?in and ?night. Inside the menu's sheet they replace the page rather than add to the
+// history, so the phone's Back button still leaves the menu once the sheet is closed.
+const keepLinks = () => document.querySelectorAll('a[data-keep]').forEach((a) => { a.dataset.to ??= a.getAttribute('href'); a.href = a.dataset.to + location.search; });
+addEventListener('DOMContentLoaded', () => {
+  keepLinks();
+  if (EMBED) document.querySelectorAll('a[data-keep]').forEach((a) => a.addEventListener('click', (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); location.replace(a.href); }));
+});
+// dusk can fall while a game is open: the sheet says so, and the page around the board follows without reloading
+if (EMBED) addEventListener('message', (e) => {
+  if (e.origin !== location.origin || e.source !== parent || (e.data !== 'lpb-game:night' && e.data !== 'lpb-game:day')) return;
+  const night = e.data === 'lpb-game:night';
+  if (document.documentElement.classList.contains('night') === night) return;
+  document.documentElement.classList.toggle('night', night);
+  history.replaceState(history.state, '', location.pathname + '?in=site' + (night ? '&night' : '')); keepLinks();
+});
+// focus goes to a screen's first button, or to the board as a game starts, only for someone playing with the keyboard:
+// on a phone it would only put a focus ring round a button nobody asked for
+let keyed = false;
+addEventListener('keydown', () => (keyed = true), true);
+addEventListener('pointerdown', () => (keyed = false), true);
+const focusKeyed = (el) => { if (keyed) el?.focus({ preventScroll: true }); };
+// while a screen covers the board, the board is out of the Tab order
+addEventListener('DOMContentLoaded', () => document.querySelectorAll('.stage').forEach((st) => {
+  const ov = st.querySelector('.overlay'), cv = st.querySelector('canvas');
+  if (!ov || !cv) return;
+  const sync = () => (cv.tabIndex = ov.hidden ? 0 : -1);
+  new MutationObserver(sync).observe(ov, { attributes: true, attributeFilter: ['hidden'] }); sync();
+}));
 
 const store = {
   get: (k) => { try { return +localStorage.getItem('lpb-game-' + k) || 0; } catch { return 0; } },
@@ -139,10 +165,12 @@ const clearCaches = () => { sprites.clear(); dice.clear(); };
 
 // ——— the screens laid over a board: a heading, a few lines, and buttons ———
 function overlay(ov, html, buttons) {
-  ov.innerHTML = html + `<div class="row">${buttons.map((b, i) => `<button type="button" class="go${b.alt ? ' alt' : ''}" data-i="${i}">${b.label}</button>`).join('')}</div>`;
-  ov.hidden = false;
-  ov.querySelectorAll('.go').forEach((el) => (el.onclick = () => { tone(660, 0.06, { vol: 0.04 }); buttons[+el.dataset.i].go(); }));
-  ov.querySelector('.go')?.focus({ preventScroll: true });
+  ov.innerHTML = `<div class="in">${html}<div class="row">${buttons.map((b, i) => `<button type="button" class="go${b.alt ? ' alt' : ''}" data-i="${i}">${b.label}</button>`).join('')}</div></div>`;
+  ov.hidden = false; ov.scrollTop = 0; // a screen that had to be scrolled doesn't pass its scroll on to the next one
+  // a screen that appears under a finger still tapping the board ignores that finger for a moment
+  const shown = performance.now();
+  ov.querySelectorAll('.go').forEach((el) => (el.onclick = () => { if (performance.now() - shown < 600) return; tone(660, 0.06, { vol: 0.04 }); buttons[+el.dataset.i].go(); }));
+  focusKeyed(ov.querySelector('.go'));
 }
 // a game redraws its board once its fonts have arrived, so the numbers aren't painted in a stand-in font
 const fontsReady = (fn) => document.fonts?.ready.then(fn);

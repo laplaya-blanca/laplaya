@@ -5,8 +5,9 @@ import { motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/
 const stack: object[] = [];
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,iframe,[tabindex]:not([tabindex="-1"])';
 
-// Bottom sheet for phones (item, cart, categories, games). Drag down or tap outside to close.
-export function Sheet({ label, onClose, children, tall = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean }) {
+// Bottom sheet for phones (item, cart, categories, games). Drag down or tap outside to close. A flush sheet leaves the
+// room at its bottom to what's inside (the games keep it themselves, so a board's shadow isn't cut off above the edge).
+export function Sheet({ label, onClose, children, tall = false, flush = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean; flush?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const still = useReducedMotion();
   const controls = useDragControls();
@@ -50,11 +51,12 @@ export function Sheet({ label, onClose, children, tall = false }: { label: strin
         initial={still ? { opacity: 0 } : { y: '100%' }} animate={still ? { opacity: 1 } : { y: 0 }} exit={still ? { opacity: 0 } : { y: '100%' }}
         transition={{ type: 'spring', stiffness: 380, damping: 38 }}
         drag={still ? false : 'y'} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} onDragEnd={drag} dragListener={false} dragControls={controls}>
-        {/* drag from the top strip only, so the content inside can scroll normally */}
-        <div className="shrink-0 touch-none pt-2.5 pb-1" onPointerDown={(e) => controls.start(e)}>
+        {/* drag from the top strip only, so the content inside can scroll normally; the pointer stays with the strip,
+            so a mouse dragged down over a game (an iframe) doesn't lose the drag */}
+        <div className="shrink-0 touch-none pt-2.5 pb-1" onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); controls.start(e); }}>
           <div aria-hidden className="mx-auto h-1.5 w-11 rounded-full bg-[var(--ink)]/20" />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(20px,env(safe-area-inset-bottom))]">{children}</div>
+        <div className={'min-h-0 flex-1 overflow-y-auto overscroll-contain ' + (flush ? 'pb-[max(0px,calc(env(safe-area-inset-bottom)_-_20px))]' : 'pb-[max(20px,env(safe-area-inset-bottom))]')}>{children}</div>
       </motion.div>
     </div>
   );
