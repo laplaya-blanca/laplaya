@@ -165,6 +165,9 @@ main { margin-left: 252px; padding: 34px clamp(18px, 4vw, 48px) 120px; max-width
 .photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .photo-pair .photo-edit img, .photo-pair .photo-empty { aspect-ratio: 3 / 4; }
 .photo-pair .row { flex-wrap: wrap; gap: 6px; }
+.photo-pair .photo-edit { position: relative; }
+/* a picture made for the menu (assets/plated): it's what customers see, not an empty slot to fill */
+.made { position: absolute; left: 8px; top: 30px; padding: 3px 9px; border-radius: 999px; background: rgba(14, 63, 76, .82); color: #fff; font-size: 11.5px; font-weight: 800; }
 .photo-hint { margin: 8px 0 18px; } .photo-hint a { color: var(--teal); font-weight: 700; }
 .photo-edit img, .photo-empty { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r); margin-bottom: 10px; }
 .photo-empty { display: grid; place-content: center; justify-items: center; gap: 6px; background: linear-gradient(150deg, #F3EAD5, #CFE1DD); color: var(--teal); font-weight: 700; }

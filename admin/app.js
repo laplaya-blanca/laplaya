@@ -29,6 +29,12 @@ function keyify(key, d) {
 const money = (p) => (p === null || p === undefined || p === '' ? 'Ask at the counter' : '$' + (Number.isInteger(+p) ? +p : (+p).toFixed(2)));
 const toPrice = (v) => (v === '' || isNaN(parseFloat(v)) ? null : Math.round(parseFloat(v) * 100) / 100);
 const move = (arr, i, dir) => { const j = i + dir; if (j < 0 || j >= arr.length) return; const t = arr[i]; arr[i] = arr[j]; arr[j] = t; };
+// the pictures made for the menu (assets/plated.json), filed under the owner's photo or, for a dish he hasn't
+// photographed, under its name: found the same way src/lib/content.ts finds them, so each slot shows what the menu shows
+let PLATED = {};
+const platedReady = fetch('/assets/plated.json').then((r) => (r.ok ? r.json() : {})).then((j) => { PLATED = j && typeof j === 'object' ? j : {}; }).catch(() => {});
+const slug = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const madeFor = (catName, item) => PLATED[item.photo ? '/' + String(item.photo).replace(/^\//, '') : 'dish:' + slug(catName || '') + '/' + slug(item.name || '')] || {};
 const findItem = (d, k) => { for (const c of d.categories) { const i = c.items.findIndex((x) => x._k === k); if (i >= 0) return { cat: c, i, item: c.items[i] }; } return null; };
 
 function Icon({ name, size = 20 }) {
@@ -136,11 +142,11 @@ function Login({ onIn, expired }) {
 }
 
 // ---------- menu ----------
-function ItemCard({ item, cat, photo, onOpen, onToggle }) {
-  const off = item.available === false;
+function ItemCard({ item, cat, made = {}, photo, onOpen, onToggle }) {
+  const off = item.available === false, pic = made.day || item.photo;
   return html`<div class=${'item' + (off ? ' off' : '')}>
     <button type="button" class="item-open" onClick=${onOpen} aria-label=${'Edit ' + (item.name || 'item') + ', ' + money(item.price) + (off ? ', sold out' : '')}>
-      <span class="thumb">${item.photo ? html`<img src=${photo(item.photo)} alt="" loading="lazy"/>` : html`<span aria-hidden="true">${(item.name || '?').charAt(0)}</span>`}</span>
+      <span class="thumb">${pic ? html`<img src=${photo(pic)} alt="" loading="lazy"/>` : html`<span aria-hidden="true">${(item.name || '?').charAt(0)}</span>`}</span>
       <span class="item-body">
         ${cat && html`<span class="eyebrow">${cat}</span>`}
         <strong>${item.name || 'Untitled'}</strong>
@@ -160,28 +166,31 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
   const nameRef = useRef();
   useEffect(() => { if (found && found.item.name === 'New item' && nameRef.current) { nameRef.current.focus(); nameRef.current.select(); } }, [itemKey]);
   if (!found) return null;
-  const { cat, i, item } = found;
+  const { cat, i, item } = found, made = madeFor(cat.name, item);
   const set = (fn) => edit((d) => fn(findItem(d, itemKey).item));
   return html`<${Panel} title="Edit item" onClose=${onClose}>
     <div class="photo-pair">
       <div class="photo-edit">
         <span class="label">Day photo</span>
-        ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
+        ${made.day ? html`<img src=${photo(made.day)} alt=""/><span class="made">On the menu now</span>`
+          : item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
         <div class="row">
-          <${PhotoButton} label=${item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
-          ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+          <${PhotoButton} label=${made.day ? 'Replace' : item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
+          ${item.photo && !made.day && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
         </div>
       </div>
       <div class="photo-edit">
         <span class="label">Night photo</span>
-        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
+        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>`
+          : made.night ? html`<img src=${photo(made.night)} alt=""/><span class="made">On the menu now</span>`
+          : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
         <div class="row">
-          <${PhotoButton} label=${item.photoNight ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
+          <${PhotoButton} label=${item.photoNight ? 'Change' : made.night ? 'Replace' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
           ${item.photoNight && html`<button class="btn ghost" onClick=${() => set((it) => { delete it.photoNight; })}>Remove</button>`}
         </div>
       </div>
     </div>
-    <p class="hint photo-hint">After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
+    <p class="hint photo-hint">${made.day || made.night ? 'The pictures marked “On the menu now” were made for the menu and are already showing. Replace one only to change it. ' : ''}After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
     <div class="avail">
       <div><strong>Available today</strong><span class="muted">${item.available === false ? 'Shows “Sold out” and can’t be ordered' : 'Customers can order it'}</span></div>
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>
@@ -266,7 +275,7 @@ function MenuView({ data, edit, photo, onPhoto, ask }) {
     </header>
     ${query ? html`
       <p class="muted">${results.length} ${results.length === 1 ? 'item' : 'items'} matching “${q.trim()}”</p>
-      <div class="items">${results.map(({ i, c }) => html`<${ItemCard} key=${i._k} item=${i} cat=${c.name} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
+      <div class="items">${results.map(({ i, c }) => html`<${ItemCard} key=${i._k} item=${i} cat=${c.name} made=${madeFor(c.name, i)} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
     ` : html`
       <nav class="tabs" aria-label="Categories">
         ${data.categories.map((c) => html`<button key=${c._k} class=${'tab' + (c._k === (cat && cat._k) ? ' on' : '')} aria-current=${c._k === (cat && cat._k) ? 'true' : undefined} onClick=${() => setActive(c._k)}>
@@ -282,7 +291,7 @@ function MenuView({ data, edit, photo, onPhoto, ask }) {
             <button class="btn primary" onClick=${addItem}><${Icon} name="plus" size=${18}/> Add item</button>
           </div>
         </div>
-        <div class="items">${cat.items.map((i) => html`<${ItemCard} key=${i._k} item=${i} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
+        <div class="items">${cat.items.map((i) => html`<${ItemCard} key=${i._k} item=${i} made=${madeFor(cat.name, i)} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
         ${!cat.items.length && html`<p class="empty">No items yet. Tap “Add item”.</p>`}
       ` : html`<p class="empty">No categories yet.</p>`}
     `}
@@ -493,6 +502,9 @@ function checkContent(files) {
 
 // ---------- app ----------
 function App() {
+  // redraw once the list of pictures made for the menu has loaded
+  const [, setMade] = useState(0);
+  useEffect(() => { platedReady.then(() => setMade(1)); }, []);
   const [user, setUser] = useState(currentUser());
   const [files, setFiles] = useState(null);       // { key: { data, sha, orig } }
   const [loadErr, setLoadErr] = useState(null);
