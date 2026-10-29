@@ -1,5 +1,5 @@
 /* La Playa Blanca owner dashboard — UI (Preact + htm, no build step).
-   Screens: Menu · Build your own · Hours & contact · Event photos. Edits stay local until "Save changes".
+   Screens: Menu · Build your own · Hours & contact · Event photos · Photo templates. Edits stay local until "Save changes".
    Libraries are vendored in admin/vendor (htm@3.1.1 preact standalone, gotrue-js@1.0.1) so /admin loads no third-party script. */
 import { html, render, useState, useEffect, useRef } from './vendor/htm-preact-3.1.1.js';
 import { FILES, LOCAL, ConflictError, currentUser, login, requestReset, loadAll, loadOne, saveAll, serialize, preparePhoto } from './store.js';
@@ -419,9 +419,11 @@ No hands, no extra props, no text, no logos. Portrait 3:4 photo, natural colours
 function TemplatesView() {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
+    let ok = true;
     try { await navigator.clipboard.writeText(PLATE_PROMPT); }
-    catch (e) { const t = document.getElementById('plate-prompt'); t.select(); document.execCommand('copy'); }
-    setCopied(true); setTimeout(() => setCopied(false), 2500);
+    catch (e) { const t = document.getElementById('plate-prompt'); t.select(); try { ok = document.execCommand('copy'); } catch (e2) { ok = false; } }
+    // if the browser wouldn't copy, the text is left selected to copy by hand
+    setCopied(ok ? 'yes' : 'no'); setTimeout(() => setCopied(false), ok ? 2500 : 6000);
   };
   return html`<div class="templates">
     <header class="view-head"><div><h1 tabindex="-1">Photo templates</h1><p class="muted">Put a new dish on the same beach table as the rest of the menu, so its photo matches.</p></div></header>
@@ -429,7 +431,7 @@ function TemplatesView() {
       <li><strong>Download a table</strong> below. Day for the normal menu, night for the after-dark one.</li>
       <li><strong>Take a photo of the dish</strong> with your phone, from above or at a slight angle, in good light.</li>
       <li><strong>Open <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a></strong> (ChatGPT works too). Attach the table first, then the dish photo, and paste the instructions below.</li>
-      <li><strong>Save the picture</strong> it makes, then add it as the dish’s photo in <a href="#menu">Menu</a>. Not quite right? Ask it to try again.</li>
+      <li><strong>Save the picture</strong> it makes, then open the dish in <a href="#menu">Menu</a>: a day table goes in <strong>Day photo</strong>, the night table in <strong>Night photo</strong>. Not quite right? Ask it to try again.</li>
     </ol>
     <div class="gallery tables">${TABLES.map((t) => html`<figure key=${t.file}>
       <img src=${'/assets/' + t.file} alt=${t.name} loading="lazy"/>
@@ -438,7 +440,8 @@ function TemplatesView() {
     </figure>`)}</div>
     <section class="prompt-box">
       <div class="prompt-head"><h2>Instructions for the AI</h2>
-        <button class="btn primary" onClick=${copy}><${Icon} name=${copied ? 'check' : 'copy'} size=${18}/>${copied ? 'Copied' : 'Copy'}</button></div>
+        <button class="btn primary" onClick=${copy}><${Icon} name=${copied === 'yes' ? 'check' : 'copy'} size=${18}/>${copied === 'yes' ? 'Copied' : 'Copy'}</button></div>
+      ${copied === 'no' && html`<p class="hint" role="status">Couldn’t copy automatically. The text is selected: copy it by hand.</p>`}
       <textarea id="plate-prompt" readonly rows="12" aria-label="Instructions for the AI">${PLATE_PROMPT}</textarea>
     </section>
   </div>`;
@@ -607,14 +610,14 @@ function App() {
 
   const go = (id) => { location.hash = id; };
   const current = VIEWS.find((v) => v.id === view) || VIEWS[0];
-  const body = !files
+  const body = current.id === 'templates' ? html`<${TemplatesView}/>`
+    : !files
     ? (loadErr
         ? html`<div class="empty"><p>Couldn’t load the content: ${loadErr}</p><button class="btn primary" onClick=${load}>Try again</button></div>`
         : html`<div class="empty">Loading your content…</div>`)
     : current.id === 'menu' ? html`<${MenuView} data=${files.menu.data} edit=${edit('menu')} photo=${photo} onPhoto=${onPhoto} ask=${ask}/>`
     : current.id === 'builder' ? html`<${BuilderView} data=${files.builder.data} edit=${edit('builder')} ask=${ask}/>`
     : current.id === 'hours' ? html`<${HoursView} data=${files.site.data} edit=${edit('site')}/>`
-    : current.id === 'templates' ? html`<${TemplatesView}/>`
     : html`<${PhotosView} data=${files.gallery.data} edit=${edit('gallery')} photo=${photo} onPhoto=${onPhoto} ask=${ask}/>`;
 
   return html`<div class=${'shell' + (dirty ? ' has-bar' : '')}>

@@ -56,7 +56,8 @@ collections:
                   - { name: name, label: Name, widget: string }
                   - { name: price, label: Price ($), widget: number, value_type: float, min: 0, step: 0.25, required: false, hint: "Leave empty to show 'Order now' (priced in store)" }
                   - { name: description, label: Description, widget: string, required: false }
-                  - { name: photo, label: Photo, widget: image, required: false, choose_url: false, hint: "Any phone photo is fine — the site resizes it automatically" }
+                  - { name: photo, label: Day photo, widget: image, required: false, choose_url: false, hint: "Any phone photo is fine — the site resizes it automatically" }
+                  - { name: photoNight, label: Night photo, widget: image, required: false, choose_url: false, hint: "Optional. Shown after dark instead of the day photo" }
                   - { name: available, label: Available today, widget: boolean, default: true }
                   - name: tags
                     label: Tags

@@ -10,6 +10,8 @@ export type Item = {
   desc: string;
   tags: string[];
   photo: string;
+  // the owner's own photo for after dark (Night photo in /admin), used then in place of photo
+  photoNight: string;
   // the photo already set on its beach table (scripts/replate.mjs), by day and after dark, when there is one
   plated: Plated;
   soldOut: boolean;
@@ -91,8 +93,8 @@ function buildMenu(raw: RawMenu, plated: RawPlated = {}): Category[] {
         desc: (typeof row.description === 'string' && row.description) || c.description || '',
         tags: own.filter((t) => t !== 'Signature'),
         photo: safePhoto(row.photo),
-        // a night photo the owner uploaded (photoNight) is shown after dark ahead of any re-plated one
-        plated: (({ day, night } = {}) => ({ day: safePlated(day), night: safePhoto(row.photoNight) || safePlated(night) }))(plated[safePhoto(row.photo) || 'dish:' + slug(c.name!) + '/' + slug(name)]),
+        photoNight: safePhoto(row.photoNight),
+        plated: (({ day, night } = {}) => ({ day: safePlated(day), night: safePlated(night) }))(plated[safePhoto(row.photo) || 'dish:' + slug(c.name!) + '/' + slug(name)]),
         soldOut: row.available === false,
         signature: own.includes('Signature'),
         kind
