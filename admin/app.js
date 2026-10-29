@@ -31,10 +31,14 @@ const toPrice = (v) => (v === '' || isNaN(parseFloat(v)) ? null : Math.round(par
 const move = (arr, i, dir) => { const j = i + dir; if (j < 0 || j >= arr.length) return; const t = arr[i]; arr[i] = arr[j]; arr[j] = t; };
 // the pictures made for the menu (assets/plated.json), filed under the owner's photo or, for a dish he hasn't
 // photographed, under its name: found the same way src/lib/content.ts finds them, so each slot shows what the menu shows
-let PLATED = {};
-const platedReady = fetch('/assets/plated.json').then((r) => (r.ok ? r.json() : {})).then((j) => { PLATED = j && typeof j === 'object' ? j : {}; }).catch(() => {});
+// Until the list has loaded (or if it can't be), a day photo can't be removed: it may be what links the dish to them.
+let PLATED = {}, platedOk = false;
+const getPlated = () => fetch('/assets/plated.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((j) => { PLATED = j && typeof j === 'object' ? j : {}; platedOk = true; });
+const platedReady = getPlated().catch(() => new Promise((ok) => setTimeout(ok, 3000)).then(getPlated)).catch(() => {});
 const slug = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const madeFor = (catName, item) => PLATED[item.photo ? '/' + String(item.photo).replace(/^\//, '') : 'dish:' + slug(catName || '') + '/' + slug(item.name || '')] || {};
+const safePhoto = (p) => (typeof p === 'string' && /^\/?(uploads|assets)\/[\w.\-]+$/.test(p) ? '/' + p.replace(/^\//, '') : '');
+const madeFor = (catName, item) => PLATED[safePhoto(item.photo) || 'dish:' + slug(catName || '') + '/' + slug(item.name || '')] || {};
 const findItem = (d, k) => { for (const c of d.categories) { const i = c.items.findIndex((x) => x._k === k); if (i >= 0) return { cat: c, i, item: c.items[i] }; } return null; };
 
 function Icon({ name, size = 20 }) {
@@ -143,7 +147,7 @@ function Login({ onIn, expired }) {
 
 // ---------- menu ----------
 function ItemCard({ item, cat, made = {}, photo, onOpen, onToggle }) {
-  const off = item.available === false, pic = made.day || item.photo;
+  const off = item.available === false, pic = made.day || item.photo || item.photoNight || made.night;
   return html`<div class=${'item' + (off ? ' off' : '')}>
     <button type="button" class="item-open" onClick=${onOpen} aria-label=${'Edit ' + (item.name || 'item') + ', ' + money(item.price) + (off ? ', sold out' : '')}>
       <span class="thumb">${pic ? html`<img src=${photo(pic)} alt="" loading="lazy"/>` : html`<span aria-hidden="true">${(item.name || '?').charAt(0)}</span>`}</span>
@@ -176,7 +180,7 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
           : item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
         <div class="row">
           <${PhotoButton} label=${made.day ? 'Replace' : item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
-          ${item.photo && !made.day && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+          ${item.photo && !made.day && platedOk && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
         </div>
       </div>
       <div class="photo-edit">
@@ -190,7 +194,7 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
         </div>
       </div>
     </div>
-    <p class="hint photo-hint">${made.day || made.night ? 'The pictures marked “On the menu now” were made for the menu and are already showing. Replace one only to change it. ' : ''}After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
+    <p class="hint photo-hint">${made.day || made.night ? 'The pictures marked “On the menu now” were made for the menu and are already showing. Replace one only to change it. ' : ''}${made.night && !item.photoNight ? 'Replacing the day photo also takes away the night picture made from it, so add a new night photo too. ' : ''}After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
     <div class="avail">
       <div><strong>Available today</strong><span class="muted">${item.available === false ? 'Shows “Sold out” and can’t be ordered' : 'Customers can order it'}</span></div>
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>

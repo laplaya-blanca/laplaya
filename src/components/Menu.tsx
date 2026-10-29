@@ -249,11 +249,11 @@ function Photo({ item, photo, w, className }: { item: Item; photo: string; w: nu
 }
 
 // a dish not photographed yet: its stand-in on its table (scripts/plate-unshot.mjs), the day one after dark if there is no
-// night one; without either, or if it won't load, the drawn card
+// night one (never a night one by day); without one, or if it won't load, the drawn card
 function StandIn({ item, w, className }: { item: Item; w: number; className: string }) {
   const night = useNight();
   const [broken, setBroken] = useState(false);
-  const src = (night && item.plated.night) || item.plated.day || item.plated.night;
+  const src = night ? item.plated.night || item.plated.day : item.plated.day;
   if (!src || broken) return <Drawn item={item} w={w} className={className} />;
   return (
     <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>
