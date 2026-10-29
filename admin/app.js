@@ -1,5 +1,5 @@
 /* La Playa Blanca owner dashboard — UI (Preact + htm, no build step).
-   Screens: Menu · Build your own · Hours & contact · Event photos. Edits stay local until "Save changes".
+   Screens: Menu · Build your own · Hours & contact · Event photos · Photo templates. Edits stay local until "Save changes".
    Libraries are vendored in admin/vendor (htm@3.1.1 preact standalone, gotrue-js@1.0.1) so /admin loads no third-party script. */
 import { html, render, useState, useEffect, useRef } from './vendor/htm-preact-3.1.1.js';
 import { FILES, LOCAL, ConflictError, currentUser, login, requestReset, loadAll, loadOne, saveAll, serialize, preparePhoto } from './store.js';
@@ -12,7 +12,8 @@ const VIEWS = [
   { id: 'menu', label: 'Menu', icon: 'menu' },
   { id: 'builder', label: 'Build your own', short: 'Build', icon: 'layers' },
   { id: 'hours', label: 'Hours & contact', short: 'Hours', icon: 'clock' },
-  { id: 'photos', label: 'Event photos', short: 'Photos', icon: 'image' }
+  { id: 'photos', label: 'Event photos', short: 'Photos', icon: 'image' },
+  { id: 'templates', label: 'Photo templates', short: 'Templates', icon: 'table' }
 ];
 
 // ---------- small helpers ----------
@@ -48,7 +49,10 @@ function Icon({ name, size = 20 }) {
     gear: html`<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>`,
     out: html`<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/>`,
     ext: html`<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>`,
-    check: html`<path d="m5 12 5 5 9-10"/>`
+    check: html`<path d="m5 12 5 5 9-10"/>`,
+    table: html`<path d="M3 9h18M5 9l-1 11M19 9l1 11M8 9v6h8V9M7 5h10l2 4H5z"/>`,
+    download: html`<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>`,
+    copy: html`<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>`
   };
   return html`<svg width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name]}</svg>`;
 }
@@ -159,13 +163,25 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
   const { cat, i, item } = found;
   const set = (fn) => edit((d) => fn(findItem(d, itemKey).item));
   return html`<${Panel} title="Edit item" onClose=${onClose}>
-    <div class="photo-edit">
-      ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
-      <div class="row">
-        <${PhotoButton} label=${item.photo ? 'Change photo' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
-        ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+    <div class="photo-pair">
+      <div class="photo-edit">
+        <span class="label">Day photo</span>
+        ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
+        <div class="row">
+          <${PhotoButton} label=${item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
+          ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+        </div>
+      </div>
+      <div class="photo-edit">
+        <span class="label">Night photo</span>
+        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
+        <div class="row">
+          <${PhotoButton} label=${item.photoNight ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
+          ${item.photoNight && html`<button class="btn ghost" onClick=${() => set((it) => { delete it.photoNight; })}>Remove</button>`}
+        </div>
       </div>
     </div>
+    <p class="hint photo-hint">After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
     <div class="avail">
       <div><strong>Available today</strong><span class="muted">${item.available === false ? 'Shows “Sold out” and can’t be ordered' : 'Customers can order it'}</span></div>
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>
@@ -382,6 +398,55 @@ function PhotosView({ data, edit, photo, onPhoto, ask }) {
   </div>`;
 }
 
+// ---------- photo templates ----------
+// The empty tables every dish on the menu is photographed on (assets/plate-table*.jpg, the same pictures
+// scripts/plate-unshot.mjs plates on), to download and give to an image AI with a photo of a new dish.
+const TABLES = [
+  { file: 'plate-table.jpg', name: 'Day table 1' },
+  { file: 'plate-table-b.jpg', name: 'Day table 2' },
+  { file: 'plate-table-c.jpg', name: 'Day table 3' },
+  { file: 'plate-table-d.jpg', name: 'Day table 4' },
+  { file: 'plate-table-night.jpg', name: 'Night table', note: 'For the after-dark menu' }
+];
+const PLATE_PROMPT = `The first image is an empty beach-bar table by a lake. The second image is a photo of one of our dishes.
+
+Make one photorealistic food photograph of the dish from the second image, served and set on the table from the first image. Keep the dish exactly as it is: the same food, toppings, sauces, plate or cup. Make it look fresh and appetising.
+
+Keep the first image as the scene, exactly as it is: the same table, background, water and sky, and the same light. Seen from a seated eye level, looking down at the table at about 25 degrees, matching the table's perspective so the dish sits flat on the tabletop. Centre the dish on the table, filling about half of the picture's width, slightly below the middle. Light the dish with the same light as the table photo, from the same direction, with a soft, natural shadow on the wood.
+
+No hands, no extra props, no text, no logos. Portrait 3:4 photo, natural colours, shallow depth of field.`;
+
+function TemplatesView() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    let ok = true;
+    try { await navigator.clipboard.writeText(PLATE_PROMPT); }
+    catch (e) { const t = document.getElementById('plate-prompt'); t.select(); try { ok = document.execCommand('copy'); } catch (e2) { ok = false; } }
+    // if the browser wouldn't copy, the text is left selected to copy by hand
+    setCopied(ok ? 'yes' : 'no'); setTimeout(() => setCopied(false), ok ? 2500 : 6000);
+  };
+  return html`<div class="templates">
+    <header class="view-head"><div><h1 tabindex="-1">Photo templates</h1><p class="muted">Put a new dish on the same beach table as the rest of the menu, so its photo matches.</p></div></header>
+    <ol class="steps">
+      <li><strong>Download a table</strong> below. Day for the normal menu, night for the after-dark one.</li>
+      <li><strong>Take a photo of the dish</strong> with your phone, from above or at a slight angle, in good light.</li>
+      <li><strong>Open <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a></strong> (ChatGPT works too). Attach the table first, then the dish photo, and paste the instructions below.</li>
+      <li><strong>Save the picture</strong> it makes, then open the dish in <a href="#menu">Menu</a>: a day table goes in <strong>Day photo</strong>, the night table in <strong>Night photo</strong>. Not quite right? Ask it to try again.</li>
+    </ol>
+    <div class="gallery tables">${TABLES.map((t) => html`<figure key=${t.file}>
+      <img src=${'/assets/' + t.file} alt=${t.name} loading="lazy"/>
+      <figcaption><span><strong>${t.name}</strong>${t.note && html`<span class="muted">${t.note}</span>`}</span>
+        <a class="btn" href=${'/assets/' + t.file} download=${'la-playa-' + t.file}><${Icon} name="download" size=${18}/>Download</a></figcaption>
+    </figure>`)}</div>
+    <section class="prompt-box">
+      <div class="prompt-head"><h2>Instructions for the AI</h2>
+        <button class="btn primary" onClick=${copy}><${Icon} name=${copied === 'yes' ? 'check' : 'copy'} size=${18}/>${copied === 'yes' ? 'Copied' : 'Copy'}</button></div>
+      ${copied === 'no' && html`<p class="hint" role="status">Couldn’t copy automatically. The text is selected: copy it by hand.</p>`}
+      <textarea id="plate-prompt" readonly rows="12" aria-label="Instructions for the AI">${PLATE_PROMPT}</textarea>
+    </section>
+  </div>`;
+}
+
 // ---------- shared chrome ----------
 function Panel({ title, onClose, children }) {
   const ref = useRef();
@@ -545,7 +610,8 @@ function App() {
 
   const go = (id) => { location.hash = id; };
   const current = VIEWS.find((v) => v.id === view) || VIEWS[0];
-  const body = !files
+  const body = current.id === 'templates' ? html`<${TemplatesView}/>`
+    : !files
     ? (loadErr
         ? html`<div class="empty"><p>Couldn’t load the content: ${loadErr}</p><button class="btn primary" onClick=${load}>Try again</button></div>`
         : html`<div class="empty">Loading your content…</div>`)

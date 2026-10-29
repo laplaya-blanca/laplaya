@@ -201,23 +201,24 @@ const tableFor = (id: string, night: boolean) => (night ? NIGHT : TABLES[Math.fl
 const PH = 'max(100cqh, 133.333cqw)';
 const onTable = (f: number) => `calc((100cqh - ${PH}) * .75 + ${f} * ${PH})`;
 
-function Photo({ item, w, className }: { item: Item; w: number; className: string }) {
+// photo: the owner's picture for this time of day (his night photo after dark, when he has given one)
+function Photo({ item, photo, w, className }: { item: Item; photo: string; w: number; className: string }) {
   const night = useNight();
-  const [shot, setShot] = useState<Shot | undefined>(() => shots.get(item.photo));
+  const [shot, setShot] = useState<Shot | undefined>(() => shots.get(photo));
   const read = (e: SyntheticEvent<HTMLImageElement>) => {
-    if (!shots.has(item.photo)) shots.set(item.photo, readShot(e.currentTarget));
-    setShot(shots.get(item.photo));
+    if (!shots.has(photo)) shots.set(photo, readShot(e.currentTarget));
+    setShot(shots.get(photo));
   };
-  // the dish already re-plated on its table, when there is one for this time of day; if it won't load, the
-  // original is set on the table as below
+  // the dish already re-plated on its table, when there is one for this time of day (re-plated from the day photo,
+  // so not over his own night one); if it won't load, the original is set on the table as below
   const [broken, setBroken] = useState(false);
-  const ready = !broken && (night ? item.plated.night : item.plated.day);
+  const ready = !broken && photo === item.photo && (night ? item.plated.night : item.plated.day);
   if (ready) return (
     <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>
       <img src={img(ready, w)} alt={item.name} loading="lazy" decoding="async" onError={() => setBroken(true)} className="size-full object-cover" style={{ objectPosition: 'center 75%' }} />
     </span>
   );
-  const src = img(item.photo, w);
+  const src = img(photo, w);
   if (!shot?.white) return (
     <span className={className + ' relative block overflow-hidden bg-[#F4ECDF]'}>
       <img src={src} alt={item.name} loading="lazy" decoding="async" onLoad={read} className={'size-full object-cover' + (shot ? '' : ' opacity-0')} />
@@ -261,8 +262,10 @@ function StandIn({ item, w, className }: { item: Item; w: number; className: str
   );
 }
 
+// after dark his night photo, if he gave one (even with no day photo); by day only the day photo
 function Art({ item, w, className }: { item: Item; w: number; className: string }) {
-  if (item.photo) return <Photo key={item.photo} item={item} w={w} className={className} />;
+  const photo = (useNight() && item.photoNight) || item.photo;
+  if (photo) return <Photo key={photo} item={item} photo={photo} w={w} className={className} />;
   return <StandIn item={item} w={w} className={className} />;
 }
 
