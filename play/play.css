@@ -1,0 +1,118 @@
+/* The table games (play/). One page per game, plus the list at play/index.html. Made for a phone held at the table:
+   the whole game fits the screen without scrolling, the board as big as the room left for it (kit.js sizes it).
+   Opened from the menu they sit in a sheet (?in=site) with no background of their own, so the sheet's paper shows
+   through, and after dark (?night) the text around the board takes the menu's night ink. The boards keep one sunny look. */
+:root { color-scheme: light; --ink: #123F4D; --soft: #456570; --faint: #6d8890; --paper: #FBF7EE; --paper-2: #F3ECDC; --line: rgba(18,63,77,.14);
+  --teal: #1F7A8C; --deep: #14586B; --cream: #F5F1E3; --gold: #E8A44C; --coral: #E7607A; --board-ink: #17323A;
+  --display: Fraunces, Georgia, serif; --body: Manrope, system-ui, sans-serif; }
+:root.night { color-scheme: dark; --ink: #F3ECDD; --soft: #B9C6C9; --faint: #93a7ad; --paper: #132B3B; --paper-2: #0F2331; --line: rgba(243,236,221,.14); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); overscroll-behavior: none; }
+:root.embed, :root.embed body { background: transparent; }
+body { display: flex; flex-direction: column; align-items: center; height: 100vh; height: 100svh; overflow: hidden; /* vh where svh is unknown */
+  padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+/* in the sheet the page runs to the sheet's bottom edge: room enough under the board for its shadow to fade */
+:root.embed body { padding-top: 2px; padding-bottom: 20px; }
+a, button { color: inherit; font: inherit; touch-action: manipulation; }
+/* a game's page is a game, not a page to read: a long press selects no words and brings up no copy menu (on the
+   board or off it), and its links can't be dragged off */
+body.game { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+a { -webkit-user-drag: none; }
+/* Crab Pop is played with several fingers at once, so two fingers on its board are never a pinch: its page doesn't
+   zoom in at all (zoomed in on the start screen, the board would fill the view with no way back out). A phone that
+   arrives already zoomed in (the menu zoomed behind the sheet) can still pinch back out, off the board. */
+body.nozoom:not(.zoomed) { touch-action: pan-x pan-y; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* top of a game: back to the list, the game's name, the sound switch */
+.top { flex: none; width: 100%; max-width: 440px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 10px; }
+.top h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.back { justify-self: start; display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: var(--paper-2); font-weight: 800; font-size: 14px; text-decoration: none; }
+.back svg { width: 18px; height: 18px; }
+/* a narrow phone: the back button keeps only its arrow, so the game's name fits */
+@media (max-width: 359px) { .back { width: 40px; padding: 0; justify-content: center; } .back span { display: none; } .top h1 { font-size: 18px; } }
+.snd { justify-self: end; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 999px; padding: 0; background: var(--paper-2); font-size: 17px; cursor: pointer; }
+.back:focus-visible, .snd:focus-visible, .go:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.foot { flex: none; margin: 10px 0 0; max-width: 440px; text-align: center; font-size: 13px; line-height: 1.4; color: var(--faint); text-wrap: balance; }
+@media (max-height: 560px) { .foot { display: none; } }
+
+/* the board: kit.js sizes it to the room .wrap leaves, keeping its shape */
+.wrap { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.stage { position: relative; flex: none; border-radius: 22px; overflow: hidden; background: #efe3c6; box-shadow: 0 14px 34px rgba(6,30,40,.2);
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; container-type: size; }
+:root.embed .stage { box-shadow: 0 8px 20px rgba(6,30,40,.18); }
+/* the board takes every touch itself: nothing scrolls and a double tap doesn't zoom. A board played with one finger
+   still lets two pinch the page back out (a phone zoomed in on the rules would otherwise be stuck there, the board
+   filling the screen) */
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: pointer; outline: none; }
+.pinch canvas { touch-action: pinch-zoom; }
+/* the board's own focus ring, drawn inside it (outside, the board's rounded edge would cut it off) */
+.stage:has(canvas:focus-visible)::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 0 4.5px rgba(255,255,255,.85); }
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 20px; text-align: center; color: var(--board-ink); background: rgba(245,241,227,.93); overflow-y: auto; overscroll-behavior: contain; }
+/* what's on the screen sits in one block: centred when it fits, and when it doesn't, scrolled from its top instead of losing it */
+.overlay > .in { margin: auto 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.overlay[hidden] { display: none; }
+.overlay h2 { font-family: var(--display); margin: 0; font-size: 27px; line-height: 1.1; color: var(--deep); text-wrap: balance; }
+.overlay p { margin: 0; color: #4b6870; max-width: 310px; line-height: 1.45; font-size: 15px; text-wrap: pretty; }
+.overlay .q { font-weight: 800; color: var(--deep); margin-top: 4px; }
+.overlay .big { font-family: var(--display); font-weight: 700; font-size: 64px; line-height: 1; color: var(--deep); font-variant-numeric: tabular-nums; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 330px; }
+.go { border: 0; border-radius: 999px; min-height: 48px; padding: 0 18px; background: var(--coral); color: #fff; font-weight: 800; font-size: 16px; box-shadow: 0 8px 20px rgba(231,96,122,.3); cursor: pointer; transition: transform .15s; }
+.go:active { transform: scale(.97); }
+.go.alt { background: #fff; color: var(--deep); box-shadow: inset 0 0 0 2px rgba(20,88,107,.2); }
+.avatar { font-size: 54px; line-height: 1; }
+.ranks { list-style: none; margin: 2px 0 4px; padding: 0; width: 100%; max-width: 270px; display: grid; gap: 6px; }
+.ranks li { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 14px; padding: 7px 14px; font-weight: 800; color: var(--deep); font-variant-numeric: tabular-nums; }
+.ranks li span:first-child { font-size: 24px; }
+.ranks li span:nth-child(2) { flex: 1; text-align: left; }
+.ranks li.win { box-shadow: inset 0 0 0 3px var(--gold); background: #fdf3df; }
+/* the screens are sized to the board they cover, not to the phone: a small board (a narrow phone, a phone on its
+   side, the board in the sheet) gets tighter screens, and the smallest leave out the pictures */
+@container (max-height: 450px) {
+  .overlay { padding: 14px 12px; } .overlay > .in { gap: 7px; }
+  .overlay h2 { font-size: 22px; }
+  .overlay p { font-size: 13.5px; line-height: 1.4; }
+  .overlay .big { font-size: 50px; }
+  .avatar { font-size: 40px; }
+  .row { gap: 6px; }
+  .go { min-height: 42px; padding: 0 15px; font-size: 15px; box-shadow: 0 6px 14px rgba(231,96,122,.28); }
+  .ranks { gap: 4px; margin: 0 0 2px; }
+  .ranks li { padding: 5px 12px; gap: 8px; white-space: nowrap; }
+  .ranks li span:first-child { font-size: 20px; }
+}
+/* a board just over the next step (a big phone on its side): a full ranking needs the room its picture takes */
+@container (max-height: 380px) { .in:has(.ranks) > .avatar { display: none; } }
+@container (max-height: 340px) {
+  .overlay { padding: 10px; } .overlay > .in { gap: 6px; }
+  .overlay .q { margin-top: 0; }
+  .overlay h2 { font-size: 20px; }
+  .overlay p { font-size: 12.5px; line-height: 1.36; }
+  .overlay .big { font-size: 40px; }
+  .avatar { font-size: 30px; }
+  .go { min-height: 38px; padding: 0 12px; font-size: 14px; }
+  .ranks li { padding: 3px 10px; font-size: 14px; }
+  .ranks li span:first-child { font-size: 17px; }
+}
+/* the very smallest board (a small, old phone on its side): the rules make way for the choices */
+@container (max-height: 280px) {
+  .overlay { padding: 8px; } .overlay > .in { gap: 5px; }
+  .overlay .rules, .avatar { display: none; }
+  .go { min-height: 36px; }
+  .overlay h2 { font-size: 19px; }
+  .ranks { gap: 3px; }
+  .ranks li { padding: 2px 10px; line-height: 1.25; }
+  .ranks li span:first-child { font-size: 15px; }
+}
+/* a phone on its side: the game's name, back and sound move into a column beside the board, so the board keeps
+   the whole height */
+@media (orientation: landscape) and (max-height: 500px) {
+  body.game { flex-direction: row; align-items: stretch; gap: 16px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  :root.embed body.game { padding-top: 2px; padding-bottom: 16px; }
+  body.game .top { width: 148px; max-width: none; margin: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
+  body.game .top h1 { order: -1; text-align: left; white-space: normal; font-size: 20px; }
+  body.game .back { width: auto; padding: 0 14px 0 8px; } body.game .back span { display: inline; }
+  body.game .wrap { height: 100%; }
+  body.game .foot { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .go { transition: none; } }

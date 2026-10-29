@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7EE">
+<title>While you wait · La Playa Blanca</title>
+<meta name="description" content="Games for the table while your order is on its way: Crab Pop, Four in a Row and Snakes & Ladders, on one phone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="/assets/logo.jpg">
+<link rel="stylesheet" href="play.css">
+<style>
+  /* the list of games: one card each, a little picture of the board, what it is, who it's for */
+  body { overflow-y: auto; height: auto; min-height: 100vh; min-height: 100svh; }
+  .intro { width: 100%; max-width: 440px; text-align: center; margin: 6px 0 16px; }
+  .intro .eyebrow { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--soft); }
+  .intro h1 { margin: 6px 0 4px; font-family: var(--display); font-size: clamp(30px, 8vw, 38px); line-height: 1.02; }
+  .intro p { margin: 0; color: var(--soft); font-size: 15px; text-wrap: balance; }
+  :root.embed .intro { margin: 6px 0 12px; text-align: left; }
+  :root.embed .intro .eyebrow, :root.embed .intro h1 { display: none; }
+  .games { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 440px; display: grid; gap: 12px; }
+  .card { display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 10px; border-radius: 22px; text-decoration: none; color: var(--ink);
+    background: #fff; box-shadow: 0 1px 0 var(--line), 0 10px 26px rgba(18,63,77,.08); transition: transform .15s; }
+  :root.night .card { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px var(--line); }
+  .card:active { transform: scale(.98); }
+  /* a long press on a game brings up no link menu, preview or text selection (iOS then opens it, as a tap would) */
+  .card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .art { flex: none; width: 88px; height: 88px; border-radius: 16px; overflow: hidden; display: block; }
+  .txt { flex: 1; min-width: 0; }
+  .txt h2 { margin: 0; font-family: var(--display); font-size: 21px; line-height: 1.1; font-weight: 700; }
+  .txt p { margin: 3px 0 0; font-size: 14px; line-height: 1.35; color: var(--soft); text-wrap: pretty; }
+  .txt .meta { display: inline-block; white-space: nowrap; margin-top: 7px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+  :root.night .txt .meta { color: #E2C27A; }
+  .chev { flex: none; width: 20px; height: 20px; color: var(--faint); }
+  .home-link { margin-top: 22px; font-size: 14px; font-weight: 800; color: var(--soft); text-decoration: none; }
+  :root.embed .home-link { display: none; }
+  /* narrower phones (most Androids are 360 wide): a smaller picture, so each name stays on one line */
+  @media (max-width: 374px) { .card { gap: 11px; padding: 8px 10px 8px 8px; } .art { width: 66px; height: 66px; border-radius: 13px; } .txt h2 { font-size: 18px; } .txt p { font-size: 13px; } .chev { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+<script src="kit.js"></script>
+</head>
+<body>
+<header class="intro">
+  <p class="eyebrow">La Playa Blanca</p>
+  <h1>While you wait</h1>
+  <p>Games for the table, on one phone. Pass it around.</p>
+</header>
+<ul class="games">
+  <li><a class="card" href="crabs.html" data-keep>
+    <svg class="art" viewBox="0 0 88 88" aria-hidden="true">
+      <defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5d63"/><stop offset="1" stop-color="#2f7f80"/></linearGradient>
+        <radialGradient id="pit" cx=".5" cy=".6" r=".6"><stop offset="0" stop-color="#2a1c10"/><stop offset="1" stop-color="#6b4c2e"/></radialGradient></defs>
+      <rect width="88" height="88" fill="#ece1cc"/>
+      <path d="M0 0h88v20c-8 3-14-2-22 1s-14 4-22 1-14-3-22 0S6 24 0 21z" fill="url(#sea)"/>
+      <path d="M0 21c6 3 14 1 22 0s14 1 22-1 14-3 22-1 14 2 22-1" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+      <ellipse cx="44" cy="64" rx="25" ry="9" fill="url(#pit)"/>
+      <text x="44" y="64" font-size="38" text-anchor="middle">🦀</text>
+      <path d="M17 64a27 10 0 0 0 54 0a25 8.5 0 0 1-54 0z" fill="#d9c49f"/>
+      <ellipse cx="17" cy="38" rx="9" ry="3.4" fill="#5b4128" opacity=".75"/><ellipse cx="72" cy="40" rx="9" ry="3.4" fill="#5b4128" opacity=".75"/>
+    </svg>
+    <span class="txt"><h2>Crab Pop</h2><p>Tap the crabs before they dive back into the sand.</p><span class="meta">1 player · beat your best</span></span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </a></li>
+  <li><a class="card" href="four.html" data-keep>
+    <svg class="art" viewBox="0 0 88 88" aria-hidden="true">
+      <defs><linearGradient id="frame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d93a8"/><stop offset="1" stop-color="#15606f"/></linearGradient>
+        <radialGradient id="g" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FFE2A6"/><stop offset=".55" stop-color="#E8A44C"/><stop offset="1" stop-color="#B9741F"/></radialGradient>
+        <radialGradient id="c" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FFB0BD"/><stop offset=".55" stop-color="#E7607A"/><stop offset="1" stop-color="#B23A54"/></radialGradient></defs>
+      <rect width="88" height="88" fill="#ecdcb8"/>
+      <circle cx="56" cy="13" r="7.5" fill="url(#c)"/>
+      <rect x="9" y="24" width="70" height="56" rx="8" fill="url(#frame)"/>
+      <g fill="#f3e7cc">
+        <circle cx="22" cy="37" r="6.5"/><circle cx="37.5" cy="37" r="6.5"/><circle cx="50.5" cy="37" r="6.5"/><circle cx="66" cy="37" r="6.5"/>
+        <circle cx="22" cy="52" r="6.5"/><circle cx="66" cy="52" r="6.5"/><circle cx="22" cy="67" r="6.5"/>
+      </g>
+      <circle cx="37.5" cy="52" r="6.5" fill="url(#g)"/><circle cx="50.5" cy="52" r="6.5" fill="url(#c)"/>
+      <circle cx="37.5" cy="67" r="6.5" fill="url(#c)"/><circle cx="50.5" cy="67" r="6.5" fill="url(#g)"/><circle cx="66" cy="67" r="6.5" fill="url(#g)"/>
+    </svg>
+    <span class="txt"><h2>Four in a Row</h2><p>Drop your discs and line up four before your friend does.</p><span class="meta">2 players · or the crab</span></span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </a></li>
+  <li><a class="card" href="snakes.html" data-keep>
+    <svg class="art" viewBox="0 0 88 88" aria-hidden="true">
+      <rect width="88" height="88" fill="#e9dcbc"/>
+      <g>
+        <rect x="2" y="2" width="27" height="27" rx="5" fill="#d7eeeb"/><rect x="30.5" y="2" width="27" height="27" rx="5" fill="#f8eed6"/><rect x="59" y="2" width="27" height="27" rx="5" fill="#f6cf7d"/>
+        <rect x="2" y="30.5" width="27" height="27" rx="5" fill="#f8eed6"/><rect x="30.5" y="30.5" width="27" height="27" rx="5" fill="#d7eeeb"/><rect x="59" y="30.5" width="27" height="27" rx="5" fill="#f8eed6"/>
+        <rect x="2" y="59" width="27" height="27" rx="5" fill="#d7eeeb"/><rect x="30.5" y="59" width="27" height="27" rx="5" fill="#f8eed6"/><rect x="59" y="59" width="27" height="27" rx="5" fill="#d7eeeb"/>
+      </g>
+      <g stroke-linecap="round"><path d="M12 78 L44 16 M22 83 L54 21" stroke="#9b6a37" stroke-width="3.2"/>
+        <path d="M17 70l10 5M22 60l10 5M27 50l10 5M32 40l10 5M37 30l10 5" stroke="#c58f55" stroke-width="2.6"/></g>
+      <path d="M72 14c-14 6 8 18-6 26s-14 14-2 22 2 18-4 20" fill="none" stroke="#2a9d8f" stroke-width="6.5" stroke-linecap="round"/>
+      <path d="M72 14c-14 6 8 18-6 26s-14 14-2 22 2 18-4 20" fill="none" stroke="#a7dccf" stroke-width="6.5" stroke-linecap="round" stroke-dasharray="5 7"/>
+      <circle cx="72" cy="14" r="6" fill="#2a9d8f"/><circle cx="74" cy="12" r="1.9" fill="#fff"/><circle cx="74.4" cy="11.8" r="1" fill="#17323A"/>
+    </svg>
+    <span class="txt"><h2>Snakes &amp; Ladders</h2><p>Race up the beach: ladders up, sea snakes down.</p><span class="meta">1–4 players · or the crab</span></span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </a></li>
+</ul>
+<a class="home-link" href="/">← Back to the menu</a>
+</body>
+</html>

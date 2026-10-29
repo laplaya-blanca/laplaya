@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7EE">
+<title>Snakes &amp; Ladders · La Playa Blanca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="/assets/logo.jpg">
+<link rel="stylesheet" href="play.css">
+<script src="kit.js"></script>
+</head>
+<body class="game pinch">
+<div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Snakes &amp; Ladders</h1><button class="snd" id="snd" type="button"></button></div>
+<div class="wrap"><div class="stage" id="stage">
+  <canvas id="cv" aria-label="Snakes and ladders board. Tap to roll the die."></canvas>
+  <div class="overlay" id="ov"></div>
+</div></div>
+<p class="foot">Pass the phone around the table. Tap anywhere on the board to roll.</p>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+const cv = document.getElementById('cv'), stage = document.getElementById('stage'), ov = document.getElementById('ov');
+let ctx = cv.getContext('2d'), raf = 0, last = 0;
+soundSwitch(document.getElementById('snd'));
+
+// ——— the board: 6 across, 7 up, winding from bottom left; a strip below it holds the die ———
+const COLS = 6, ROWS = 7, LAST = COLS * ROWS;
+const LADDERS = { 3: 12, 8: 20, 16: 26, 24: 34, 28: 39 };
+const SNAKES = { 14: 5, 22: 11, 31: 18, 36: 25, 41: 30 };
+const SHELLS = [6, 19, 33];
+const SNAKE_COLORS = [['#2a9d8f', '#a7dccf'], ['#e76f51', '#f6c1ad'], ['#7b6cd9', '#c9c1f5'], ['#d99a2b', '#f5d898'], ['#3c8dbc', '#acd5ec']];
+const HUMANS = [{ e: '🐚', c: '#1F7A8C' }, { e: '🐠', c: '#E7607A' }, { e: '🌴', c: '#5f8f2f' }, { e: '⭐', c: '#d08a1e' }];
+const CRAB = { e: '🦀', c: '#c8452f' };
+const SPREAD = { 2: [[-1, 0], [1, 0]], 3: [[-1, -0.8], [1, -0.8], [0, 0.9]], 4: [[-1, -1], [1, -1], [-1, 1], [1, 1]] };
+let W = 0, H = 0, S = 1, DPR = 1, cw = 0, ch = 0, snakes = [], boardImg = null;
+const cell = (n) => { const i = n - 1, row = Math.floor(i / COLS), col = row % 2 === 0 ? i % COLS : COLS - 1 - (i % COLS); return { x: (col + 0.5) * cw, y: (ROWS - 1 - row + 0.5) * ch }; };
+
+function fit() {
+  sizeStage(stage, 3 / 4);
+  if (!V.W) return;
+  ({ W, H, S, DPR } = V);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); clearCaches();
+  cw = W / COLS; ch = H / (ROWS + 1);
+  snakes = Object.entries(SNAKES).map(([h, t], k) => ({ h: +h, t, pts: curve(+h, t, k), colors: SNAKE_COLORS[k % SNAKE_COLORS.length] }));
+  boardImg = paintBoard();
+  if (!G.running) draw();
+}
+addEventListener('resize', fit);
+fontsReady(fit);
+
+// a snake's body: an S-curve from head to tail with a gentle wiggle along it
+function curve(h, t, k) {
+  const a = cell(h), b = cell(t), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len, bend = (k % 2 ? 1 : -1) * len * 0.22;
+  const p1 = { x: a.x + dx * 0.3 + nx * bend, y: a.y + dy * 0.3 + ny * bend }, p2 = { x: a.x + dx * 0.7 - nx * bend, y: a.y + dy * 0.7 - ny * bend };
+  const pts = [];
+  for (let i = 0; i <= 48; i++) {
+    const u = i / 48, v = 1 - u, w = Math.sin(u * Math.PI * 5) * 3.5 * S * (1 - u * 0.6);
+    pts.push({ x: v * v * v * a.x + 3 * v * v * u * p1.x + 3 * v * u * u * p2.x + u * u * u * b.x + nx * w, y: v * v * v * a.y + 3 * v * v * u * p1.y + 3 * v * u * u * p2.y + u * u * u * b.y + ny * w });
+  }
+  return pts;
+}
+const along = (pts, t) => { const f = clamp(t, 0, 1) * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), k = f - i; return { x: lerp(pts[i].x, pts[i + 1].x, k), y: lerp(pts[i].y, pts[i + 1].y, k) }; };
+
+// ——— the static board, painted once per size ———
+function paintBoard() {
+  const c = document.createElement('canvas'); c.width = Math.round(W * DPR); c.height = Math.round(ROWS * ch * DPR);
+  const main = ctx; ctx = c.getContext('2d'); ctx.scale(DPR, DPR);
+  ctx.fillStyle = '#e9dcbc'; ctx.fillRect(0, 0, W, ROWS * ch);
+  for (let n = 1; n <= LAST; n++) {
+    const { x, y } = cell(n), row = Math.floor((n - 1) / COLS), x0 = x - cw / 2, y0 = y - ch / 2;
+    ctx.fillStyle = n === LAST ? '#f6cf7d' : (n + row) % 2 ? '#f8eed6' : '#d7eeeb';
+    rrect(ctx, x0 + 1.5, y0 + 1.5, cw - 3, ch - 3, 7 * S); ctx.fill();
+  }
+  for (const [s, e] of Object.entries(LADDERS)) ladder(cell(+s), cell(e));
+  for (const sn of snakes) snake(sn);
+  // the numbers over them, on a little halo of paper, so a snake's tail or a ladder's foot never hides one; clear of
+  // the ring that marks whose turn it is
+  ctx.font = `800 ${Math.max(8.5, 10 * S)}px Manrope, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
+  for (let n = 1; n <= LAST; n++) {
+    const { x, y } = cell(n), x0 = x - cw / 2, y0 = y - ch / 2;
+    const tuck = x0 < 2 && y0 < 2 ? 7 : 0; // the board's rounded corner would clip the top-left square's number
+    const nx = x0 + Math.max(5 * S, 6.5) + tuck, ny = y0 + Math.max(4 * S, 5.5) + tuck * 0.6;
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,250,236,.85)'; ctx.strokeText(n, nx, ny);
+    ctx.fillStyle = 'rgba(20,88,107,.72)'; ctx.fillText(n, nx, ny);
+  }
+  // the shells and the flag go on top of the snakes and ladders that cross their squares, so they always show
+  for (const n of [...SHELLS, LAST]) {
+    const { x, y } = cell(n);
+    if (n === LAST) { stamp(ctx, '🏁', cw * 0.42, x, y - 3 * S); word(n, 'FINISH', Math.max(7.5, 9 * S), '#7a4a05'); }
+    else { stamp(ctx, '🐚', cw * 0.36, x, y - 2 * S); word(n, 'ROLL AGAIN', Math.max(7.5, 7.5 * S), '#a35f0c'); }
+  }
+  ctx = main; return c;
+}
+// the words under a square's picture, on a little halo of paper so a snake or ladder underneath can't cross them out;
+// never too small to read, and left out where they wouldn't fit the square
+function word(n, txt, px, color) {
+  const { x, y } = cell(n);
+  ctx.font = `800 ${px}px Manrope, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  if (ctx.measureText(txt).width > cw - 6) return;
+  const by = y + ch / 2 - 5 * S;
+  ctx.lineJoin = 'round'; ctx.lineWidth = 3.2; ctx.strokeStyle = 'rgba(255,250,236,.92)'; ctx.strokeText(txt, x, by);
+  ctx.fillStyle = color; ctx.fillText(txt, x, by);
+}
+function ladder(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy * 8 * S, ny = ux * 8 * S;
+  const rails = (color, w, off) => { ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round';
+    for (const s of [1, -1]) { ctx.beginPath(); ctx.moveTo(a.x + nx * s + off, a.y + ny * s + off); ctx.lineTo(b.x + nx * s + off, b.y + ny * s + off); ctx.stroke(); } };
+  ctx.strokeStyle = 'rgba(80,50,20,.18)'; ctx.lineWidth = 3 * S;
+  for (let d = 10 * S; d < len - 6 * S; d += 13 * S) { ctx.beginPath(); ctx.moveTo(a.x + ux * d + nx + 2 * S, a.y + uy * d + ny + 2 * S); ctx.lineTo(a.x + ux * d - nx + 2 * S, a.y + uy * d - ny + 2 * S); ctx.stroke(); }
+  rails('rgba(80,50,20,.18)', 4.5 * S, 2 * S);
+  ctx.strokeStyle = '#c58f55'; ctx.lineWidth = 3 * S;
+  for (let d = 10 * S; d < len - 6 * S; d += 13 * S) { ctx.beginPath(); ctx.moveTo(a.x + ux * d + nx, a.y + uy * d + ny); ctx.lineTo(a.x + ux * d - nx, a.y + uy * d - ny); ctx.stroke(); }
+  rails('#9b6a37', 4.5 * S, 0); rails('rgba(255,225,180,.55)', 1.4 * S, -0.8 * S);
+}
+function snake({ pts, colors }) {
+  const n = pts.length - 1;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < n; i++) { ctx.strokeStyle = 'rgba(20,40,40,.16)'; ctx.lineWidth = lerp(15, 4, i / n) * S; ctx.beginPath(); ctx.moveTo(pts[i].x + 2 * S, pts[i].y + 3 * S); ctx.lineTo(pts[i + 1].x + 2 * S, pts[i + 1].y + 3 * S); ctx.stroke(); }
+  for (let i = 0; i < n; i++) { ctx.strokeStyle = Math.floor(i / 4) % 2 ? colors[1] : colors[0]; ctx.lineWidth = lerp(15, 4, i / n) * S; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[i + 1].x, pts[i + 1].y); ctx.stroke(); }
+  const h = pts[0], f = pts[2], ang = Math.atan2(h.y - f.y, h.x - f.x);
+  ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(ang);
+  ctx.strokeStyle = '#E7607A'; ctx.lineWidth = 1.6 * S; ctx.beginPath(); ctx.moveTo(8 * S, 0); ctx.lineTo(15 * S, 0); ctx.lineTo(18 * S, -2.5 * S); ctx.moveTo(15 * S, 0); ctx.lineTo(18 * S, 2.5 * S); ctx.stroke();
+  ctx.fillStyle = colors[0]; ctx.beginPath(); ctx.ellipse(1 * S, 0, 11 * S, 9 * S, 0, 0, 7); ctx.fill();
+  for (const s of [-1, 1]) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(3 * S, s * 4.2 * S, 3 * S, 0, 7); ctx.fill(); ctx.fillStyle = '#17323A'; ctx.beginPath(); ctx.arc(4 * S, s * 4.2 * S, 1.6 * S, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+
+// ——— the game ———
+const G = { running: false, players: [], turn: 0, state: 'setup', face: 1, faceT: 0, rollT: 0, anim: null, botWait: 0, clock: 0, n: 0 };
+const who = (p) => (p.bot ? 'The crab' : G.n === 1 ? 'You' : `Player ${G.players.indexOf(p) + 1}`);
+// the words that change when it's 'You': 'Your turn', 'You win!', 'You climb'
+const turnOf = (p) => (who(p) === 'You' ? 'Your turn' : `${who(p)}’s turn`);
+const does = (p, verb) => `${who(p)} ${who(p) === 'You' ? verb : verb + 's'}`;
+
+function setup(n) {
+  G.n = n;
+  G.players = HUMANS.slice(0, n).map((h) => ({ ...h, pos: 1, bot: false, land: 0 }));
+  if (n === 1) G.players.push({ ...CRAB, pos: 1, bot: true, land: 0 });
+  start();
+}
+function start() {
+  for (const p of G.players) { p.pos = 1; p.land = 0; }
+  G.turn = 0; G.state = 'await'; G.face = 1 + ((Math.random() * 6) | 0); G.anim = null; G.botWait = 0.9; G.clock = 0;
+  clearFx();
+  ov.hidden = true; G.running = true; ready = performance.now() + 400; tell(`${turnOf(G.players[0])}.`);
+  focusKeyed(cv);
+  cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
+}
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+  update(dt); stepFx(dt); draw();
+  if (G.running) raf = requestAnimationFrame(loop);
+}
+function roll() {
+  if (G.state !== 'await') return;
+  G.state = 'rolling'; G.rollT = calm ? 0.25 : 0.6; G.faceT = 0; buzz(10);
+}
+function update(dt) {
+  G.clock += dt;
+  for (const p of G.players) p.land = Math.max(0, p.land - dt * 4);
+  const p = G.players[G.turn];
+  if (G.state === 'await' && p.bot) { G.botWait -= dt; if (G.botWait <= 0) roll(); }
+  else if (G.state === 'rolling') {
+    G.rollT -= dt; G.faceT -= dt;
+    if (G.faceT <= 0) { G.faceT = 0.07; let f; do f = 1 + ((Math.random() * 6) | 0); while (f === G.face); G.face = f; tone(240 + Math.random() * 180, 0.03, { type: 'triangle', vol: 0.03 }); }
+    if (G.rollT <= 0) move(p, 1 + ((Math.random() * 6) | 0));
+  } else if (G.state === 'moving' && G.anim) {
+    const a = G.anim;
+    if (a.wait > 0) { a.wait -= dt; return; }
+    a.t += dt / a.dur;
+    if (a.kind === 'hop') {
+      if (a.t >= 1) {
+        p.pos = a.steps[a.i]; p.land = 1; a.i++; a.t = 0;
+        tone(560 + a.i * 45, 0.05, { type: 'triangle', vol: 0.045 });
+        if (a.i >= a.steps.length) { G.anim = null; const c = cell(p.pos); burst(c.x, c.y + ch * 0.2, '#d9c38f', 7, 70 * S, { g: 200, size: 2 }); land(p); }
+      }
+    } else if (a.t >= 1) { p.pos = a.to; p.land = 1; G.anim = null; const c = cell(p.pos); burst(c.x, c.y + ch * 0.2, '#d9c38f', 9, 90 * S, { g: 200, size: 2 }); after(p); }
+  }
+}
+// past the flag, the token walks back the steps it has left
+function move(p, face) {
+  G.face = face; G.state = 'moving'; tone(880, 0.09, { vol: 0.06 });
+  const steps = []; let s = p.pos, dir = 1;
+  for (let k = 0; k < face; k++) { if (s === LAST) dir = -1; s += dir; steps.push(s); }
+  if (p.pos + face > LAST) { const c = cell(LAST); say(c.x, c.y + ch * 0.6, 'Too far, bounce back!', '#E7607A', 17); }
+  G.anim = { kind: 'hop', steps, i: 0, t: 0, dur: calm ? 0.12 : 0.2, wait: 0.35 };
+  tell(`${who(p)} rolled ${face}.`);
+}
+function land(p) {
+  const c = cell(p.pos);
+  if (LADDERS[p.pos]) {
+    const to = LADDERS[p.pos];
+    say(c.x, c.y - ch * 0.5, `Ladder! Up to ${to}`, '#14586B', 19); chord([523, 659, 784, 1047], 0.07, { type: 'triangle' }); buzz(15);
+    G.anim = { kind: 'climb', a: cell(p.pos), b: cell(to), to, t: 0, dur: calm ? 0.3 : 0.85, wait: 0.15 };
+    tell(`Ladder! ${does(p, 'climb')} to ${to}.`); return;
+  }
+  if (SNAKES[p.pos]) {
+    const sn = snakes.find((s) => s.h === p.pos);
+    say(c.x, c.y - ch * 0.5, `Snake! Down to ${sn.t}`, '#E7607A', 19); tone(760, 0.75, { type: 'triangle', to: 140, vol: 0.06, delay: 0.1 }); buzz(45); fx.shake = 0.22;
+    G.anim = { kind: 'slide', pts: sn.pts, to: sn.t, t: 0, dur: calm ? 0.35 : 1.1, wait: 0.2 };
+    tell(`Snake! ${does(p, 'slide')} down to ${sn.t}.`); return;
+  }
+  after(p);
+}
+function after(p) {
+  if (p.pos === LAST) return win(p);
+  const c = cell(p.pos);
+  const again = SHELLS.includes(p.pos) ? 'Shell! Roll again' : G.face === 6 ? 'Six! Roll again' : '';
+  if (again) { say(c.x, c.y - ch * 0.5, again, '#c27a12', 19); chord([784, 988], 0.06, { vol: 0.05 }); tell(who(p) === 'You' ? `${again}.` : `${again}, ${who(p)}.`); }
+  else { G.turn = (G.turn + 1) % G.players.length; if (!p.bot) ready = performance.now() + 400; tell(`${turnOf(G.players[G.turn])}.`); }
+  G.state = 'await'; G.botWait = 0.85;
+}
+function win(p) {
+  G.state = 'won'; tell(`${does(p, 'win')}!`);
+  chord([523, 659, 784, 1047, 1319], 0.09); buzz(80);
+  const colors = ['#E7607A', '#E8A44C', '#1F7A8C', '#86c23f', '#fff'];
+  for (let i = 0; i < 6; i++) setTimeout(() => burst(rnd(W * 0.15, W * 0.85), rnd(H * 0.1, H * 0.55), colors[i % colors.length], 22, 280 * S, { g: 380, size: 3.2 }), i * 140);
+  setTimeout(() => {
+    G.running = false; cancelAnimationFrame(raf); draw();
+    const order = [...G.players].sort((a, b) => b.pos - a.pos);
+    overlay(ov, `<div class="avatar">${p.e}</div><h2>${does(p, 'win')}!</h2>
+      <ol class="ranks">${order.map((q) => `<li class="${q === p ? 'win' : ''}"><span>${q.e}</span><span>${who(q)}</span><span>${q === p ? '🏁' : 'square ' + q.pos}</span></li>`).join('')}</ol>`,
+      [{ label: 'Play again', go: start }, { label: 'Change players', alt: true, go: menu }]);
+  }, 1700);
+}
+
+// where a token is drawn: on its square, sharing it neatly, or partway through a hop, climb or slide
+function tokenAt(p) {
+  const a = G.anim, mine = G.state === 'moving' && a && G.players[G.turn] === p && !(a.wait > 0);
+  if (mine && a.kind === 'hop') { const f = cell(p.pos), t = cell(a.steps[a.i]), k = ease(Math.min(1, a.t)); return { x: lerp(f.x, t.x, k), y: lerp(f.y, t.y, k), lift: Math.sin(Math.PI * Math.min(1, a.t)) * ch * 0.3, solo: true }; }
+  if (mine && a.kind === 'climb') { const k = ease(Math.min(1, a.t)); return { x: lerp(a.a.x, a.b.x, k) + Math.sin(k * 28) * 2 * S, y: lerp(a.a.y, a.b.y, k), lift: 4 * S, solo: true }; }
+  if (mine && a.kind === 'slide') { const q = along(a.pts, ease(Math.min(1, a.t))); return { x: q.x, y: q.y, lift: 2 * S, solo: true }; }
+  const c = cell(p.pos), mates = G.players.filter((q) => q.pos === p.pos && !(G.state === 'moving' && G.anim && G.players[G.turn] === q && !(G.anim.wait > 0)));
+  if (mates.length > 1) { const o = SPREAD[mates.length][mates.indexOf(p)]; return { x: c.x + o[0] * cw * 0.21, y: c.y + o[1] * ch * 0.19, lift: 0, solo: false }; }
+  return { x: c.x, y: c.y, lift: 0, solo: true };
+}
+
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  ctx.save(); if (fx.shake > 0 && !calm) ctx.translate(rnd(-1, 1) * fx.shake * 14 * S, rnd(-1, 1) * fx.shake * 14 * S);
+  if (boardImg) ctx.drawImage(boardImg, 0, 0, W, ROWS * ch);
+  // START, unless three or four tokens crowd the square at the start of a game and would only half cover it
+  if (G.players.filter((q) => q.pos === 1).length < 3) word(1, 'START', Math.max(7.5, 9 * S), '#14586B');
+  const cur = G.players[G.turn], leadPos = Math.max(0, ...G.players.map((q) => q.pos)), leaders = G.players.filter((q) => q.pos === leadPos);
+  // the one whose turn it is: a soft pulse on their square
+  if (G.running && cur && G.state === 'await') {
+    const c = cell(cur.pos), k = (Math.sin(G.clock * 4) + 1) / 2;
+    ctx.strokeStyle = cur.c; ctx.globalAlpha = 0.35 + k * 0.4; ctx.lineWidth = 3 * S; rrect(ctx, c.x - cw / 2 + 3, c.y - ch / 2 + 3, cw - 6, ch - 6, 7 * S); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  // tokens, the moving one last so it passes over the others
+  const order = [...G.players].sort((a, b) => (a === cur) - (b === cur));
+  for (const p of order) {
+    const { x, y, lift, solo } = tokenAt(p), r = cw * (solo ? 0.25 : 0.2), sq = p.land * 0.16;
+    ctx.fillStyle = `rgba(40,40,20,${0.22 - lift / ch * 0.25})`; ctx.beginPath(); ctx.ellipse(x, y + r * 0.85, r * (1 - lift / ch * 0.6), r * 0.32, 0, 0, 7); ctx.fill();
+    ctx.save(); ctx.translate(x, y - lift); ctx.scale(1 + sq, 1 - sq);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.lineWidth = 3 * S; ctx.strokeStyle = p.c; ctx.stroke();
+    ctx.restore();
+    stamp(ctx, p.e, r * 1.25, x, y - lift + r * 0.04, { sx: 1 + sq, sy: 1 - sq });
+    if (leaders.length === 1 && leadPos > 1 && leaders[0] === p && G.players.length > 1) stamp(ctx, '👑', r * 0.85, x + r * 0.62, y - lift - r * 0.82, { rot: 0.35 });
+  }
+  drawFx(ctx);
+  ctx.restore();
+  strip();
+}
+function strip() {
+  const y0 = ROWS * ch, cy = y0 + ch / 2, p = G.players[G.turn];
+  ctx.fillStyle = '#fffaf0'; ctx.fillRect(0, y0, W, ch);
+  ctx.fillStyle = 'rgba(20,88,107,.12)'; ctx.fillRect(0, y0, W, 1.5 * S);
+  if (!p) return;
+  const r = ch * 0.3, ax = 16 * S + r;
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ax, cy, r, 0, 7); ctx.fill(); ctx.lineWidth = 3 * S; ctx.strokeStyle = p.c; ctx.stroke();
+  stamp(ctx, p.e, r * 1.25, ax, cy + r * 0.04);
+  const tx = ax + r + 12 * S;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = `700 ${ch * 0.33}px Fraunces, Georgia, serif`; ctx.fillStyle = '#14586B';
+  ctx.fillText(G.state === 'won' ? `${does(p, 'win')}!` : turnOf(p), tx, cy - ch * 0.03);
+  const hint = G.state === 'await' ? (p.bot ? 'is thinking…' : 'Tap anywhere to roll') : G.state === 'rolling' ? 'Rolling…' : G.state === 'moving' ? `Rolled ${G.face}` : '';
+  ctx.font = `700 ${ch * 0.235}px Manrope, sans-serif`; ctx.fillStyle = G.state === 'await' && !p.bot ? '#E7607A' : '#4b6870'; ctx.fillText(hint, tx, cy + ch * 0.27);
+  const size = ch * 0.62, dx = W - 14 * S - size / 2;
+  const rolling = G.state === 'rolling', ready = G.state === 'await' && !p.bot;
+  const rot = rolling && !calm ? Math.sin(G.clock * 38) * 0.4 : 0, hopY = rolling && !calm ? -Math.abs(Math.sin(G.clock * 19)) * 6 * S : 0;
+  const pulse = ready && !calm ? 1 + Math.sin(G.clock * 5) * 0.045 : 1;
+  ctx.save(); ctx.translate(dx, cy + hopY); ctx.scale(pulse, pulse); die(ctx, 0, 0, size, G.face, rot, ready ? (Math.sin(G.clock * 5) + 1) / 2 : 0); ctx.restore();
+}
+
+function menu() {
+  G.running = false; cancelAnimationFrame(raf); G.players = []; G.state = 'setup'; draw();
+  overlay(ov, `<h2>Snakes &amp; Ladders</h2><p class="rules">Climb the ladders, slide down the sea snakes. Land on a shell 🐚 or roll a 6 to roll again. First to the flag wins; roll too far and you bounce back.</p><p class="q">Who’s playing?</p>`,
+    [{ label: 'Me vs the crab 🦀', go: () => setup(1) }, { label: '2 players', alt: true, go: () => setup(2) }, { label: '3 players', alt: true, go: () => setup(3) }, { label: '4 players', alt: true, go: () => setup(4) }]);
+}
+
+// ——— input: a tap anywhere on the board rolls for whoever's turn it is; Space or Enter on the board too ———
+// A tap, not just any touch: a swipe, a hand resting on the board as the phone is passed, two fingers (a pinch) and a
+// press begun before the board was ready (a double tap on the button that started the game, or someone still tapping
+// as their turn passed to the next player) don't roll. A thumb that has been resting on the board a while doesn't
+// stop another finger's tap: that's a tap, not half of a pinch.
+cv.tabIndex = 0;
+let press = null, ready = 0;
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (press && performance.now() - press.at < 300) { press.two = true; return; }
+  press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now() };
+  try { cv.setPointerCapture(e.pointerId); } catch { /* fine */ } // its lift comes back here, even off the board
+});
+cv.addEventListener('pointermove', (e) => { if (press?.id === e.pointerId && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 14) press.moved = true; });
+cv.addEventListener('pointerup', (e) => {
+  if (press?.id !== e.pointerId) return;
+  const t = press, p = G.players[G.turn]; press = null;
+  if (!t.two && !t.moved && t.at >= ready && performance.now() - t.at < 700 && G.running && p && !p.bot) roll();
+});
+cv.addEventListener('pointercancel', (e) => { if (press?.id === e.pointerId) press = null; });
+cv.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && G.running && !G.players[G.turn]?.bot) { e.preventDefault(); roll(); } });
+
+fit(); menu();
+</script>
+</body>
+</html>

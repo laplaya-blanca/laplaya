@@ -19,7 +19,7 @@ const when = () => {
 };
 const photoFor = (night: boolean) => img('/assets/hero-' + (night ? 'night' : 'lake') + '-wide.jpg', 1200);
 
-export function Postcard({ lines, total, unpriced, night, onClose }: { lines: Line[]; total: number; unpriced: boolean; night: boolean; onClose: () => void }) {
+export function Postcard({ lines, total, unpriced, night, onClose, onPlay }: { lines: Line[]; total: number; unpriced: boolean; night: boolean; onClose: () => void; onPlay: () => void }) {
   const still = useReducedMotion();
   const [back, setBack] = useState(!!still);
   const [saving, setSaving] = useState(false);
@@ -61,6 +61,11 @@ export function Postcard({ lines, total, unpriced, night, onClose }: { lines: Li
           </button>
           <button onClick={onClose} className="h-12 rounded-full bg-[var(--paper-2)] font-extrabold">Done</button>
         </div>
+        {/* the order's in: something for the table while it's made */}
+        <button onClick={onPlay} className="mx-auto mt-3 flex h-11 items-center gap-2 rounded-full px-4 text-[15px] font-bold text-[var(--ink-soft)] active:scale-[.98] transition-transform">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden><rect x="4" y="4" width="16" height="16" rx="4.5" /><g fill="currentColor" stroke="none"><circle cx="8.6" cy="8.6" r="1.45" /><circle cx="12" cy="12" r="1.45" /><circle cx="15.4" cy="15.4" r="1.45" /></g></svg>
+          While you wait: a game for the table
+        </button>
       </div>
     </Sheet>
   );

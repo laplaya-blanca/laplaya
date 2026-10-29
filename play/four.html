@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7EE">
+<title>Four in a Row · La Playa Blanca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/sand-tall.jpg" as="image">
+<link rel="icon" href="/assets/logo.jpg">
+<link rel="stylesheet" href="play.css">
+<style>
+  /* the discs as they appear on the screens between rounds */
+  .disc { width: 58px; height: 58px; border-radius: 50%; box-shadow: inset 0 -4px 0 rgba(0,0,0,.14), 0 8px 18px rgba(20,60,70,.22); }
+  .disc.gold { background: radial-gradient(circle at 35% 30%, #FFE2A6, #E8A44C 58%, #B9741F); }
+  .disc.coral { background: radial-gradient(circle at 35% 30%, #FFB0BD, #E7607A 58%, #B23A54); }
+  .pair { display: flex; gap: 10px; align-items: center; }
+  .tally { display: flex; gap: 18px; justify-content: center; font-weight: 800; color: var(--deep); font-variant-numeric: tabular-nums; }
+  .tally span { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .tally i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+  .tally i.gold { background: #E8A44C; } .tally i.coral { background: #E7607A; }
+  @container (max-height: 450px) { .disc { width: 44px; height: 44px; } }
+  @container (max-height: 340px) { .disc { width: 34px; height: 34px; } .pair { gap: 7px; } }
+  @container (max-height: 280px) { .in > .disc, .pair { display: none; } .tally { gap: 12px; } }
+</style>
+<script src="kit.js"></script>
+</head>
+<body class="game pinch">
+<div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Four in a Row</h1><button class="snd" id="snd" type="button"></button></div>
+<div class="wrap"><div class="stage" id="stage">
+  <canvas id="cv" aria-label="Four in a row board. Tap a column to drop your disc, or use the arrow keys and Enter."></canvas>
+  <div class="overlay" id="ov"></div>
+</div></div>
+<p class="foot">Line up four of your colour: across, up or on a slant. Tap a column to drop.</p>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+const cv = document.getElementById('cv'), stage = document.getElementById('stage'), ov = document.getElementById('ov');
+const ctx = cv.getContext('2d');
+let raf = 0, last = 0;
+soundSwitch(document.getElementById('snd'));
+
+// ——— the board: 7 columns, 6 rows, in a lake-blue frame standing on the sand; the discs sit behind the frame ———
+const COLS = 7, ROWS = 6, AR = 0.86;
+const SIDES = {
+  1: { key: 'gold', name: 'Gold', c: '#E8A44C', hi: '#FFE2A6', lo: '#B9741F' },
+  2: { key: 'coral', name: 'Coral', c: '#E7607A', hi: '#FFB0BD', lo: '#B23A54' }
+};
+let W = 0, H = 0, S = 1, DPR = 1, cs = 0, m = 0, bx = 0, by = 0, bw = 0, bh = 0, rh = 0, rd = 0, bg = null, frame = null;
+const holeX = (col) => bx + m + (col + 0.5) * cs;
+const holeY = (row) => by + m + (ROWS - 1 - row + 0.5) * cs; // row 0 is the bottom one
+const previewY = () => by - cs * 0.62;
+
+function fit() {
+  sizeStage(stage, AR);
+  if (!V.W) return;
+  ({ W, H, S, DPR } = V);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); clearCaches(); discs.clear();
+  cs = Math.min(W / 8, H / 9.4); m = cs * 0.28; bw = COLS * cs + 2 * m; bh = ROWS * cs + 2 * m;
+  bx = (W - bw) / 2; by = cs * 1.3; rh = cs * 0.385; rd = cs * 0.41;
+  bg = paintSand(); frame = paintFrame();
+  if (!G.running) draw();
+}
+addEventListener('resize', fit);
+fontsReady(fit);
+
+function layer(paint) {
+  const c = document.createElement('canvas'); c.width = Math.round(W * DPR); c.height = Math.round(H * DPR);
+  const g = c.getContext('2d'); g.scale(DPR, DPR); paint(g); return c;
+}
+const photo = new Image(); photo.decoding = 'async'; photo.src = '/assets/sand-tall.jpg'; photo.onload = () => fit();
+// the sand, and the frame's shadow on it
+function paintSand() {
+  return layer((g) => {
+    // the menu's own beach from above (the footer's photo): the wet edge behind the disc you hold, dry sand under the frame
+    if (photo.complete && photo.naturalWidth) { const k = W / photo.naturalWidth; g.drawImage(photo, 0, -W * 0.42, W, photo.naturalHeight * k); g.fillStyle = 'rgba(240,215,170,.14)'; g.fillRect(0, 0, W, H); }
+    else { const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#f6ecd4'); sky.addColorStop(1, '#e8d6ad'); g.fillStyle = sky; g.fillRect(0, 0, W, H); }
+    let seed = 7; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < (photo.naturalWidth ? 0 : 260); i++) { g.fillStyle = r() > 0.5 ? 'rgba(160,120,60,.13)' : 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(r() * W, r() * H, (0.6 + r() * 1.1) * S, 0, 7); g.fill(); }
+    const sh = g.createRadialGradient(W / 2, by + bh + cs * 0.12, cs, W / 2, by + bh + cs * 0.12, bw * 0.62);
+    sh.addColorStop(0, 'rgba(90,60,20,.28)'); sh.addColorStop(1, 'rgba(90,60,20,0)');
+    g.save(); g.translate(0, by + bh + cs * 0.12); g.scale(1, 0.16); g.translate(0, -(by + bh + cs * 0.12)); g.fillStyle = sh; g.fillRect(0, 0, W, H * 2); g.restore();
+  });
+}
+// the frame: painted lake blue, lit from above, with 42 holes punched through it and a lip around each
+function paintFrame() {
+  return layer((g) => {
+    // feet in the sand
+    g.fillStyle = '#0f4a5a';
+    for (const s of [-1, 1]) { const x = W / 2 + s * (bw / 2 - cs * 0.42); g.beginPath(); g.moveTo(x - cs * 0.3, by + bh - cs * 0.2); g.lineTo(x + cs * 0.3, by + bh - cs * 0.2); g.lineTo(x + cs * 0.42 * s + cs * 0.12, by + bh + cs * 0.2); g.lineTo(x + cs * 0.42 * s - cs * 0.24, by + bh + cs * 0.2); g.closePath(); g.fill(); }
+    const body = g.createLinearGradient(0, by, 0, by + bh); body.addColorStop(0, '#2d93a8'); body.addColorStop(0.55, '#1F7A8C'); body.addColorStop(1, '#15606f');
+    rrect(g, bx, by, bw, bh, cs * 0.3); g.fillStyle = body; g.fill();
+    g.globalCompositeOperation = 'destination-out';
+    for (let col = 0; col < COLS; col++) for (let row = 0; row < ROWS; row++) { g.beginPath(); g.arc(holeX(col), holeY(row), rh, 0, 7); g.fill(); }
+    g.globalCompositeOperation = 'source-over';
+    for (let col = 0; col < COLS; col++) for (let row = 0; row < ROWS; row++) {
+      const x = holeX(col), y = holeY(row);
+      g.strokeStyle = 'rgba(4,34,44,.42)'; g.lineWidth = cs * 0.07; g.beginPath(); g.arc(x, y, rh, 0, 7); g.stroke();
+      g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = cs * 0.03; g.beginPath(); g.arc(x, y, rh + cs * 0.04, Math.PI * 0.15, Math.PI * 0.85); g.stroke();
+    }
+    // a bright edge along the top, a dark one along the bottom
+    g.save(); rrect(g, bx, by, bw, bh, cs * 0.3); g.clip();
+    g.strokeStyle = 'rgba(255,255,255,.28)'; g.lineWidth = 2.5 * S; rrect(g, bx + 1.2 * S, by + 1.2 * S, bw - 2.4 * S, bh - 2.4 * S, cs * 0.28); g.stroke();
+    g.fillStyle = 'rgba(0,30,40,.18)'; g.fillRect(bx, by + bh - cs * 0.1, bw, cs * 0.1);
+    g.restore();
+  });
+}
+// a disc, drawn once per colour and size: glossy, with a ring pressed into it and a little sun or shell
+const discs = new Map();
+function disc(p, r) {
+  const k = p + ':' + Math.round(r * 10); if (discs.has(k)) return discs.get(k);
+  const s = SIDES[p], d = Math.ceil(r * 2 + 6 * S), c = document.createElement('canvas'); c.width = c.height = Math.ceil(d * DPR);
+  const g = c.getContext('2d'); g.scale(DPR, DPR); g.translate(d / 2, d / 2);
+  const body = g.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r); body.addColorStop(0, s.hi); body.addColorStop(0.55, s.c); body.addColorStop(1, s.lo);
+  g.fillStyle = body; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,.13)'; g.lineWidth = r * 0.07; g.beginPath(); g.arc(0, r * 0.03, r * 0.7, 0, 7); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = r * 0.05; g.beginPath(); g.arc(0, -r * 0.03, r * 0.7, Math.PI * 1.1, Math.PI * 1.9); g.stroke();
+  g.strokeStyle = g.fillStyle = 'rgba(255,255,255,.62)'; g.lineCap = 'round'; g.lineWidth = r * 0.075;
+  if (p === 1) { // a sun
+    g.beginPath(); g.arc(0, 0, r * 0.17, 0, 7); g.fill();
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.beginPath(); g.moveTo(Math.cos(a) * r * 0.3, Math.sin(a) * r * 0.3); g.lineTo(Math.cos(a) * r * 0.44, Math.sin(a) * r * 0.44); g.stroke(); }
+  } else { // a scallop shell
+    g.beginPath(); g.moveTo(-r * 0.4, -r * 0.08); g.quadraticCurveTo(0, -r * 0.62, r * 0.4, -r * 0.08); g.lineTo(0, r * 0.34); g.closePath(); g.stroke();
+    for (const t of [-0.2, 0, 0.2]) { g.beginPath(); g.moveTo(0, r * 0.3); g.lineTo(t * r * 1.4, -r * 0.3); g.stroke(); }
+    g.beginPath(); g.moveTo(-r * 0.13, r * 0.4); g.lineTo(r * 0.13, r * 0.4); g.stroke();
+  }
+  g.fillStyle = 'rgba(255,255,255,.32)'; g.beginPath(); g.ellipse(-r * 0.34, -r * 0.42, r * 0.28, r * 0.15, -0.6, 0, 7); g.fill();
+  const out = { c, d }; discs.set(k, out); return out;
+}
+function drawDisc(p, x, y, r, { alpha = 1, sy = 1 } = {}) {
+  const t = disc(p, r); ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.scale(1 + (1 - sy) * 0.5, sy); ctx.drawImage(t.c, -t.d / 2, -t.d / 2, t.d, t.d); ctx.restore();
+}
+
+// ——— rules and the crab ———
+// cells[row * 7 + col]: 0 empty, 1 gold, 2 coral; row 0 is the bottom. heights[col]: how many discs that column holds.
+const WINDOWS = [];
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) for (const [dc, dr] of [[1, 0], [0, 1], [1, 1], [1, -1]]) {
+  const cells = [0, 1, 2, 3].map((k) => [c + dc * k, r + dr * k]);
+  if (cells.every(([x, y]) => x >= 0 && x < COLS && y >= 0 && y < ROWS)) WINDOWS.push(cells.map(([x, y]) => y * COLS + x));
+}
+const BY_CELL = Array.from({ length: COLS * ROWS }, (_, i) => WINDOWS.filter((w) => w.includes(i)));
+const ORDER = [3, 2, 4, 1, 5, 0, 6]; // the middle first: the crab finds good moves sooner
+const won = (cells, i, p) => BY_CELL[i].some((w) => w.every((j) => cells[j] === p));
+const lineAt = (cells, i, p) => BY_CELL[i].find((w) => w.every((j) => cells[j] === p));
+function score(cells, p) {
+  const o = 3 - p, V3 = [0, 1, 5, 40];
+  let s = 0;
+  for (const w of WINDOWS) {
+    let a = 0, b = 0; for (const j of w) { if (cells[j] === p) a++; else if (cells[j] === o) b++; }
+    if (!b) s += V3[a]; else if (!a) s -= V3[b] * 1.2;
+  }
+  for (let r = 0; r < ROWS; r++) { const v = cells[r * COLS + 3]; if (v === p) s += 3; else if (v === o) s -= 3; }
+  return s;
+}
+// The crab thinks for at most 60 ms, a few frames, looking one move further ahead each time round while there's
+// time. On a slow phone it simply sees a move or two less far ahead; it never holds the game up.
+let deadline = 0, nodes = 0, outOfTime = false;
+function negamax(cells, heights, depth, alpha, beta, p, filled) {
+  if ((++nodes & 1023) === 0 && performance.now() > deadline) outOfTime = true;
+  if (outOfTime) return 0;
+  if (filled === COLS * ROWS) return 0;
+  for (const c of ORDER) if (heights[c] < ROWS) { const i = heights[c] * COLS + c; cells[i] = p; const w = won(cells, i, p); cells[i] = 0; if (w) return 10000 + depth; }
+  if (depth === 0) return score(cells, p);
+  let best = -Infinity;
+  for (const c of ORDER) {
+    if (heights[c] >= ROWS) continue;
+    const i = heights[c] * COLS + c; cells[i] = p; heights[c]++;
+    const v = -negamax(cells, heights, depth - 1, -beta, -alpha, 3 - p, filled + 1);
+    heights[c]--; cells[i] = 0;
+    if (v > best) best = v; if (v > alpha) alpha = v; if (alpha >= beta) break;
+  }
+  return best;
+}
+// the crab grows cleverer each time you beat it, and goes easier each time it wins
+const LEVELS = [{ depth: 2, slip: 0.35 }, { depth: 3, slip: 0.2 }, { depth: 5, slip: 0.08 }, { depth: 6, slip: 0 }];
+function crabMove() {
+  const cells = Int8Array.from(G.cells), heights = Int8Array.from(G.heights), p = G.turn, o = 3 - p, L = LEVELS[G.level - 1];
+  const legal = ORDER.filter((c) => heights[c] < ROWS);
+  const at = (c) => heights[c] * COLS + c;
+  const winning = legal.find((c) => { const i = at(c); cells[i] = p; const w = won(cells, i, p); cells[i] = 0; return w; });
+  if (winning !== undefined && (G.level > 1 || Math.random() > 0.3)) return winning;
+  // moves that don't hand you a win straight back
+  const safe = legal.filter((c) => {
+    const i = at(c); cells[i] = p; heights[c]++;
+    const gives = c => heights[c] < ROWS && (() => { const j = at(c); cells[j] = o; const w = won(cells, j, o); cells[j] = 0; return w; })();
+    const bad = legal.some((d) => gives(d)); heights[c]--; cells[i] = 0; return !bad;
+  });
+  if (Math.random() < L.slip) { const pool = safe.length ? safe : legal; return pool[(Math.random() * pool.length) | 0]; }
+  // each root move is searched only as far as it takes to show it isn't better than the best so far
+  const search = (order, depth) => {
+    let best = -Infinity, pick = order[0];
+    for (const c of order) {
+      const i = at(c); cells[i] = p; heights[c]++;
+      const v = -negamax(cells, heights, depth - 1, -Infinity, -best, o, G.filled + 1);
+      heights[c]--; cells[i] = 0;
+      if (outOfTime) return -1;
+      if (v > best) { best = v; pick = c; }
+    }
+    return pick;
+  };
+  deadline = performance.now() + 60; nodes = 0; outOfTime = false;
+  let pick = legal[0], order = legal;
+  for (let d = 1; d <= L.depth; d++) {
+    const c = search(order, d); if (c < 0) break;
+    pick = c; order = [c, ...order.filter((k) => k !== c)]; // the best move so far is looked at first next time
+  }
+  return pick;
+}
+
+// ——— the game ———
+const G = { running: false, solo: false, cells: new Int8Array(COLS * ROWS), heights: new Int8Array(COLS), filled: 0, turn: 1, starts: 1, tally: { 1: 0, 2: 0 },
+  hover: 3, hx: 0, state: 'setup', drop: null, line: null, level: 1, clock: 0, think: 0, crabCol: -1, nudge: 0, off: false, queued: -1, since: 0 };
+const isCrab = (p) => G.solo && p === 2;
+const name = (p) => (G.solo ? (p === 1 ? 'You' : 'The crab') : SIDES[p].name);
+const turnText = (p) => (G.solo ? (p === 1 ? 'Your turn' : 'The crab’s turn') : `${SIDES[p].name}’s turn`);
+const human = () => G.running && G.state === 'await' && !isCrab(G.turn);
+// against the crab, your turn is coming: it's thinking, or its disc is still falling
+const soon = () => G.running && G.solo && (G.state === 'await' ? isCrab(G.turn) : G.state === 'dropping' && isCrab(G.drop.p));
+
+function setup(solo) { G.solo = solo; G.tally = { 1: 0, 2: 0 }; G.starts = 1; G.level = 1; round(); }
+function round() {
+  G.cells.fill(0); G.heights.fill(0); G.filled = 0; G.turn = G.starts; G.state = 'await'; G.drop = null; G.line = null; G.clock = 0; finger = null; twice = false; G.off = false; G.queued = -1; G.since = performance.now();
+  G.hover = 3; G.hx = holeX(3); G.think = 0.7; G.crabCol = -1;
+  clearFx(); ov.hidden = true; G.running = true; focusKeyed(cv);
+  tell(`${turnText(G.turn)}.`);
+  cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
+}
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+  update(dt); stepFx(dt); draw();
+  if (G.running) raf = requestAnimationFrame(loop);
+}
+function play(col) {
+  if (G.state !== 'await') return;
+  if (G.heights[col] >= ROWS) { G.nudge = 0.3; buzz(20); tone(180, 0.08, { type: 'square', vol: 0.025 }); tell('That column is full.'); return; }
+  G.state = 'dropping'; G.hover = col;
+  G.drop = { col, row: G.heights[col], p: G.turn, y: previewY(), v: 0, bounces: 0 };
+  buzz(8);
+}
+function update(dt) {
+  G.clock += dt; G.nudge = Math.max(0, G.nudge - dt);
+  G.hx = lerp(G.hx, holeX(G.hover), Math.min(1, dt * (isCrab(G.turn) ? 7 : 22)));
+  if (G.state === 'await' && isCrab(G.turn)) {
+    // the crab thinks a moment, slides its disc over its column, then lets go
+    G.think -= dt;
+    if (G.crabCol < 0 && G.think <= 0.35) { G.crabCol = crabMove(); G.hover = G.crabCol; }
+    if (G.crabCol >= 0 && G.think <= 0 && Math.abs(G.hx - holeX(G.crabCol)) < cs * 0.08) { const c = G.crabCol; G.crabCol = -1; play(c); }
+  } else if (G.state === 'dropping') {
+    const d = G.drop, floor = holeY(d.row);
+    d.v += 3800 * S * dt; d.y += d.v * dt;
+    if (d.y >= floor) {
+      d.y = floor;
+      if (d.bounces === 0) { tone(320 - d.row * 18, 0.07, { type: 'triangle', vol: 0.07 }); tone(1400, 0.02, { type: 'square', vol: 0.012 }); buzz(12); }
+      if (d.bounces < 2 && d.v > 260 * S && !calm) { d.v = -d.v * 0.24; d.bounces++; }
+      else settle();
+    }
+  }
+}
+function settle() {
+  const { col, row, p } = G.drop, i = row * COLS + col;
+  G.cells[i] = p; G.heights[col]++; G.filled++; G.drop = null;
+  const line = lineAt(G.cells, i, p);
+  if (line) return finish(p, line);
+  if (G.filled === COLS * ROWS) return finish(0, null);
+  G.turn = 3 - p; G.state = 'await'; G.think = rnd(0.6, 0.95);
+  tell(`${name(p)} dropped in column ${col + 1}. ${turnText(G.turn)}.`);
+  // your turn, and a finger got there first: a tap made as the crab's disc landed is played now, and a finger still
+  // resting on the board gets the disc under it
+  if (human()) { if (G.queued >= 0) { G.hover = G.queued; play(G.queued); } else if (finger !== null && !G.off) G.hover = colAt({ clientX: fingerX }); }
+  G.queued = -1;
+}
+function finish(p, line) {
+  G.state = 'over'; G.line = line; const was = G.level;
+  if (p) {
+    G.tally[p]++; tell(`${name(p)} ${G.solo && p === 1 ? 'win' : 'wins'}! Four in a row.`);
+    const crabWon = isCrab(p);
+    if (G.solo) { if (crabWon) { G.level = Math.max(1, G.level - 1); } else { G.level = Math.min(LEVELS.length, G.level + 1); } }
+    if (crabWon) { tone(500, 0.5, { type: 'triangle', to: 180, vol: 0.06 }); buzz(40); }
+    else {
+      chord([523, 659, 784, 1047, 1319], 0.08); buzz(70);
+      const colors = ['#E7607A', '#E8A44C', '#1F7A8C', '#86c23f', '#fff'];
+      for (let k = 0; k < 5; k++) setTimeout(() => burst(rnd(W * 0.15, W * 0.85), rnd(H * 0.1, H * 0.5), colors[k % colors.length], 22, 280 * S, { g: 380, size: 3.2 }), k * 140);
+    }
+    G.starts = 3 - p; // whoever lost goes first next time
+  } else { tell('The board is full. A draw!'); chord([440, 392], 0.12, { vol: 0.05 }); G.starts = 3 - G.starts; }
+  setTimeout(() => {
+    G.running = false; cancelAnimationFrame(raf); draw();
+    const head = p ? `<div class="disc ${SIDES[p].key}"></div><h2>${G.solo ? (p === 1 ? 'You win!' : 'The crab wins!') : SIDES[p].name + ' wins!'}</h2>`
+      : `<div class="pair"><div class="disc gold"></div><div class="disc coral"></div></div><h2>A draw!</h2>`;
+    const note = !G.solo ? '' : p === 1 ? (G.level === LEVELS.length ? '<p>The crab is as clever as it gets now. 🦀</p>' : '<p>The crab gets a little cleverer. 🦀</p>') : p === 2 && G.level < was ? '<p>The crab will go easier next round.</p>' : '';
+    overlay(ov, `${head}<div class="tally"><span><i class="gold"></i>${name(1)} ${G.tally[1]}</span><span><i class="coral"></i>${name(2)} ${G.tally[2]}</span></div>${note}`,
+      [{ label: 'Next round', go: round }, { label: 'Change players', alt: true, go: menu }]);
+  }, p && !isCrab(p) ? 1700 : 1300);
+}
+
+// ——— drawing ———
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (bg) ctx.drawImage(bg, 0, 0, W, H);
+  // the discs sit behind the frame, so a falling one passes behind it too
+  ctx.save(); ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.clip();
+  for (let i = 0; i < COLS * ROWS; i++) if (G.cells[i]) drawDisc(G.cells[i], holeX(i % COLS), holeY((i / COLS) | 0), rd);
+  ctx.restore();
+  if (G.drop) { const d = G.drop, squash = d.bounces && d.y >= holeY(d.row) - 2 ? 0.92 : 1; drawDisc(d.p, holeX(d.col), d.y, rd, { sy: squash }); }
+  if (frame) ctx.drawImage(frame, 0, 0, W, H);
+  // whose turn: their disc over the column, bobbing gently, the column lit
+  if (G.running && G.state === 'await') {
+    const bob = calm ? 0 : Math.sin(G.clock * 4) * cs * 0.05, shake = G.nudge > 0 ? Math.sin(G.nudge * 60) * cs * 0.08 : 0;
+    // a finger gone off the board will drop nothing when it lets go: the disc fades and the column goes dark
+    if (human() && !G.off) { ctx.fillStyle = 'rgba(255,255,255,.1)'; rrect(ctx, G.hx - cs / 2 + 2 * S, by + m * 0.5, cs - 4 * S, bh - m, cs * 0.2); ctx.fill(); }
+    drawDisc(G.turn, G.hx + shake, previewY() + bob, rd, { alpha: human() && G.off ? 0.35 : 1 });
+    if (isCrab(G.turn)) stamp(ctx, '🦀', cs * 0.5, G.hx + rd * 0.8, previewY() - rd * 0.75, { rot: Math.sin(G.clock * 6) * 0.15 });
+  }
+  // the winning four: a ring on each, joined by a line of light
+  if (G.line) {
+    const pts = G.line.map((i) => ({ x: holeX(i % COLS), y: holeY((i / COLS) | 0) })), k = calm ? 1 : 0.75 + Math.sin(G.clock * 8) * 0.25;
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = `rgba(255,255,255,${0.55 * k})`; ctx.lineWidth = cs * 0.16;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); ctx.lineTo(pts[3].x, pts[3].y); ctx.stroke();
+    ctx.strokeStyle = `rgba(255,255,255,${0.95 * k})`; ctx.lineWidth = 3.5 * S;
+    for (const q of pts) { ctx.beginPath(); ctx.arc(q.x, q.y, rd * 0.86, 0, 7); ctx.stroke(); }
+    ctx.restore();
+  }
+  drawFx(ctx);
+  strip();
+}
+// under the board: whose turn it is, and the rounds won so far
+function strip() {
+  const y = by + bh + (H - by - bh) * 0.55, p = G.turn;
+  if (!G.running && G.state === 'setup') return;
+  const r = cs * 0.36, x = bx + r + 2 * S;
+  drawDisc(p, x, y, r);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = `700 ${Math.max(14, cs * 0.42)}px Fraunces, Georgia, serif`; ctx.fillStyle = '#14586B';
+  const title = G.state === 'over' ? (G.line ? `${name(p)} ${G.solo && p === 1 ? 'win' : 'wins'}!` : 'A draw!') : turnText(p);
+  ctx.fillText(title, x + r + 10 * S, y - cs * 0.02);
+  const hint = G.state === 'await' ? (isCrab(p) ? 'is thinking…' : 'Tap a column to drop') : '';
+  ctx.font = `700 ${Math.max(11, cs * 0.29)}px Manrope, sans-serif`; ctx.fillStyle = human() ? '#B23A54' : '#4b6870';
+  ctx.fillText(G.solo && G.state === 'await' && isCrab(p) ? `is thinking… (level ${G.level})` : hint, x + r + 10 * S, y + cs * 0.36);
+  // the tally, on the right
+  ctx.textAlign = 'right'; ctx.font = `800 ${cs * 0.36}px Manrope, sans-serif`; ctx.fillStyle = '#14586B';
+  const tx = bx + bw - 2 * S, gap = cs * 0.3, rr = cs * 0.17;
+  const two = String(G.tally[2]), one = String(G.tally[1]);
+  ctx.fillText(two, tx, y + cs * 0.13); const w2 = ctx.measureText(two).width;
+  drawDisc(2, tx - w2 - rr - 5 * S, y, rr);
+  const x1 = tx - w2 - rr * 2 - 5 * S - gap;
+  ctx.fillText(one, x1, y + cs * 0.13); const w1 = ctx.measureText(one).width;
+  drawDisc(1, x1 - w1 - rr - 5 * S, y, rr);
+}
+
+function menu() {
+  G.running = false; cancelAnimationFrame(raf); G.state = 'setup'; G.cells.fill(0); G.heights.fill(0); G.line = null; G.drop = null; draw();
+  overlay(ov, `<div class="pair"><div class="disc gold"></div><div class="disc coral"></div></div><h2>Four in a Row</h2><p class="rules">Take turns dropping your discs. The first to line up four, across, up or on a slant, wins the round.</p><p class="q">Who’s playing?</p>`,
+    [{ label: 'Me vs the crab 🦀', go: () => setup(true) }, { label: '2 players', alt: true, go: () => setup(false) }]);
+}
+
+// ——— input: touch a column (slide to change your mind), let go to drop, or slide off the board and let go there to
+// drop nothing. Arrow keys and Enter work too. ———
+const colAt = (e) => { const r = cv.getBoundingClientRect(); return clamp(Math.floor((e.clientX - r.left - bx - m) / cs), 0, COLS - 1); };
+// the board, for a finger: the frame and the sand above it, a little either side; not the strip under the frame
+const onBoard = (e, below = 0.45) => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; return y >= 0 && y < by + bh + cs * below && x > bx - cs * 0.2 && x < bx + bw + cs * 0.2; };
+cv.tabIndex = 0;
+// one finger at a time; a second one touching the board while the first is down calls the move off (two fingers are
+// a pinch, not a move). Against the crab, a finger that goes down during its turn (while it thinks, or as its disc
+// falls) counts when it lifts on yours, and a tap made as its disc lands counts as soon as it has. The second tap of
+// a double tap on the button that started the round doesn't make a move.
+let finger = null, twice = false, fingerX = 0, landing = false;
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (finger !== null) { if (e.pointerId !== finger) twice = G.off = true; return; }
+  if (!(human() || soon()) || !onBoard(e, 0.2) || performance.now() < G.since + 400) return;
+  finger = e.pointerId; fingerX = e.clientX; landing = G.state === 'dropping'; if (human()) G.hover = colAt(e);
+  try { cv.setPointerCapture(e.pointerId); } catch { /* fine */ }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (e.pointerId === finger) { fingerX = e.clientX; G.off = twice || !onBoard(e); if (human() && !G.off) G.hover = colAt(e); }
+  else if (finger === null && e.pointerType === 'mouse' && human()) G.hover = colAt(e);
+});
+cv.addEventListener('pointerup', (e) => {
+  if (e.pointerId !== finger) return;
+  const off = twice || !onBoard(e); finger = null; twice = G.off = false;
+  if (off) return;
+  if (human()) { G.hover = colAt(e); play(G.hover); } else if (landing && soon()) G.queued = colAt(e);
+});
+cv.addEventListener('pointercancel', (e) => { if (e.pointerId === finger) { finger = null; twice = G.off = false; } });
+cv.addEventListener('keydown', (e) => {
+  if (!human()) return;
+  if (e.key === 'ArrowLeft') { G.hover = Math.max(0, G.hover - 1); e.preventDefault(); tell(`Column ${G.hover + 1}`); }
+  else if (e.key === 'ArrowRight') { G.hover = Math.min(COLS - 1, G.hover + 1); e.preventDefault(); tell(`Column ${G.hover + 1}`); }
+  else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { play(G.hover); e.preventDefault(); }
+});
+
+fit(); menu();
+</script>
+</body>
+</html>
