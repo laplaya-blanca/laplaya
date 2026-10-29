@@ -1,13 +1,14 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react';
 
 // open sheets, newest last: only the top one reacts to Escape / Tab, and focus goes back where it came from
 const stack: object[] = [];
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,iframe,[tabindex]:not([tabindex="-1"])';
 
-// Bottom sheet for phones (item, cart, categories, games). Drag down or tap outside to close. A flush sheet leaves the
-// room at its bottom to what's inside (the games keep it themselves, so a board's shadow isn't cut off above the edge).
-export function Sheet({ label, onClose, children, tall = false, flush = false }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean; flush?: boolean }) {
+// Bottom sheet for phones (item, cart, categories, games). Drag down or tap outside to close; a sheet holding something
+// a stray tap would lose (a game being played) can keep a tap outside from closing it. A flush sheet leaves the room
+// at its bottom to what's inside (the games keep it themselves, so a board's shadow isn't cut off above the edge).
+export function Sheet({ label, onClose, children, tall = false, flush = false, outside = true }: { label: string; onClose: () => void; children: ReactNode; tall?: boolean; flush?: boolean; outside?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const still = useReducedMotion();
   const controls = useDragControls();
@@ -17,7 +18,7 @@ export function Sheet({ label, onClose, children, tall = false, flush = false }:
   useEffect(() => {
     const me = {}, prev = document.activeElement as HTMLElement | null;
     stack.push(me);
-    document.body.classList.add('locked');
+    document.documentElement.classList.add('locked');
     const first = ref.current?.querySelector<HTMLElement>('[data-autofocus]') || ref.current;
     first?.focus({ preventScroll: true });
     const key = (e: KeyboardEvent) => {
@@ -36,24 +37,31 @@ export function Sheet({ label, onClose, children, tall = false, flush = false }:
       removeEventListener('keydown', key);
       stack.splice(stack.indexOf(me), 1);
       // when another sheet replaced this one, leave focus in the new sheet
-      if (!stack.length) { document.body.classList.remove('locked'); prev?.focus?.({ preventScroll: true }); }
+      if (!stack.length) { document.documentElement.classList.remove('locked'); prev?.focus?.({ preventScroll: true }); }
     };
   }, []);
 
   const drag = (_: unknown, i: PanInfo) => { if (i.offset.y > 110 || i.velocity.y > 600) onClose(); };
+  // the pointer stays with the grip row it pressed, so a mouse dragged down over a game (an iframe) doesn't lose the drag
+  const grip = (e: ReactPointerEvent) => {
+    const t = e.target as Element, g = t.closest('[data-grip]');
+    if (!g || t.closest('button, a')) return;
+    g.setPointerCapture?.(e.pointerId); controls.start(e);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <motion.div className="absolute inset-0 bg-[#06141d]/55" onClick={onClose}
+      {/* a finger dragged on the dimmed page doesn't scroll it, though two can still pinch the page back out */}
+      <motion.div className="absolute inset-0 touch-pinch-zoom bg-[#06141d]/55" onClick={outside ? onClose : undefined}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} />
       <motion.div ref={ref} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}
         className={'grain relative w-full max-w-[560px] overflow-hidden rounded-t-[30px] bg-[var(--paper)] text-[var(--ink)] shadow-[0_-20px_60px_rgba(0,0,0,.25)] outline-none flex flex-col ' + (tall ? 'h-[92svh]' : 'max-h-[92svh]')}
         initial={still ? { opacity: 0 } : { y: '100%' }} animate={still ? { opacity: 1 } : { y: 0 }} exit={still ? { opacity: 0 } : { y: '100%' }}
         transition={{ type: 'spring', stiffness: 380, damping: 38 }}
-        drag={still ? false : 'y'} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} onDragEnd={drag} dragListener={false} dragControls={controls}>
-        {/* drag from the top strip only, so the content inside can scroll normally; the pointer stays with the strip,
-            so a mouse dragged down over a game (an iframe) doesn't lose the drag */}
-        <div className="shrink-0 touch-none pt-2.5 pb-1" onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); controls.start(e); }}>
+        drag={still ? false : 'y'} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} onDragEnd={drag} dragListener={false} dragControls={controls}
+        onPointerDown={grip}>
+        {/* drag from the top strip (or a row inside marked data-grip), so the content inside can scroll normally */}
+        <div data-grip className="shrink-0 touch-none pt-2.5 pb-1">
           <div aria-hidden className="mx-auto h-1.5 w-11 rounded-full bg-[var(--ink)]/20" />
         </div>
         <div className={'min-h-0 flex-1 overflow-y-auto overscroll-contain ' + (flush ? 'pb-[max(0px,calc(env(safe-area-inset-bottom)_-_20px))]' : 'pb-[max(20px,env(safe-area-inset-bottom))]')}>{children}</div>

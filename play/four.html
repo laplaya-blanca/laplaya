@@ -27,7 +27,7 @@
 </style>
 <script src="kit.js"></script>
 </head>
-<body class="game">
+<body class="game pinch">
 <div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Four in a Row</h1><button class="snd" id="snd" type="button"></button></div>
 <div class="wrap"><div class="stage" id="stage">
   <canvas id="cv" aria-label="Four in a row board. Tap a column to drop your disc, or use the arrow keys and Enter."></canvas>
@@ -211,15 +211,17 @@ function crabMove() {
 
 // ——— the game ———
 const G = { running: false, solo: false, cells: new Int8Array(COLS * ROWS), heights: new Int8Array(COLS), filled: 0, turn: 1, starts: 1, tally: { 1: 0, 2: 0 },
-  hover: 3, hx: 0, state: 'setup', drop: null, line: null, level: 1, clock: 0, think: 0, crabCol: -1, nudge: 0 };
+  hover: 3, hx: 0, state: 'setup', drop: null, line: null, level: 1, clock: 0, think: 0, crabCol: -1, nudge: 0, off: false, queued: -1, since: 0 };
 const isCrab = (p) => G.solo && p === 2;
 const name = (p) => (G.solo ? (p === 1 ? 'You' : 'The crab') : SIDES[p].name);
 const turnText = (p) => (G.solo ? (p === 1 ? 'Your turn' : 'The crab’s turn') : `${SIDES[p].name}’s turn`);
 const human = () => G.running && G.state === 'await' && !isCrab(G.turn);
+// against the crab, your turn is coming: it's thinking, or its disc is still falling
+const soon = () => G.running && G.solo && (G.state === 'await' ? isCrab(G.turn) : G.state === 'dropping' && isCrab(G.drop.p));
 
 function setup(solo) { G.solo = solo; G.tally = { 1: 0, 2: 0 }; G.starts = 1; G.level = 1; round(); }
 function round() {
-  G.cells.fill(0); G.heights.fill(0); G.filled = 0; G.turn = G.starts; G.state = 'await'; G.drop = null; G.line = null; G.clock = 0; finger = null;
+  G.cells.fill(0); G.heights.fill(0); G.filled = 0; G.turn = G.starts; G.state = 'await'; G.drop = null; G.line = null; G.clock = 0; finger = null; twice = false; G.off = false; G.queued = -1; G.since = performance.now();
   G.hover = 3; G.hx = holeX(3); G.think = 0.7; G.crabCol = -1;
   clearFx(); ov.hidden = true; G.running = true; focusKeyed(cv);
   tell(`${turnText(G.turn)}.`);
@@ -264,6 +266,10 @@ function settle() {
   if (G.filled === COLS * ROWS) return finish(0, null);
   G.turn = 3 - p; G.state = 'await'; G.think = rnd(0.6, 0.95);
   tell(`${name(p)} dropped in column ${col + 1}. ${turnText(G.turn)}.`);
+  // your turn, and a finger got there first: a tap made as the crab's disc landed is played now, and a finger still
+  // resting on the board gets the disc under it
+  if (human()) { if (G.queued >= 0) { G.hover = G.queued; play(G.queued); } else if (finger !== null && !G.off) G.hover = colAt({ clientX: fingerX }); }
+  G.queued = -1;
 }
 function finish(p, line) {
   G.state = 'over'; G.line = line; const was = G.level;
@@ -302,8 +308,9 @@ function draw() {
   // whose turn: their disc over the column, bobbing gently, the column lit
   if (G.running && G.state === 'await') {
     const bob = calm ? 0 : Math.sin(G.clock * 4) * cs * 0.05, shake = G.nudge > 0 ? Math.sin(G.nudge * 60) * cs * 0.08 : 0;
-    if (human()) { ctx.fillStyle = 'rgba(255,255,255,.1)'; rrect(ctx, G.hx - cs / 2 + 2 * S, by + m * 0.5, cs - 4 * S, bh - m, cs * 0.2); ctx.fill(); }
-    drawDisc(G.turn, G.hx + shake, previewY() + bob, rd);
+    // a finger gone off the board will drop nothing when it lets go: the disc fades and the column goes dark
+    if (human() && !G.off) { ctx.fillStyle = 'rgba(255,255,255,.1)'; rrect(ctx, G.hx - cs / 2 + 2 * S, by + m * 0.5, cs - 4 * S, bh - m, cs * 0.2); ctx.fill(); }
+    drawDisc(G.turn, G.hx + shake, previewY() + bob, rd, { alpha: human() && G.off ? 0.35 : 1 });
     if (isCrab(G.turn)) stamp(ctx, '🦀', cs * 0.5, G.hx + rd * 0.8, previewY() - rd * 0.75, { rot: Math.sin(G.clock * 6) * 0.15 });
   }
   // the winning four: a ring on each, joined by a line of light
@@ -348,15 +355,35 @@ function menu() {
     [{ label: 'Me vs the crab 🦀', go: () => setup(true) }, { label: '2 players', alt: true, go: () => setup(false) }]);
 }
 
-// ——— input: touch a column (slide to change your mind), let go to drop. Arrow keys and Enter work too. ———
+// ——— input: touch a column (slide to change your mind), let go to drop, or slide off the board and let go there to
+// drop nothing. Arrow keys and Enter work too. ———
 const colAt = (e) => { const r = cv.getBoundingClientRect(); return clamp(Math.floor((e.clientX - r.left - bx - m) / cs), 0, COLS - 1); };
+// the board, for a finger: the frame and the sand above it, a little either side; not the strip under the frame
+const onBoard = (e, below = 0.45) => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; return y >= 0 && y < by + bh + cs * below && x > bx - cs * 0.2 && x < bx + bw + cs * 0.2; };
 cv.tabIndex = 0;
-// one finger at a time: a second one touching the board while the first is down is ignored
-let finger = null;
-cv.addEventListener('pointerdown', (e) => { e.preventDefault(); if (!human() || finger !== null) return; finger = e.pointerId; G.hover = colAt(e); try { cv.setPointerCapture(e.pointerId); } catch { /* fine */ } });
-cv.addEventListener('pointermove', (e) => { if (human() && (e.pointerId === finger || (finger === null && e.pointerType === 'mouse'))) G.hover = colAt(e); });
-cv.addEventListener('pointerup', (e) => { if (e.pointerId !== finger) return; finger = null; if (human()) { G.hover = colAt(e); play(G.hover); } });
-cv.addEventListener('pointercancel', (e) => { if (e.pointerId === finger) finger = null; });
+// one finger at a time; a second one touching the board while the first is down calls the move off (two fingers are
+// a pinch, not a move). Against the crab, a finger that goes down during its turn (while it thinks, or as its disc
+// falls) counts when it lifts on yours, and a tap made as its disc lands counts as soon as it has. The second tap of
+// a double tap on the button that started the round doesn't make a move.
+let finger = null, twice = false, fingerX = 0, landing = false;
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (finger !== null) { if (e.pointerId !== finger) twice = G.off = true; return; }
+  if (!(human() || soon()) || !onBoard(e, 0.2) || performance.now() < G.since + 400) return;
+  finger = e.pointerId; fingerX = e.clientX; landing = G.state === 'dropping'; if (human()) G.hover = colAt(e);
+  try { cv.setPointerCapture(e.pointerId); } catch { /* fine */ }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (e.pointerId === finger) { fingerX = e.clientX; G.off = twice || !onBoard(e); if (human() && !G.off) G.hover = colAt(e); }
+  else if (finger === null && e.pointerType === 'mouse' && human()) G.hover = colAt(e);
+});
+cv.addEventListener('pointerup', (e) => {
+  if (e.pointerId !== finger) return;
+  const off = twice || !onBoard(e); finger = null; twice = G.off = false;
+  if (off) return;
+  if (human()) { G.hover = colAt(e); play(G.hover); } else if (landing && soon()) G.queued = colAt(e);
+});
+cv.addEventListener('pointercancel', (e) => { if (e.pointerId === finger) { finger = null; twice = G.off = false; } });
 cv.addEventListener('keydown', (e) => {
   if (!human()) return;
   if (e.key === 'ArrowLeft') { G.hover = Math.max(0, G.hover - 1); e.preventDefault(); tell(`Column ${G.hover + 1}`); }

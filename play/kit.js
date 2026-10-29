@@ -10,9 +10,14 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape' && EMBED && parent !
 // links between the games keep ?in and ?night. Inside the menu's sheet they replace the page rather than add to the
 // history, so the phone's Back button still leaves the menu once the sheet is closed.
 const keepLinks = () => document.querySelectorAll('a[data-keep]').forEach((a) => { a.dataset.to ??= a.getAttribute('href'); a.href = a.dataset.to + location.search; });
+// A link pressed in the page's first half second was the second tap of a double tap on whatever opened the page (the
+// menu's die, or '‹ Games'), landing on a game nobody picked: it's ignored.
 addEventListener('DOMContentLoaded', () => {
   keepLinks();
-  if (EMBED) document.querySelectorAll('a[data-keep]').forEach((a) => a.addEventListener('click', (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); location.replace(a.href); }));
+  document.querySelectorAll('a[data-keep]').forEach((a) => a.addEventListener('click', (e) => {
+    if (e.detail && downAt < 500) { e.preventDefault(); return; }
+    if (EMBED && !(e.metaKey || e.ctrlKey || e.shiftKey)) { e.preventDefault(); location.replace(a.href); }
+  }));
 });
 // dusk can fall while a game is open: the sheet says so, and the page around the board follows without reloading
 if (EMBED) addEventListener('message', (e) => {
@@ -24,10 +29,21 @@ if (EMBED) addEventListener('message', (e) => {
 });
 // focus goes to a screen's first button, or to the board as a game starts, only for someone playing with the keyboard:
 // on a phone it would only put a focus ring round a button nobody asked for
-let keyed = false;
+let keyed = false, touched = false, downAt = -1; // downAt: when the last finger (or mouse button) went down
 addEventListener('keydown', () => (keyed = true), true);
-addEventListener('pointerdown', () => (keyed = false), true);
+addEventListener('pointerdown', (e) => { keyed = false; touched = e.pointerType !== 'mouse'; downAt = performance.now(); }, true);
 const focusKeyed = (el) => { if (keyed) el?.focus({ preventScroll: true }); };
+// a page that won't zoom in (Crab Pop) still lets a view that's already zoomed in pinch back out. In the menu's sheet
+// the zoom is the menu's, so that's the one it watches.
+addEventListener('DOMContentLoaded', () => {
+  if (!document.body.classList.contains('nozoom')) return;
+  try {
+    const vp = (EMBED && parent !== window ? parent : window).visualViewport;
+    const watch = () => document.body.classList.toggle('zoomed', vp.scale > 1.01);
+    vp.addEventListener('resize', watch); watch();
+    addEventListener('pagehide', () => vp.removeEventListener('resize', watch)); // the menu's page outlives this one
+  } catch { /* no visual viewport: the page simply doesn't zoom */ }
+});
 // while a screen covers the board, the board is out of the Tab order
 addEventListener('DOMContentLoaded', () => document.querySelectorAll('.stage').forEach((st) => {
   const ov = st.querySelector('.overlay'), cv = st.querySelector('canvas');
@@ -54,8 +70,9 @@ function sizeStage(stage, ar, max = 440) {
   V.DPR = Math.min(devicePixelRatio || 1, 2); V.W = w; V.H = h; V.S = h / 560;
   return { w, h };
 }
-// a long press on the board must not bring up the phone's copy / save-image menu
-addEventListener('contextmenu', (e) => { if (e.target.closest?.('.stage')) e.preventDefault(); });
+// a long press on the board must not bring up the phone's copy / save-image menu, nor one on a game's page or on a
+// game in the list its link menu (a right click with a mouse still gets the browser's menu off the board)
+addEventListener('contextmenu', (e) => { if (e.target.closest?.('.stage') || (touched && e.target.closest?.('body.game, a[data-keep]'))) e.preventDefault(); });
 
 // ——— sound: tiny synth blips, only after a tap (browsers allow sound from then on), with a switch to turn them off ———
 let AC = null, muted = store.get('mute') === 1;
@@ -167,9 +184,10 @@ const clearCaches = () => { sprites.clear(); dice.clear(); };
 function overlay(ov, html, buttons) {
   ov.innerHTML = `<div class="in">${html}<div class="row">${buttons.map((b, i) => `<button type="button" class="go${b.alt ? ' alt' : ''}" data-i="${i}">${b.label}</button>`).join('')}</div></div>`;
   ov.hidden = false; ov.scrollTop = 0; // a screen that had to be scrolled doesn't pass its scroll on to the next one
-  // a screen that appears under a finger still tapping the board ignores that finger for a moment
+  // a screen that appears under a finger still on the board, or under the second tap of a double tap, ignores that tap:
+  // a button counts a press that began a moment after the screen appeared (or a key pressed on it a moment after)
   const shown = performance.now();
-  ov.querySelectorAll('.go').forEach((el) => (el.onclick = () => { if (performance.now() - shown < 600) return; tone(660, 0.06, { vol: 0.04 }); buttons[+el.dataset.i].go(); }));
+  ov.querySelectorAll('.go').forEach((el) => (el.onclick = (e) => { if ((e.detail ? downAt : performance.now()) < shown + 300) return; tone(660, 0.06, { vol: 0.04 }); buttons[+el.dataset.i].go(); }));
   focusKeyed(ov.querySelector('.go'));
 }
 // a game redraws its board once its fonts have arrived, so the numbers aren't painted in a stand-in font

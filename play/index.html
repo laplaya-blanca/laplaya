@@ -25,6 +25,8 @@
     background: #fff; box-shadow: 0 1px 0 var(--line), 0 10px 26px rgba(18,63,77,.08); transition: transform .15s; }
   :root.night .card { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px var(--line); }
   .card:active { transform: scale(.98); }
+  /* a long press on a game brings up no link menu, preview or text selection (iOS then opens it, as a tap would) */
+  .card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .art { flex: none; width: 88px; height: 88px; border-radius: 16px; overflow: hidden; display: block; }
   .txt { flex: 1; min-width: 0; }
   .txt h2 { margin: 0; font-family: var(--display); font-size: 21px; line-height: 1.1; font-weight: 700; }
@@ -59,7 +61,7 @@
       <path d="M17 64a27 10 0 0 0 54 0a25 8.5 0 0 1-54 0z" fill="#d9c49f"/>
       <ellipse cx="17" cy="38" rx="9" ry="3.4" fill="#5b4128" opacity=".75"/><ellipse cx="72" cy="40" rx="9" ry="3.4" fill="#5b4128" opacity=".75"/>
     </svg>
-    <span class="txt"><h2>Crab Pop</h2><p>Tap the crabs before they dive back into the sand.</p><span class="meta">1–4 players</span></span>
+    <span class="txt"><h2>Crab Pop</h2><p>Tap the crabs before they dive back into the sand.</p><span class="meta">1 player · beat your best</span></span>
     <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
   </a></li>
   <li><a class="card" href="four.html" data-keep>

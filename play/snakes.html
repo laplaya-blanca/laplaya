@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="play.css">
 <script src="kit.js"></script>
 </head>
-<body class="game">
+<body class="game pinch">
 <div class="top"><a class="back" href="./" data-keep aria-label="All games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Games</span></a><h1>Snakes &amp; Ladders</h1><button class="snd" id="snd" type="button"></button></div>
 <div class="wrap"><div class="stage" id="stage">
   <canvas id="cv" aria-label="Snakes and ladders board. Tap to roll the die."></canvas>
@@ -145,7 +145,7 @@ function start() {
   for (const p of G.players) { p.pos = 1; p.land = 0; }
   G.turn = 0; G.state = 'await'; G.face = 1 + ((Math.random() * 6) | 0); G.anim = null; G.botWait = 0.9; G.clock = 0;
   clearFx();
-  ov.hidden = true; G.running = true; tell(`${turnOf(G.players[0])}.`);
+  ov.hidden = true; G.running = true; ready = performance.now() + 400; tell(`${turnOf(G.players[0])}.`);
   focusKeyed(cv);
   cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(loop);
 }
@@ -210,7 +210,7 @@ function after(p) {
   const c = cell(p.pos);
   const again = SHELLS.includes(p.pos) ? 'Shell! Roll again' : G.face === 6 ? 'Six! Roll again' : '';
   if (again) { say(c.x, c.y - ch * 0.5, again, '#c27a12', 19); chord([784, 988], 0.06, { vol: 0.05 }); tell(who(p) === 'You' ? `${again}.` : `${again}, ${who(p)}.`); }
-  else { G.turn = (G.turn + 1) % G.players.length; tell(`${turnOf(G.players[G.turn])}.`); }
+  else { G.turn = (G.turn + 1) % G.players.length; if (!p.bot) ready = performance.now() + 400; tell(`${turnOf(G.players[G.turn])}.`); }
   G.state = 'await'; G.botWait = 0.85;
 }
 function win(p) {
@@ -293,8 +293,25 @@ function menu() {
 }
 
 // ——— input: a tap anywhere on the board rolls for whoever's turn it is; Space or Enter on the board too ———
+// A tap, not just any touch: a swipe, a hand resting on the board as the phone is passed, two fingers (a pinch) and a
+// press begun before the board was ready (a double tap on the button that started the game, or someone still tapping
+// as their turn passed to the next player) don't roll. A thumb that has been resting on the board a while doesn't
+// stop another finger's tap: that's a tap, not half of a pinch.
 cv.tabIndex = 0;
-cv.addEventListener('pointerdown', (e) => { e.preventDefault(); const p = G.players[G.turn]; if (G.running && p && !p.bot) roll(); });
+let press = null, ready = 0;
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (press && performance.now() - press.at < 300) { press.two = true; return; }
+  press = { id: e.pointerId, x: e.clientX, y: e.clientY, at: performance.now() };
+  try { cv.setPointerCapture(e.pointerId); } catch { /* fine */ } // its lift comes back here, even off the board
+});
+cv.addEventListener('pointermove', (e) => { if (press?.id === e.pointerId && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 14) press.moved = true; });
+cv.addEventListener('pointerup', (e) => {
+  if (press?.id !== e.pointerId) return;
+  const t = press, p = G.players[G.turn]; press = null;
+  if (!t.two && !t.moved && t.at >= ready && performance.now() - t.at < 700 && G.running && p && !p.bot) roll();
+});
+cv.addEventListener('pointercancel', (e) => { if (press?.id === e.pointerId) press = null; });
 cv.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && G.running && !G.players[G.turn]?.bot) { e.preventDefault(); roll(); } });
 
 fit(); menu();
