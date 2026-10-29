@@ -163,13 +163,25 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
   const { cat, i, item } = found;
   const set = (fn) => edit((d) => fn(findItem(d, itemKey).item));
   return html`<${Panel} title="Edit item" onClose=${onClose}>
-    <div class="photo-edit">
-      ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
-      <div class="row">
-        <${PhotoButton} label=${item.photo ? 'Change photo' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
-        ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+    <div class="photo-pair">
+      <div class="photo-edit">
+        <span class="label">Day photo</span>
+        ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
+        <div class="row">
+          <${PhotoButton} label=${item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
+          ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+        </div>
+      </div>
+      <div class="photo-edit">
+        <span class="label">Night photo</span>
+        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
+        <div class="row">
+          <${PhotoButton} label=${item.photoNight ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
+          ${item.photoNight && html`<button class="btn ghost" onClick=${() => set((it) => { delete it.photoNight; })}>Remove</button>`}
+        </div>
       </div>
     </div>
+    <p class="hint photo-hint">After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
     <div class="avail">
       <div><strong>Available today</strong><span class="muted">${item.available === false ? 'Shows “Sold out” and can’t be ordered' : 'Customers can order it'}</span></div>
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>
