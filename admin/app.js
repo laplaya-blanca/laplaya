@@ -110,6 +110,18 @@ function Switch({ on, onChange, label }) {
     onClick=${(e) => { e.stopPropagation(); onChange(!on); }}><span></span></button>`;
 }
 
+// A price as typed: a phone's keyboard may give "6,5" or Arabic digits ("٦٫٥"), and a half-typed "6." has to stay on screen.
+// (A number field fed back its own value dropped the dot while typing, so "6.5" became 56.)
+const priceText = (v) => String(v).replace(/[\u0660-\u0669]/g, (d) => d.charCodeAt(0) - 0x660).replace(/[\u06f0-\u06f9]/g, (d) => d.charCodeAt(0) - 0x6f0)
+  .replace(/[,\u066b]/g, '.').replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+function PriceInput({ value, onChange, ...rest }) {
+  const [text, setText] = useState(value ?? '');
+  // a change made elsewhere (Discard, another dish) shows; the owner's own typing stays as he typed it
+  useEffect(() => { if (toPrice(text) !== (value ?? null)) setText(value ?? ''); }, [value]);
+  return html`<input type="text" inputmode="decimal" autocomplete="off" ...${rest} value=${text}
+    onInput=${(e) => { const t = priceText(e.target.value); setText(t); onChange(toPrice(t)); }}/>`;
+}
+
 function Field({ label, hint, children }) {
   return html`<label class="field"><span class="label">${label}</span>${children}${hint && html`<span class="hint">${hint}</span>`}</label>`;
 }
@@ -201,8 +213,7 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
     </div>
     <${Field} label="Name"><input ref=${nameRef} value=${item.name} onInput=${(e) => set((it) => { it.name = e.target.value; })}/></${Field}>
     <${Field} label="Price ($)" hint="Leave empty to show “Ask at the counter”.">
-      <input type="number" inputmode="decimal" min="0" step="0.25" value=${item.price ?? ''} placeholder="Ask at the counter"
-        onInput=${(e) => set((it) => { it.price = toPrice(e.target.value); })}/>
+      <${PriceInput} value=${item.price} placeholder="Ask at the counter" onChange=${(v) => set((it) => { it.price = v; })}/>
     </${Field}>
     <${Field} label="Description" hint=${'Empty = uses the category text: “' + (cat.description || '—') + '”'}>
       <textarea rows="2" value=${item.description} onInput=${(e) => set((it) => { it.description = e.target.value; })}></textarea>
@@ -314,7 +325,7 @@ function OptionList({ title, hint, list, color, edit, field, ask }) {
     <div class="opts">${list.map((o, i) => { const nm = o.name || title + ' ' + (i + 1); return html`<div class="opt" key=${o._k}>
       ${color && html`<input type="color" class="swatch" aria-label=${'Colour for ' + nm} value=${o.color || '#E8B25E'} onInput=${(e) => set(o._k, (x) => { x.color = e.target.value; })}/>`}
       <input class="grow" aria-label=${title + ' ' + (i + 1) + ' name'} placeholder="Name" value=${o.name} onInput=${(e) => set(o._k, (x) => { x.name = e.target.value; })}/>
-      <div class="money"><span>$</span><input type="number" inputmode="decimal" min="0" step="0.25" aria-label=${'Price for ' + nm} value=${o.price ?? ''} onInput=${(e) => set(o._k, (x) => { x.price = toPrice(e.target.value); })} onBlur=${() => o.price == null && set(o._k, (x) => { x.price = 0; })}/></div>
+      <div class="money"><span>$</span><${PriceInput} aria-label=${'Price for ' + nm} value=${o.price} onChange=${(v) => set(o._k, (x) => { x.price = v; })} onBlur=${() => o.price == null && set(o._k, (x) => { x.price = 0; })}/></div>
       <button class="icon-btn" aria-label=${'Move ' + nm + ' up'} disabled=${i === 0} onClick=${() => edit((d) => move(d[field], i, -1))}><${Icon} name="up" size=${18}/></button>
       <button class="icon-btn" aria-label=${'Move ' + nm + ' down'} disabled=${i === list.length - 1} onClick=${() => edit((d) => move(d[field], i, 1))}><${Icon} name="down" size=${18}/></button>
       <button class="icon-btn" aria-label=${'Delete ' + nm} onClick=${() => ask('Delete “' + nm + '”?', 'It disappears from Build your own when you save.', () => edit((d) => { d[field].splice(d[field].findIndex((x) => x._k === o._k), 1); }))}><${Icon} name="trash" size=${18}/></button>
@@ -333,7 +344,7 @@ function BuilderView({ data, edit, ask }) {
       <div class="card-head"><div><h2>Finish</h2><span class="muted">The optional extra at the end</span></div></div>
       <div class="opt">
         <input class="grow" aria-label="Finish name" value=${cream.name} onInput=${(e) => edit((d) => { d.cream = Object.assign({}, d.cream, { name: e.target.value }); })}/>
-        <div class="money"><span>$</span><input type="number" inputmode="decimal" min="0" step="0.25" aria-label="Finish price" value=${cream.price ?? ''} onInput=${(e) => edit((d) => { d.cream = Object.assign({}, d.cream, { price: toPrice(e.target.value) }); })} onBlur=${() => cream.price == null && edit((d) => { d.cream = Object.assign({}, d.cream, { price: 0 }); })}/></div>
+        <div class="money"><span>$</span><${PriceInput} aria-label="Finish price" value=${cream.price} onChange=${(v) => edit((d) => { d.cream = Object.assign({}, d.cream, { price: v }); })} onBlur=${() => cream.price == null && edit((d) => { d.cream = Object.assign({}, d.cream, { price: 0 }); })}/></div>
       </div>
     </section>
   </div>`;
