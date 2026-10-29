@@ -18,11 +18,6 @@ export function sceneImage(cat: Category, w: number) {
 
 export const SHADE = 'linear-gradient(180deg, transparent 28%, color-mix(in srgb, var(--sea-3) 55%, #06141d) 100%)';
 
-export function priceRange(items: Item[]) {
-  const p = items.map((i) => i.price).filter((x): x is number => x != null);
-  return p.length ? 'from ' + money(Math.min(...p)) : 'priced at the counter';
-}
-
 // ---------- sticky category bar ----------
 export function CategoryBar({ cats, active, onPick, view, setView, visible }: { cats: Category[]; active: string; onPick: (k: string) => void; view: View; setView: (v: View) => void; visible: boolean }) {
   const rail = useRef<HTMLDivElement>(null);
@@ -103,7 +98,7 @@ export const Scene = memo(function Scene({ cat, view, onOpen, onAdd }: { cat: Ca
       <div className="edge px-5">
         <p className="flex items-center gap-2.5 text-[14px] font-semibold text-[var(--ink-soft)]">
           <span className="rounded-full bg-[#007385] px-2.5 py-0.5 font-brand text-[11px] font-bold uppercase tracking-[.16em] text-[#F9F6E3] [text-shadow:none]">{cat.temp || 'Fresh'}</span>
-          {cat.items.length} items, {priceRange(cat.items)}
+          {cat.items.length} items
         </p>
         <div className="reveal mt-2"><h2 id={'h-' + cat.key} className="font-brand font-extrabold uppercase leading-[.95] tracking-[.02em] text-[#F9F6E3]"
           style={{ fontSize: titleSize(cat.name) }}>
@@ -249,11 +244,11 @@ function Photo({ item, photo, w, className }: { item: Item; photo: string; w: nu
 }
 
 // a dish not photographed yet: its stand-in on its table (scripts/plate-unshot.mjs), the day one after dark if there is no
-// night one; without either, or if it won't load, the drawn card
+// night one (never a night one by day); without one, or if it won't load, the drawn card
 function StandIn({ item, w, className }: { item: Item; w: number; className: string }) {
   const night = useNight();
   const [broken, setBroken] = useState(false);
-  const src = (night && item.plated.night) || item.plated.day || item.plated.night;
+  const src = night ? item.plated.night || item.plated.day : item.plated.day;
   if (!src || broken) return <Drawn item={item} w={w} className={className} />;
   return (
     <span className={className + ' relative block overflow-hidden bg-[#EFE6D8]'}>

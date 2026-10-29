@@ -29,6 +29,16 @@ function keyify(key, d) {
 const money = (p) => (p === null || p === undefined || p === '' ? 'Ask at the counter' : '$' + (Number.isInteger(+p) ? +p : (+p).toFixed(2)));
 const toPrice = (v) => (v === '' || isNaN(parseFloat(v)) ? null : Math.round(parseFloat(v) * 100) / 100);
 const move = (arr, i, dir) => { const j = i + dir; if (j < 0 || j >= arr.length) return; const t = arr[i]; arr[i] = arr[j]; arr[j] = t; };
+// the pictures made for the menu (assets/plated.json), filed under the owner's photo or, for a dish he hasn't
+// photographed, under its name: found the same way src/lib/content.ts finds them, so each slot shows what the menu shows
+// Until the list has loaded (or if it can't be), a day photo can't be removed: it may be what links the dish to them.
+let PLATED = {}, platedOk = false;
+const getPlated = () => fetch('/assets/plated.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((j) => { PLATED = j && typeof j === 'object' ? j : {}; platedOk = true; });
+const platedReady = getPlated().catch(() => new Promise((ok) => setTimeout(ok, 3000)).then(getPlated)).catch(() => {});
+const slug = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const safePhoto = (p) => (typeof p === 'string' && /^\/?(uploads|assets)\/[\w.\-]+$/.test(p) ? '/' + p.replace(/^\//, '') : '');
+const madeFor = (catName, item) => PLATED[safePhoto(item.photo) || 'dish:' + slug(catName || '') + '/' + slug(item.name || '')] || {};
 const findItem = (d, k) => { for (const c of d.categories) { const i = c.items.findIndex((x) => x._k === k); if (i >= 0) return { cat: c, i, item: c.items[i] }; } return null; };
 
 function Icon({ name, size = 20 }) {
@@ -100,6 +110,18 @@ function Switch({ on, onChange, label }) {
     onClick=${(e) => { e.stopPropagation(); onChange(!on); }}><span></span></button>`;
 }
 
+// A price as typed: a phone's keyboard may give "6,5" or Arabic digits ("٦٫٥"), and a half-typed "6." has to stay on screen.
+// (A number field fed back its own value dropped the dot while typing, so "6.5" became 56.)
+const priceText = (v) => String(v).replace(/[\u0660-\u0669]/g, (d) => d.charCodeAt(0) - 0x660).replace(/[\u06f0-\u06f9]/g, (d) => d.charCodeAt(0) - 0x6f0)
+  .replace(/[,\u066b]/g, '.').replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+function PriceInput({ value, onChange, ...rest }) {
+  const [text, setText] = useState(value ?? '');
+  // a change made elsewhere (Discard, another dish) shows; the owner's own typing stays as he typed it
+  useEffect(() => { if (toPrice(text) !== (value ?? null)) setText(value ?? ''); }, [value]);
+  return html`<input type="text" inputmode="decimal" autocomplete="off" ...${rest} value=${text}
+    onInput=${(e) => { const t = priceText(e.target.value); setText(t); onChange(toPrice(t)); }}/>`;
+}
+
 function Field({ label, hint, children }) {
   return html`<label class="field"><span class="label">${label}</span>${children}${hint && html`<span class="hint">${hint}</span>`}</label>`;
 }
@@ -136,11 +158,11 @@ function Login({ onIn, expired }) {
 }
 
 // ---------- menu ----------
-function ItemCard({ item, cat, photo, onOpen, onToggle }) {
-  const off = item.available === false;
+function ItemCard({ item, cat, made = {}, photo, onOpen, onToggle }) {
+  const off = item.available === false, pic = made.day || item.photo || item.photoNight || made.night;
   return html`<div class=${'item' + (off ? ' off' : '')}>
     <button type="button" class="item-open" onClick=${onOpen} aria-label=${'Edit ' + (item.name || 'item') + ', ' + money(item.price) + (off ? ', sold out' : '')}>
-      <span class="thumb">${item.photo ? html`<img src=${photo(item.photo)} alt="" loading="lazy"/>` : html`<span aria-hidden="true">${(item.name || '?').charAt(0)}</span>`}</span>
+      <span class="thumb">${pic ? html`<img src=${photo(pic)} alt="" loading="lazy"/>` : html`<span aria-hidden="true">${(item.name || '?').charAt(0)}</span>`}</span>
       <span class="item-body">
         ${cat && html`<span class="eyebrow">${cat}</span>`}
         <strong>${item.name || 'Untitled'}</strong>
@@ -160,36 +182,38 @@ function ItemEditor({ data, itemKey, photo, edit, onPhoto, onClose, ask }) {
   const nameRef = useRef();
   useEffect(() => { if (found && found.item.name === 'New item' && nameRef.current) { nameRef.current.focus(); nameRef.current.select(); } }, [itemKey]);
   if (!found) return null;
-  const { cat, i, item } = found;
+  const { cat, i, item } = found, made = madeFor(cat.name, item);
   const set = (fn) => edit((d) => fn(findItem(d, itemKey).item));
   return html`<${Panel} title="Edit item" onClose=${onClose}>
     <div class="photo-pair">
       <div class="photo-edit">
         <span class="label">Day photo</span>
-        ${item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
+        ${made.day ? html`<img src=${photo(made.day)} alt=""/><span class="made">On the menu now</span>`
+          : item.photo ? html`<img src=${photo(item.photo)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>No photo yet</span></div>`}
         <div class="row">
-          <${PhotoButton} label=${item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
-          ${item.photo && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
+          <${PhotoButton} label=${made.day ? 'Replace' : item.photo ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name, (path) => set((it) => { it.photo = path; }))}/>
+          ${item.photo && !made.day && platedOk && html`<button class="btn ghost" onClick=${() => set((it) => { it.photo = ''; })}>Remove</button>`}
         </div>
       </div>
       <div class="photo-edit">
         <span class="label">Night photo</span>
-        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>` : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
+        ${item.photoNight ? html`<img src=${photo(item.photoNight)} alt=""/>`
+          : made.night ? html`<img src=${photo(made.night)} alt=""/><span class="made">On the menu now</span>`
+          : html`<div class="photo-empty"><${Icon} name="camera" size=${30}/><span>Shown after dark</span></div>`}
         <div class="row">
-          <${PhotoButton} label=${item.photoNight ? 'Change' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
+          <${PhotoButton} label=${item.photoNight ? 'Change' : made.night ? 'Replace' : 'Add photo'} onFiles=${(f) => onPhoto(f[0], item.name + ' night', (path) => set((it) => { it.photoNight = path; }))}/>
           ${item.photoNight && html`<button class="btn ghost" onClick=${() => set((it) => { delete it.photoNight; })}>Remove</button>`}
         </div>
       </div>
     </div>
-    <p class="hint photo-hint">After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
+    <p class="hint photo-hint">${made.day || made.night ? 'The pictures marked “On the menu now” were made for the menu and are already showing. Replace one only to change it. ' : ''}${made.night && !item.photoNight ? 'Replacing the day photo also takes away the night picture made from it, so add a new night photo too. ' : ''}After dark the menu shows the night photo, or the day photo if there isn’t one. To make them, see <a href="#templates">Photo templates</a>.</p>
     <div class="avail">
       <div><strong>Available today</strong><span class="muted">${item.available === false ? 'Shows “Sold out” and can’t be ordered' : 'Customers can order it'}</span></div>
       <${Switch} on=${item.available !== false} label="Available today" onChange=${(v) => set((it) => { it.available = v; })}/>
     </div>
     <${Field} label="Name"><input ref=${nameRef} value=${item.name} onInput=${(e) => set((it) => { it.name = e.target.value; })}/></${Field}>
     <${Field} label="Price ($)" hint="Leave empty to show “Ask at the counter”.">
-      <input type="number" inputmode="decimal" min="0" step="0.25" value=${item.price ?? ''} placeholder="Ask at the counter"
-        onInput=${(e) => set((it) => { it.price = toPrice(e.target.value); })}/>
+      <${PriceInput} value=${item.price} placeholder="Ask at the counter" onChange=${(v) => set((it) => { it.price = v; })}/>
     </${Field}>
     <${Field} label="Description" hint=${'Empty = uses the category text: “' + (cat.description || '—') + '”'}>
       <textarea rows="2" value=${item.description} onInput=${(e) => set((it) => { it.description = e.target.value; })}></textarea>
@@ -266,7 +290,7 @@ function MenuView({ data, edit, photo, onPhoto, ask }) {
     </header>
     ${query ? html`
       <p class="muted">${results.length} ${results.length === 1 ? 'item' : 'items'} matching “${q.trim()}”</p>
-      <div class="items">${results.map(({ i, c }) => html`<${ItemCard} key=${i._k} item=${i} cat=${c.name} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
+      <div class="items">${results.map(({ i, c }) => html`<${ItemCard} key=${i._k} item=${i} cat=${c.name} made=${madeFor(c.name, i)} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
     ` : html`
       <nav class="tabs" aria-label="Categories">
         ${data.categories.map((c) => html`<button key=${c._k} class=${'tab' + (c._k === (cat && cat._k) ? ' on' : '')} aria-current=${c._k === (cat && cat._k) ? 'true' : undefined} onClick=${() => setActive(c._k)}>
@@ -282,7 +306,7 @@ function MenuView({ data, edit, photo, onPhoto, ask }) {
             <button class="btn primary" onClick=${addItem}><${Icon} name="plus" size=${18}/> Add item</button>
           </div>
         </div>
-        <div class="items">${cat.items.map((i) => html`<${ItemCard} key=${i._k} item=${i} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
+        <div class="items">${cat.items.map((i) => html`<${ItemCard} key=${i._k} item=${i} made=${madeFor(cat.name, i)} photo=${photo} onOpen=${() => setOpen({ item: i._k })} onToggle=${toggle(i._k)}/>`)}</div>
         ${!cat.items.length && html`<p class="empty">No items yet. Tap “Add item”.</p>`}
       ` : html`<p class="empty">No categories yet.</p>`}
     `}
@@ -301,7 +325,7 @@ function OptionList({ title, hint, list, color, edit, field, ask }) {
     <div class="opts">${list.map((o, i) => { const nm = o.name || title + ' ' + (i + 1); return html`<div class="opt" key=${o._k}>
       ${color && html`<input type="color" class="swatch" aria-label=${'Colour for ' + nm} value=${o.color || '#E8B25E'} onInput=${(e) => set(o._k, (x) => { x.color = e.target.value; })}/>`}
       <input class="grow" aria-label=${title + ' ' + (i + 1) + ' name'} placeholder="Name" value=${o.name} onInput=${(e) => set(o._k, (x) => { x.name = e.target.value; })}/>
-      <div class="money"><span>$</span><input type="number" inputmode="decimal" min="0" step="0.25" aria-label=${'Price for ' + nm} value=${o.price ?? ''} onInput=${(e) => set(o._k, (x) => { x.price = toPrice(e.target.value); })} onBlur=${() => o.price == null && set(o._k, (x) => { x.price = 0; })}/></div>
+      <div class="money"><span>$</span><${PriceInput} aria-label=${'Price for ' + nm} value=${o.price} onChange=${(v) => set(o._k, (x) => { x.price = v; })} onBlur=${() => o.price == null && set(o._k, (x) => { x.price = 0; })}/></div>
       <button class="icon-btn" aria-label=${'Move ' + nm + ' up'} disabled=${i === 0} onClick=${() => edit((d) => move(d[field], i, -1))}><${Icon} name="up" size=${18}/></button>
       <button class="icon-btn" aria-label=${'Move ' + nm + ' down'} disabled=${i === list.length - 1} onClick=${() => edit((d) => move(d[field], i, 1))}><${Icon} name="down" size=${18}/></button>
       <button class="icon-btn" aria-label=${'Delete ' + nm} onClick=${() => ask('Delete “' + nm + '”?', 'It disappears from Build your own when you save.', () => edit((d) => { d[field].splice(d[field].findIndex((x) => x._k === o._k), 1); }))}><${Icon} name="trash" size=${18}/></button>
@@ -320,7 +344,7 @@ function BuilderView({ data, edit, ask }) {
       <div class="card-head"><div><h2>Finish</h2><span class="muted">The optional extra at the end</span></div></div>
       <div class="opt">
         <input class="grow" aria-label="Finish name" value=${cream.name} onInput=${(e) => edit((d) => { d.cream = Object.assign({}, d.cream, { name: e.target.value }); })}/>
-        <div class="money"><span>$</span><input type="number" inputmode="decimal" min="0" step="0.25" aria-label="Finish price" value=${cream.price ?? ''} onInput=${(e) => edit((d) => { d.cream = Object.assign({}, d.cream, { price: toPrice(e.target.value) }); })} onBlur=${() => cream.price == null && edit((d) => { d.cream = Object.assign({}, d.cream, { price: 0 }); })}/></div>
+        <div class="money"><span>$</span><${PriceInput} aria-label="Finish price" value=${cream.price} onChange=${(v) => edit((d) => { d.cream = Object.assign({}, d.cream, { price: v }); })} onBlur=${() => cream.price == null && edit((d) => { d.cream = Object.assign({}, d.cream, { price: 0 }); })}/></div>
       </div>
     </section>
   </div>`;
@@ -493,6 +517,9 @@ function checkContent(files) {
 
 // ---------- app ----------
 function App() {
+  // redraw once the list of pictures made for the menu has loaded
+  const [, setMade] = useState(0);
+  useEffect(() => { platedReady.then(() => setMade(1)); }, []);
   const [user, setUser] = useState(currentUser());
   const [files, setFiles] = useState(null);       // { key: { data, sha, orig } }
   const [loadErr, setLoadErr] = useState(null);
